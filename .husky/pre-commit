@@ -1,0 +1,7 @@
+echo "🔍 Running pre-commit checks..."
+
+# lint-staged 실행 (staged 파일에 대한 포맷팅 및 린팅)
+npx lint-staged
+
+# 디렉토리 구조 검증
+npm run check:structure

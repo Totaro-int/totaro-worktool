@@ -1,0 +1,7 @@
+echo "📦 Checking for dependency updates..."
+
+# package.json 변경 시 자동 npm install
+if git diff HEAD@{1} --name-only | grep -q 'package.json'; then
+  echo "📦 package.json changed, running npm install..."
+  npm install
+fi

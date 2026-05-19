@@ -1,0 +1,50 @@
+{
+  "name": "totaro-worktool",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:structure": "tsx scripts/check-structure.ts",
+    "check:unused-deps": "tsx scripts/check-unused-deps.ts",
+    "check:large-files": "tsx scripts/check-large-files.ts",
+    "check:drift": "tsx scripts/check-drift.ts",
+    "check:all": "npm run format:check && npm run lint && npm run check:structure",
+    "clean": "npm run check:unused-deps && npm run check:large-files && npm run check:drift",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4",
+    "bcryptjs": "^3.0.3",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.3",
+    "depcheck": "^1.4.7",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "eslint-plugin-import": "^2.32.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
+    "prettier": "^3.8.3",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.1",
+    "typescript": "^5"
+  }
+}
