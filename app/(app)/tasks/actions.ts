@@ -59,6 +59,9 @@ export async function updateTaskStatus(formData: FormData): Promise<void> {
   }
 
   revalidatePath('/tasks')
+  revalidatePath('/hub/github')
+  revalidatePath('/hub/naver')
+  revalidatePath('/hub/agent')
 }
 
 /** 할 일을 삭제한다. */

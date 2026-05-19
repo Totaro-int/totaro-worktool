@@ -1,3 +1,5 @@
+import { AreaTaskList } from '@/components/AreaTaskList'
+import { ConsolePanel, ConsoleShell, StatPanel } from '@/components/console'
 import { PageHeader, inputClass, labelClass, primaryButtonClass } from '@/components/ui'
 import { getAgentData } from '@/lib/agents'
 import type { AgentData, AgentStatus, MarketingAgent } from '@/lib/agents'
@@ -19,23 +21,13 @@ export default async function AgentHubPage(): Promise<React.JSX.Element> {
         title="마케팅 에이전트 · 판매"
         description="AI 마케팅 에이전트 운영과 판매 현황을 관리합니다."
       />
-      <div className="p-8">
-        <div className="mx-auto max-w-4xl space-y-5">
-          {data.status === 'needs_migration' && <MigrationCard />}
-          {data.status === 'error' && <ErrorCard message={data.message} />}
-          {data.status === 'ok' && <AgentDashboard data={data} />}
-        </div>
-      </div>
+      <ConsoleShell>
+        <AreaTaskList workAreaId="ai_agent" />
+        {data.status === 'needs_migration' && <MigrationCard />}
+        {data.status === 'error' && <ErrorCard message={data.message} />}
+        {data.status === 'ok' && <AgentDashboard data={data} />}
+      </ConsoleShell>
     </>
-  )
-}
-
-function StatCard({ label, value }: { label: string; value: string }): React.JSX.Element {
-  return (
-    <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
-    </div>
   )
 }
 
@@ -65,17 +57,18 @@ function AgentRow({ agent }: { agent: MarketingAgent }): React.JSX.Element {
 function AgentDashboard({ data }: { data: AgentData }): React.JSX.Element {
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="운영 중 에이전트" value={`${data.activeCount}개`} />
-        <StatCard
-          label="이번 달 매출 (운영 중)"
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatPanel label="운영 중 에이전트" value={`${data.activeCount}개`} accent="emerald" />
+        <StatPanel
+          label="이번 달 매출"
           value={`${data.monthlyRevenue.toLocaleString('ko-KR')}원`}
+          accent="blue"
         />
-        <StatCard label="도입 진행 중" value={`${data.onboardingCount}개`} />
+        <StatPanel label="도입 진행 중" value={`${data.onboardingCount}개`} accent="amber" />
       </div>
 
-      <details className="rounded-xl bg-white ring-1 ring-slate-200">
-        <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-slate-700">
+      <details className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+        <summary className="cursor-pointer list-none px-5 py-3.5 font-mono text-[11px] font-semibold tracking-[0.14em] text-slate-500">
           + 에이전트 추가
         </summary>
         <form action={createAgent} className="space-y-3 border-t border-slate-100 p-5">
@@ -140,10 +133,7 @@ function AgentDashboard({ data }: { data: AgentData }): React.JSX.Element {
         </form>
       </details>
 
-      <div className="rounded-xl bg-white ring-1 ring-slate-200">
-        <div className="border-b border-slate-100 px-5 py-3">
-          <h2 className="text-sm font-semibold text-slate-700">에이전트 목록</h2>
-        </div>
+      <ConsolePanel title="에이전트 목록" accent="slate" flush>
         {data.agents.length === 0 ? (
           <p className="px-5 py-10 text-center text-sm text-slate-400">
             등록된 에이전트가 없습니다. 위에서 첫 에이전트를 추가하세요.
@@ -155,14 +145,14 @@ function AgentDashboard({ data }: { data: AgentData }): React.JSX.Element {
             ))}
           </ul>
         )}
-      </div>
+      </ConsolePanel>
     </>
   )
 }
 
 function MigrationCard(): React.JSX.Element {
   return (
-    <div className="rounded-xl bg-white p-6 ring-1 ring-slate-200">
+    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
       <h2 className="text-base font-semibold text-slate-900">에이전트 테이블 생성이 필요합니다</h2>
       <p className="mt-1.5 text-sm text-slate-500">
         에이전트 데이터는 Supabase에 저장됩니다. 아래 SQL 파일의 내용을 Supabase 프로젝트의 SQL

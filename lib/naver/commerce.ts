@@ -4,7 +4,9 @@ const COMMERCE_API = 'https://api.commerce.naver.com'
 
 export type CommerceData = {
   status: 'ok'
-  todayOrderCount: number
+  orderCount: number
+  paidRevenue: number
+  pendingRevenue: number
 }
 
 export type CommerceResult =
@@ -19,10 +21,18 @@ type TokenResponse = {
 
 type LastChangedResponse = {
   data?: {
-    count?: number
     lastChangeStatuses?: { productOrderId: string }[]
   }
 }
+
+type ProductOrderQueryResponse = {
+  data?: {
+    productOrder?: { productOrderStatus?: string; totalPaymentAmount?: number }
+  }[]
+}
+
+/** 결제가 확정돼 매출로 잡히는 상품주문 상태. */
+const PAID_STATUSES = new Set(['PAYED', 'DELIVERING', 'DELIVERED', 'PURCHASE_DECIDED'])
 
 // 프로세스 메모리 내 토큰 캐시 (만료 60초 전까지 재사용)
 let cachedToken: { token: string; expiresAt: number } | null = null
@@ -77,8 +87,9 @@ function seoulMidnightIso(): string {
 }
 
 /**
- * /hub/naver 대시보드용 — 오늘 스마트스토어 주문 현황을 조회한다.
- * 응답 형식은 커머스 API 버전에 따라 다를 수 있어 방어적으로 파싱한다.
+ * /hub/naver 대시보드용 — 오늘 스마트스토어 주문·매출을 조회한다.
+ * last-changed-statuses 로 오늘 변경된 주문 ID를 모은 뒤 product-orders/query 로
+ * 상세를 받아, 결제 확정 상태의 totalPaymentAmount 를 합산한다.
  */
 export async function getCommerceData(): Promise<CommerceResult> {
   const clientId = process.env.NAVER_COMMERCE_CLIENT_ID
@@ -88,21 +99,55 @@ export async function getCommerceData(): Promise<CommerceResult> {
   try {
     const token = await getAccessToken(clientId, clientSecret)
     const from = encodeURIComponent(seoulMidnightIso())
-    const res = await fetch(
-      `${COMMERCE_API}/external/v1/pay-order/seller/product-orders/last-changed-statuses?lastChangedFrom=${from}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
-      }
+
+    const lcRes = await fetch(
+      `${COMMERCE_API}/external/v1/pay-order/seller/product-orders/last-changed-statuses` +
+        `?lastChangedFrom=${from}`,
+      { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
     )
-    if (!res.ok) {
-      throw new Error(`커머스 주문 조회에 실패했습니다 (${res.status}).`)
+    if (!lcRes.ok) {
+      throw new Error(`커머스 주문 조회에 실패했습니다 (${lcRes.status}).`)
+    }
+    const lc = (await lcRes.json()) as LastChangedResponse
+    const ids = [...new Set((lc.data?.lastChangeStatuses ?? []).map((s) => s.productOrderId))]
+    if (ids.length === 0) {
+      return { status: 'ok', orderCount: 0, paidRevenue: 0, pendingRevenue: 0 }
     }
 
-    const json = (await res.json()) as LastChangedResponse
-    const statuses = json.data?.lastChangeStatuses ?? []
-    const todayOrderCount = json.data?.count ?? statuses.length
-    return { status: 'ok', todayOrderCount }
+    let orderCount = 0
+    let paidRevenue = 0
+    let pendingRevenue = 0
+    // product-orders/query — 안전하게 300개씩 끊어 조회
+    for (let i = 0; i < ids.length; i += 300) {
+      const qRes = await fetch(
+        `${COMMERCE_API}/external/v1/pay-order/seller/product-orders/query`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ productOrderIds: ids.slice(i, i + 300) }),
+          cache: 'no-store',
+        }
+      )
+      if (!qRes.ok) continue
+      const q = (await qRes.json()) as ProductOrderQueryResponse
+      for (const row of q.data ?? []) {
+        const po = row.productOrder
+        if (!po) continue
+        const amount = po.totalPaymentAmount ?? 0
+        if (po.productOrderStatus && PAID_STATUSES.has(po.productOrderStatus)) {
+          paidRevenue += amount
+          orderCount += 1
+        } else if (po.productOrderStatus === 'PAYMENT_WAITING') {
+          pendingRevenue += amount
+          orderCount += 1
+        }
+      }
+    }
+
+    return { status: 'ok', orderCount, paidRevenue, pendingRevenue }
   } catch (error) {
     return {
       status: 'error',

@@ -1,3 +1,5 @@
+import { AreaTaskList } from '@/components/AreaTaskList'
+import { ConsolePanel, ConsoleShell, StatPanel } from '@/components/console'
 import { PageHeader } from '@/components/ui'
 import { getGithubData } from '@/lib/github'
 import type { GithubData } from '@/lib/github'
@@ -11,59 +13,49 @@ export default async function GithubHubPage(): Promise<React.JSX.Element> {
         title="GitHub · 개발 업무"
         description="플랫폼 개발 작업 현황을 GitHub에서 실시간으로 확인합니다."
       />
-      <div className="p-8">
-        <div className="mx-auto max-w-4xl space-y-5">
-          {data.status === 'unconfigured' && <SetupCard />}
-          {data.status === 'error' && <ErrorCard message={data.message} />}
-          {data.status === 'ok' && <GithubDashboard data={data} />}
-        </div>
-      </div>
+      <ConsoleShell>
+        <AreaTaskList workAreaId="b2b_sourcing" />
+        {data.status === 'unconfigured' && <SetupCard />}
+        {data.status === 'error' && <ErrorCard message={data.message} />}
+        {data.status === 'ok' && <GithubDashboard data={data} />}
+      </ConsoleShell>
     </>
-  )
-}
-
-function StatCard({ label, value }: { label: string; value: number }): React.JSX.Element {
-  return (
-    <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
-    </div>
   )
 }
 
 function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
   return (
     <>
-      <div className="flex items-center justify-between gap-3 rounded-lg bg-emerald-50 px-4 py-3 ring-1 ring-emerald-200">
-        <span className="text-sm text-emerald-700">
-          ✓ 실시간 연동됨 · <span className="font-semibold">{data.repo}</span>
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="font-mono text-[10px] tracking-[0.14em] text-slate-400">
+            GITHUB ONLINE · {data.repo}
+          </span>
+        </div>
         <a
           href={data.repoUrl}
           target="_blank"
           rel="noreferrer"
-          className="shrink-0 text-xs font-medium text-emerald-700 hover:underline"
+          className="font-mono text-[10px] tracking-wide text-blue-500 hover:text-blue-600"
         >
           저장소 열기 →
         </a>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="오늘 커밋" value={data.commitsToday} />
-        <StatCard label="열린 PR" value={data.openPullCount} />
-        <StatCard label="열린 이슈" value={data.openIssueCount} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatPanel label="오늘 커밋" value={String(data.commitsToday)} accent="blue" />
+        <StatPanel label="열린 PR" value={String(data.openPullCount)} accent="slate" />
+        <StatPanel label="열린 이슈" value={String(data.openIssueCount)} accent="amber" />
       </div>
 
-      <div className="rounded-xl bg-white p-5 ring-1 ring-slate-200">
-        <h2 className="text-sm font-semibold text-slate-700">
-          최근 커밋 <span className="font-normal text-slate-400">· {data.defaultBranch}</span>
-        </h2>
+      <ConsolePanel title="최근 커밋" meta={data.defaultBranch} accent="blue" flush>
         {data.recentCommits.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-400">표시할 커밋이 없습니다.</p>
+          <p className="px-5 py-6 text-sm text-slate-400">표시할 커밋이 없습니다.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100">
             {data.recentCommits.map((c) => (
-              <li key={c.sha} className="flex items-center gap-3 py-2.5">
+              <li key={c.sha} className="flex items-center gap-3 px-5 py-2.5">
                 <code className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-500">
                   {c.sha}
                 </code>
@@ -71,7 +63,7 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
                   href={c.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-w-0 flex-1 truncate text-sm text-slate-700 transition-colors hover:text-indigo-600 hover:underline"
+                  className="min-w-0 flex-1 truncate text-sm text-slate-700 transition-colors hover:text-blue-600 hover:underline"
                 >
                   {c.message}
                 </a>
@@ -81,22 +73,21 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
             ))}
           </ul>
         )}
-      </div>
+      </ConsolePanel>
 
-      <div className="rounded-xl bg-white p-5 ring-1 ring-slate-200">
-        <h2 className="text-sm font-semibold text-slate-700">열린 PR</h2>
+      <ConsolePanel title="열린 PR" accent="slate" flush>
         {data.openPulls.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-400">열린 PR이 없습니다.</p>
+          <p className="px-5 py-6 text-sm text-slate-400">열린 PR이 없습니다.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100">
             {data.openPulls.map((p) => (
-              <li key={p.number} className="flex items-center gap-3 py-2.5">
+              <li key={p.number} className="flex items-center gap-3 px-5 py-2.5">
                 <span className="shrink-0 font-mono text-xs text-slate-400">#{p.number}</span>
                 <a
                   href={p.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-w-0 flex-1 truncate text-sm text-slate-700 transition-colors hover:text-indigo-600 hover:underline"
+                  className="min-w-0 flex-1 truncate text-sm text-slate-700 transition-colors hover:text-blue-600 hover:underline"
                 >
                   {p.title}
                 </a>
@@ -106,7 +97,7 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
             ))}
           </ul>
         )}
-      </div>
+      </ConsolePanel>
     </>
   )
 }
@@ -125,7 +116,7 @@ function ErrorCard({ message }: { message: string }): React.JSX.Element {
 
 function SetupCard(): React.JSX.Element {
   return (
-    <div className="rounded-xl bg-white p-6 ring-1 ring-slate-200">
+    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
       <h2 className="text-base font-semibold text-slate-900">GitHub 연동 설정이 필요합니다</h2>
       <p className="mt-1.5 text-sm text-slate-500">
         프로젝트 루트의{' '}

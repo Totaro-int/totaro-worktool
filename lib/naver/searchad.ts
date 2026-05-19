@@ -10,6 +10,9 @@ export type SearchAdData = {
   clicks: number
   cost: number
   ctr: number
+  conversions: number
+  adRevenue: number
+  roas: number
   campaigns: { name: string; enabled: boolean }[]
 }
 
@@ -35,6 +38,8 @@ type RawStatRow = {
   impCnt?: number
   clkCnt?: number
   salesAmt?: number
+  ccnt?: number
+  convAmt?: number
 }
 
 function getConfig(): SearchAdConfig | null {
@@ -80,8 +85,11 @@ function seoulDate(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
 }
 
-/** /hub/naver 대시보드용 — 검색광고 캠페인·이번 달 성과를 조회한다. */
-export async function getSearchAdData(): Promise<SearchAdResult> {
+/** /hub/naver 대시보드용 — 검색광고 캠페인·기간 성과를 조회한다. */
+export async function getSearchAdData(range?: {
+  since: string
+  until: string
+}): Promise<SearchAdResult> {
   const config = getConfig()
   if (!config) return { status: 'unconfigured' }
 
@@ -92,25 +100,47 @@ export async function getSearchAdData(): Promise<SearchAdResult> {
     let impressions = 0
     let clicks = 0
     let cost = 0
+    let conversions = 0
+    let adRevenue = 0
+
     if (campaigns.length > 0) {
+      const today = seoulDate()
+      const since = range?.since ?? `${today.slice(0, 8)}01`
+      const until = range?.until ?? today
+      const ids = encodeURIComponent(JSON.stringify(campaigns.map((c) => c.nccCampaignId)))
+      const timeRange = encodeURIComponent(JSON.stringify({ since, until }))
+
+      // 노출·클릭·광고비 — 검증된 기본 필드
       try {
-        const today = seoulDate()
-        const monthStart = `${today.slice(0, 8)}01`
-        const ids = JSON.stringify(campaigns.map((c) => c.nccCampaignId))
-        const fields = JSON.stringify(['impCnt', 'clkCnt', 'salesAmt'])
-        const timeRange = JSON.stringify({ since: monthStart, until: today })
-        const query =
-          `?ids=${encodeURIComponent(ids)}` +
-          `&fields=${encodeURIComponent(fields)}` +
-          `&timeRange=${encodeURIComponent(timeRange)}`
-        const stats = await searchAdGet<{ data?: RawStatRow[] }>(config, '/stats', query)
+        const fields = encodeURIComponent(JSON.stringify(['impCnt', 'clkCnt', 'salesAmt']))
+        const stats = await searchAdGet<{ data?: RawStatRow[] }>(
+          config,
+          '/stats',
+          `?ids=${ids}&fields=${fields}&timeRange=${timeRange}`
+        )
         for (const row of stats.data ?? []) {
           impressions += row.impCnt ?? 0
           clicks += row.clkCnt ?? 0
           cost += row.salesAmt ?? 0
         }
       } catch {
-        // 성과 통계 조회 실패 시 캠페인 수만 노출하고 지표는 0으로 둔다.
+        // 기본 성과 통계 실패 시 0 으로 둔다.
+      }
+
+      // 전환수·전환매출 — 전환추적(프리미엄 로그 분석) 연동 시에만 값이 들어온다
+      try {
+        const fields = encodeURIComponent(JSON.stringify(['ccnt', 'convAmt']))
+        const stats = await searchAdGet<{ data?: RawStatRow[] }>(
+          config,
+          '/stats',
+          `?ids=${ids}&fields=${fields}&timeRange=${timeRange}`
+        )
+        for (const row of stats.data ?? []) {
+          conversions += row.ccnt ?? 0
+          adRevenue += row.convAmt ?? 0
+        }
+      } catch {
+        // 전환추적 미연동이면 전환 지표는 0 으로 둔다.
       }
     }
 
@@ -122,6 +152,9 @@ export async function getSearchAdData(): Promise<SearchAdResult> {
       clicks,
       cost,
       ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
+      conversions,
+      adRevenue,
+      roas: cost > 0 ? (adRevenue / cost) * 100 : 0,
       campaigns: campaigns.slice(0, 6).map((c) => ({
         name: c.name,
         enabled: !c.userLock && c.status === 'ELIGIBLE',

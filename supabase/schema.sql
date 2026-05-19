@@ -22,9 +22,9 @@ create table if not exists public.work_areas (
 );
 
 insert into public.work_areas (id, name, color, sort_order) values
-  ('ai_branding',  'AI 브랜딩',        '#6366f1', 1),
-  ('b2b_sourcing', 'B2B 소싱 AI',      '#0ea5e9', 2),
-  ('ai_agent',     'AI 에이전트 판매', '#10b981', 3)
+  ('ai_branding',  'e커머스',          '#6366f1', 1),
+  ('b2b_sourcing', '소싱 AI',          '#0ea5e9', 2),
+  ('ai_agent',     '마케팅 에이전트',  '#10b981', 3)
 on conflict (id) do nothing;
 
 -- ----- 할 일 -----
