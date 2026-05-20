@@ -1,3 +1,8 @@
+/** ISO 시각이 지금 기준으로 maxAgeMs 보다 오래됐으면 true. */
+export function isStale(iso: string, maxAgeMs: number): boolean {
+  return Date.now() - new Date(iso).getTime() > maxAgeMs
+}
+
 /** ISO 시각을 "3시간 전" 같은 상대 표기로 변환 */
 export function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime()

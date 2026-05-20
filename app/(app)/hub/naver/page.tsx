@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { AreaTaskList } from '@/components/AreaTaskList'
 import { ConsoleShell, StatPanel } from '@/components/console'
 import { PageHeader } from '@/components/ui'
+import { isStale, timeAgo } from '@/lib/format'
 import { getCommerceData } from '@/lib/naver/commerce'
 import { getSearchAdData } from '@/lib/naver/searchad'
 import { createClient } from '@/lib/supabase/server'
@@ -63,12 +64,26 @@ export default async function NaverHubPage({
 
   const convNote = ad && ad.clicks > 0 && ad.adRevenue === 0 ? '전환추적 연동 필요' : undefined
   const com = commerce.status === 'ok' ? commerce : null
+  // 스냅샷 워커가 최근 1시간 안에 돌았는지 판정 — 너무 오래되면 stale 경고
+  const STALE_MS = 60 * 60 * 1000
+  const syncedAt =
+    commerce.status === 'ok' || (commerce.status === 'error' && commerce.syncedAt)
+      ? (commerce as { syncedAt?: string }).syncedAt
+      : undefined
+  const stale = syncedAt ? isStale(syncedAt, STALE_MS) : false
+  const syncNote = syncedAt
+    ? stale
+      ? `⚠️ 동기화 ${timeAgo(syncedAt)} (워커 점검 필요)`
+      : `동기화 ${timeAgo(syncedAt)}`
+    : undefined
   const commerceNote =
     commerce.status === 'error'
       ? `커머스 오류: ${commerce.message}`
-      : commerce.status === 'unconfigured'
-        ? 'API 설정 필요'
-        : undefined
+      : commerce.status === 'needs_migration'
+        ? 'naver_commerce_snapshot 테이블 생성 필요'
+        : commerce.status === 'unconfigured'
+          ? '워커 미실행 — sync-naver-commerce 1회 돌려 주세요'
+          : syncNote
   const pendingNote =
     com && com.pendingRevenue > 0 ? `입금대기 ${won(com.pendingRevenue)}` : undefined
   const nonAdRevenue = com ? Math.max(com.paidRevenue - (ad?.adRevenue ?? 0), 0) : 0
@@ -161,8 +176,23 @@ export default async function NaverHubPage({
           />
         </div>
 
+        {commerce.status === 'needs_migration' && (
+          <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 ring-1 ring-amber-200">
+            커머스 스냅샷 테이블이 없습니다 — Supabase SQL Editor 에서{' '}
+            <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-xs">
+              supabase/naver-commerce-snapshot.sql
+            </code>{' '}
+            을 실행한 뒤, 화이트리스트 IP 머신에서{' '}
+            <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-xs">
+              npx tsx scripts/sync-naver-commerce.ts
+            </code>{' '}
+            를 한 번 돌려 주세요.
+          </p>
+        )}
+
         <p className="font-mono text-[10px] tracking-wide text-slate-400">
-          {range.since} ~ {range.until} · 네이버 검색광고 API
+          {range.since} ~ {range.until} · 네이버 검색광고 API · 커머스 스냅샷
+          {syncedAt ? ` ${timeAgo(syncedAt)}` : ''}
         </p>
       </ConsoleShell>
     </>
