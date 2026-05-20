@@ -4,7 +4,7 @@ import { PageHeader, inputClass, labelClass, primaryButtonClass } from '@/compon
 import { getAgentData } from '@/lib/agents'
 import type { AgentData, AgentStatus, MarketingAgent } from '@/lib/agents'
 
-import { createAgent } from './actions'
+import { createAgent, deleteAgent, updateAgent } from './actions'
 
 const STATUS_META: Record<AgentStatus, { label: string; badge: string }> = {
   active: { label: '운영중', badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
@@ -34,22 +34,112 @@ export default async function AgentHubPage(): Promise<React.JSX.Element> {
 function AgentRow({ agent }: { agent: MarketingAgent }): React.JSX.Element {
   const meta = STATUS_META[agent.status]
   return (
-    <li className="flex items-center gap-3 px-5 py-3.5">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-slate-900">{agent.name}</p>
-        <p className="mt-0.5 truncate text-xs text-slate-400">
-          {agent.client_name ? `고객사 · ${agent.client_name}` : '고객사 미지정'}
-          {agent.note ? ` · ${agent.note}` : ''}
-        </p>
-      </div>
-      <span
-        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${meta.badge}`}
-      >
-        {meta.label}
-      </span>
-      <span className="w-24 shrink-0 text-right text-sm text-slate-600 tabular-nums">
-        {agent.monthly_fee > 0 ? `${agent.monthly_fee.toLocaleString('ko-KR')}원` : '—'}
-      </span>
+    <li>
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-3.5 hover:bg-slate-50">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-slate-900">{agent.name}</p>
+            <p className="mt-0.5 truncate text-xs text-slate-400">
+              {agent.client_name ? `고객사 · ${agent.client_name}` : '고객사 미지정'}
+              {agent.note ? ` · ${agent.note}` : ''}
+            </p>
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${meta.badge}`}
+          >
+            {meta.label}
+          </span>
+          <span className="w-24 shrink-0 text-right text-sm text-slate-600 tabular-nums">
+            {agent.monthly_fee > 0 ? `${agent.monthly_fee.toLocaleString('ko-KR')}원` : '—'}
+          </span>
+          <span className="shrink-0 font-mono text-[10px] tracking-wide text-slate-300 group-open:text-blue-500">
+            수정 ▾
+          </span>
+        </summary>
+        <form
+          action={updateAgent}
+          className="space-y-3 border-t border-slate-100 bg-slate-50/50 p-5"
+        >
+          <input type="hidden" name="id" value={agent.id} />
+          <div>
+            <label className={labelClass} htmlFor={`agent-name-${agent.id}`}>
+              에이전트 이름
+            </label>
+            <input
+              id={`agent-name-${agent.id}`}
+              name="name"
+              required
+              defaultValue={agent.name}
+              className={inputClass}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <label className={labelClass} htmlFor={`agent-status-${agent.id}`}>
+                상태
+              </label>
+              <select
+                id={`agent-status-${agent.id}`}
+                name="status"
+                defaultValue={agent.status}
+                className={inputClass}
+              >
+                <option value="active">운영중</option>
+                <option value="onboarding">도입중</option>
+                <option value="paused">일시중지</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass} htmlFor={`agent-client-${agent.id}`}>
+                고객사 (선택)
+              </label>
+              <input
+                id={`agent-client-${agent.id}`}
+                name="client_name"
+                defaultValue={agent.client_name ?? ''}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass} htmlFor={`agent-fee-${agent.id}`}>
+                월 매출 (원)
+              </label>
+              <input
+                type="number"
+                id={`agent-fee-${agent.id}`}
+                name="monthly_fee"
+                min={0}
+                step={10000}
+                defaultValue={agent.monthly_fee}
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div>
+            <label className={labelClass} htmlFor={`agent-note-${agent.id}`}>
+              메모 (선택)
+            </label>
+            <input
+              id={`agent-note-${agent.id}`}
+              name="note"
+              defaultValue={agent.note ?? ''}
+              className={inputClass}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="submit" className={primaryButtonClass}>
+              저장
+            </button>
+            <button
+              type="submit"
+              formAction={deleteAgent}
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-red-600 ring-1 ring-red-200 hover:bg-red-50"
+            >
+              삭제
+            </button>
+          </div>
+        </form>
+      </details>
     </li>
   )
 }
