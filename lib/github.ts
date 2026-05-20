@@ -2,13 +2,15 @@ import { timeAgo } from '@/lib/format'
 
 const GITHUB_API = 'https://api.github.com'
 const REVALIDATE_SECONDS = 300
+// 조직 커밋 피드를 만들 때 스캔할 (최근 푸시 순) 저장소 수
+const SCAN_REPOS = 8
 
 type RawRepo = {
+  name: string
   full_name: string
-  description: string | null
-  default_branch: string
-  open_issues_count: number
   html_url: string
+  pushed_at: string | null
+  private: boolean
 }
 
 type RawCommit = {
@@ -21,15 +23,8 @@ type RawCommit = {
   author: { login: string } | null
 }
 
-type RawPull = {
-  number: number
-  title: string
-  html_url: string
-  created_at: string
-  user: { login: string } | null
-}
-
 export type GithubCommit = {
+  repo: string
   sha: string
   message: string
   author: string
@@ -37,25 +32,21 @@ export type GithubCommit = {
   url: string
 }
 
-export type GithubPull = {
-  number: number
-  title: string
-  author: string
-  relativeTime: string
+export type GithubRepo = {
+  name: string
   url: string
+  pushedRelative: string
+  private: boolean
 }
 
 export type GithubData = {
   status: 'ok'
-  repo: string
-  repoUrl: string
-  description: string | null
-  defaultBranch: string
+  org: string
+  orgUrl: string
+  repoCount: number
   commitsToday: number
-  openPullCount: number
-  openIssueCount: number
   recentCommits: GithubCommit[]
-  openPulls: GithubPull[]
+  repos: GithubRepo[]
 }
 
 export type GithubResult =
@@ -83,11 +74,6 @@ async function ghFetch<T>(token: string, path: string): Promise<T> {
     if (res.status === 401) {
       throw new Error('GitHub 토큰이 유효하지 않습니다 (401). GITHUB_TOKEN 값을 확인하세요.')
     }
-    if (res.status === 404) {
-      throw new Error(
-        '저장소를 찾을 수 없습니다 (404). GITHUB_REPO 값(owner/repo)과 토큰 권한을 확인하세요.'
-      )
-    }
     if (res.status === 403) {
       throw new Error(
         'GitHub API 요청이 거부되었습니다 (403). 토큰 권한 또는 호출 한도를 확인하세요.'
@@ -98,51 +84,70 @@ async function ghFetch<T>(token: string, path: string): Promise<T> {
   return res.json() as Promise<T>
 }
 
-/** /hub/github 대시보드용 GitHub 저장소 현황을 조회한다. */
+/**
+ * /hub/github 대시보드용 — GITHUB_REPO 의 조직(owner) 전체 개발 활동을 조회한다.
+ * 최근 푸시된 저장소 상위 SCAN_REPOS 개의 커밋을 모아 하나의 피드로 합친다.
+ */
 export async function getGithubData(): Promise<GithubResult> {
   const token = process.env.GITHUB_TOKEN
-  const repo = process.env.GITHUB_REPO
-  if (!token || !repo) return { status: 'unconfigured' }
+  const repoEnv = process.env.GITHUB_REPO
+  if (!token || !repoEnv) return { status: 'unconfigured' }
+  const org = repoEnv.split('/')[0]
 
   try {
-    const [repoInfo, commits, pulls] = await Promise.all([
-      ghFetch<RawRepo>(token, `/repos/${repo}`),
-      ghFetch<RawCommit[]>(token, `/repos/${repo}/commits?per_page=30`),
-      ghFetch<RawPull[]>(token, `/repos/${repo}/pulls?state=open&per_page=50`),
-    ])
+    const repos = await ghFetch<RawRepo[]>(
+      token,
+      `/orgs/${org}/repos?sort=pushed&direction=desc&per_page=100`
+    )
+
+    const scanned = await Promise.all(
+      repos.slice(0, SCAN_REPOS).map(async (r) => {
+        try {
+          const commits = await ghFetch<RawCommit[]>(
+            token,
+            `/repos/${r.full_name}/commits?per_page=5`
+          )
+          return commits.map((c) => ({
+            repo: r.name,
+            sha: c.sha.slice(0, 7),
+            message: c.commit.message.split('\n')[0],
+            author: c.author?.login ?? c.commit.author?.name ?? '알 수 없음',
+            date: c.commit.author?.date ?? '',
+            relativeTime: c.commit.author ? timeAgo(c.commit.author.date) : '',
+            url: c.html_url,
+          }))
+        } catch {
+          return []
+        }
+      })
+    )
+    const allCommits = scanned.flat().sort((a, b) => (a.date < b.date ? 1 : -1))
 
     const today = seoulDate()
-    const commitsToday = commits.filter(
-      (c) => c.commit.author && seoulDate(c.commit.author.date) === today
-    ).length
+    const commitsToday = allCommits.filter((c) => c.date && seoulDate(c.date) === today).length
 
-    const recentCommits: GithubCommit[] = commits.slice(0, 8).map((c) => ({
-      sha: c.sha.slice(0, 7),
-      message: c.commit.message.split('\n')[0],
-      author: c.author?.login ?? c.commit.author?.name ?? '알 수 없음',
-      relativeTime: c.commit.author ? timeAgo(c.commit.author.date) : '',
-      url: c.html_url,
-    }))
-
-    const openPulls: GithubPull[] = pulls.map((p) => ({
-      number: p.number,
-      title: p.title,
-      author: p.user?.login ?? '알 수 없음',
-      relativeTime: timeAgo(p.created_at),
-      url: p.html_url,
+    const recentCommits: GithubCommit[] = allCommits.slice(0, 20).map((c) => ({
+      repo: c.repo,
+      sha: c.sha,
+      message: c.message,
+      author: c.author,
+      relativeTime: c.relativeTime,
+      url: c.url,
     }))
 
     return {
       status: 'ok',
-      repo: repoInfo.full_name,
-      repoUrl: repoInfo.html_url,
-      description: repoInfo.description,
-      defaultBranch: repoInfo.default_branch,
+      org,
+      orgUrl: `https://github.com/${org}`,
+      repoCount: repos.length,
       commitsToday,
-      openPullCount: openPulls.length,
-      openIssueCount: Math.max(0, repoInfo.open_issues_count - openPulls.length),
       recentCommits,
-      openPulls: openPulls.slice(0, 6),
+      repos: repos.slice(0, 12).map((r) => ({
+        name: r.name,
+        url: r.html_url,
+        pushedRelative: r.pushed_at ? timeAgo(r.pushed_at) : '',
+        private: r.private,
+      })),
     }
   } catch (error) {
     return {
