@@ -171,23 +171,44 @@ ${body}`
     '--mcp-config',
     '{"mcpServers":{}}',
   ]
-  const res = spawnSync('claude', args, {
+  // launchd 최소 PATH 에선 node 가 없어 `claude`(내부서 node 호출)가 죽는다.
+  // 현재 node 위치 + 흔한 bin 경로를 PATH 에 보강해 준다.
+  const nodeDir = path.dirname(process.execPath)
+  const augmentedPath = [nodeDir, '/usr/local/bin', '/opt/homebrew/bin', process.env.PATH || '']
+    .filter(Boolean)
+    .join(':')
+  const opts = {
     input: prompt,
-    env: { ...process.env, TOTARO_LOGGER_CHILD: '1' }, // 요약 세션이 로거 훅을 또 부르지 않게
+    env: { ...process.env, PATH: augmentedPath, TOTARO_LOGGER_CHILD: '1' }, // PATH 보강 + 재귀 방지
     cwd: os.tmpdir(),
     timeout: 90000,
     encoding: 'utf-8',
     maxBuffer: 4 * 1024 * 1024,
-  })
-  if (res.error || res.status !== 0 || !res.stdout) return null
-  let out = String(res.stdout).trim()
-  if (!out || /API Error|not_found_error|"type"\s*:\s*"error"/i.test(out)) return null
-  return (
-    out
-      .replace(/\*\*/g, '')
-      .replace(/^#+\s*/gm, '')
-      .trim() || null
-  )
+  }
+  // launchd 최소 PATH 에선 `claude` 가 안 잡힐 수 있어 흔한 설치 위치도 순서대로 시도
+  const candidates = [
+    'claude',
+    '/usr/local/bin/claude',
+    '/opt/homebrew/bin/claude',
+    path.join(os.homedir(), '.claude/local/claude'),
+  ]
+  for (const bin of candidates) {
+    const res = spawnSync(bin, args, opts)
+    if (res.error) {
+      if (res.error.code === 'ENOENT') continue
+      return null
+    }
+    if (res.status !== 0 || !res.stdout) return null
+    const out = String(res.stdout).trim()
+    if (!out || /API Error|not_found_error|"type"\s*:\s*"error"/i.test(out)) return null
+    return (
+      out
+        .replace(/\*\*/g, '')
+        .replace(/^#+\s*/gm, '')
+        .trim() || null
+    )
+  }
+  return null
 }
 
 async function postLog({ member, summary, turnCount }) {

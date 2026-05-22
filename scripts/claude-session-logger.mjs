@@ -153,9 +153,14 @@ ${list}`
     '--mcp-config',
     '{"mcpServers":{}}',
   ]
+  // 최소 PATH 환경(launchd 등)에선 node 가 없어 `claude`(내부서 node 호출)가 죽는다.
+  const nodeDir = path.dirname(process.execPath)
+  const augmentedPath = [nodeDir, '/usr/local/bin', '/opt/homebrew/bin', process.env.PATH || '']
+    .filter(Boolean)
+    .join(':')
   const opts = {
     input: prompt,
-    env: { ...process.env, TOTARO_LOGGER_CHILD: '1' },
+    env: { ...process.env, PATH: augmentedPath, TOTARO_LOGGER_CHILD: '1' },
     cwd: os.tmpdir(),
     timeout: 90000,
     encoding: 'utf-8',
