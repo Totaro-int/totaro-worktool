@@ -88,7 +88,7 @@ export default async function ClaudeLogPage(): Promise<React.JSX.Element> {
                                 <span>·</span>
                               </>
                             )}
-                            <span>지시 {log.turn_count}건</span>
+                            <span>작업 {log.turn_count}건</span>
                             <span>·</span>
                             <span>{fmtTime(log.occurred_at)}</span>
                           </div>
@@ -114,7 +114,7 @@ function LogSummary({ text }: { text: string }): React.JSX.Element {
       {rest.length > 0 && (
         <details className="mt-1.5">
           <summary className="cursor-pointer list-none text-xs font-medium text-indigo-500 hover:text-indigo-600">
-            지시 전체 보기 ({rest.length})
+            상세 보기
           </summary>
           <ul className="mt-1.5 space-y-1 border-l-2 border-slate-100 pl-3">
             {rest.map((line, i) => (
