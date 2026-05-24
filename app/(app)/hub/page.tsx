@@ -1,10 +1,71 @@
 import Link from 'next/link'
 
 import { signOut } from '@/app/auth/actions'
+import { getAgentData } from '@/lib/agents'
+import { getGithubData } from '@/lib/github'
+import { getCommerceData } from '@/lib/naver/commerce'
 import { createClient } from '@/lib/supabase/server'
 import type { Task } from '@/lib/types'
 
 type IconName = 'tasks' | 'github' | 'naver' | 'agent'
+
+type Accent = 'blue' | 'amber' | 'emerald' | 'indigo'
+
+/** 노드 큐브의 재질(면별 그라데이션)·조명·라벨 색을 한 묶음으로 정의한다. */
+type CubePalette = {
+  top: [string, string]
+  left: [string, string]
+  right: [string, string]
+  emblem: string
+  iconColor: string
+  header: string
+  pool: string
+  poolOpacity: number
+}
+
+/** 톤다운 파스텔 팔레트 — 채도를 낮춰 쨍하지 않게. */
+const PALETTE: Record<Accent, CubePalette> = {
+  blue: {
+    top: ['#ffffff', '#eef2f8'],
+    left: ['#d6dfea', '#c2cddd'],
+    right: ['#bfcadd', '#aab8cd'],
+    emblem: 'rgba(37, 99, 235, 0.1)',
+    iconColor: '#2f63cc',
+    header: '#3b6fd4',
+    pool: '#2563eb',
+    poolOpacity: 0.28,
+  },
+  amber: {
+    top: ['#fffdf9', '#f6efe2'],
+    left: ['#ece1cd', '#ddceb2'],
+    right: ['#dccfb1', '#cabf9c'],
+    emblem: 'rgba(180, 83, 9, 0.1)',
+    iconColor: '#b06f1d',
+    header: '#e0a23f',
+    pool: '#f0b24a',
+    poolOpacity: 0.24,
+  },
+  emerald: {
+    top: ['#f8fffc', '#e6f3ec'],
+    left: ['#c8e0d4', '#aed0bf'],
+    right: ['#b0d2c2', '#97c2ac'],
+    emblem: 'rgba(4, 120, 87, 0.1)',
+    iconColor: '#0f8a66',
+    header: '#2fa982',
+    pool: '#10b981',
+    poolOpacity: 0.22,
+  },
+  indigo: {
+    top: ['#ecf2ff', '#d8e6ff'],
+    left: ['#7ea2dd', '#6a8ace'],
+    right: ['#4d6ea6', '#3f5b8a'],
+    emblem: 'rgba(255, 255, 255, 0.55)',
+    iconColor: '#26407f',
+    header: '#6d70e0',
+    pool: '#6366f1',
+    poolOpacity: 0.34,
+  },
+}
 
 type NodeSpec = {
   href: string
@@ -13,6 +74,7 @@ type NodeSpec = {
   subText: string
   value: string
   position: string
+  accent: Accent
   hero?: boolean
 }
 
@@ -73,23 +135,18 @@ function NodeIcon({
   )
 }
 
-/** 3면(윗면·좌측면·우측면) clip-path 폴리곤으로 아이소메트릭 큐브를 그린다. */
+/** 3면(윗면·좌측면·우측면) clip-path 폴리곤으로 아이소메트릭 큐브를 그린다.
+ *  각 면은 그라데이션 + 앞쪽 세로 모서리 하이라이트로 '렌더된' 입체감을 낸다. */
 function IsoCube({
   w,
   h,
-  topColor,
-  leftColor,
-  rightColor,
+  palette,
   icon,
-  hero,
 }: {
   w: number
   h: number
-  topColor: string
-  leftColor: string
-  rightColor: string
+  palette: CubePalette
   icon: IconName
-  hero?: boolean
 }): React.JSX.Element {
   const bw = 2 * w
   const bh = w + h
@@ -105,12 +162,42 @@ function IsoCube({
       style={{
         width: `${bw}px`,
         height: `${bh}px`,
-        filter: 'drop-shadow(0 22px 17px rgba(15, 23, 42, 0.23))',
+        filter: 'drop-shadow(0 24px 18px rgba(15, 23, 42, 0.24))',
       }}
     >
-      <div className="absolute inset-0" style={{ clipPath: rightPoly, background: rightColor }} />
-      <div className="absolute inset-0" style={{ clipPath: leftPoly, background: leftColor }} />
-      <div className="absolute inset-0" style={{ clipPath: topPoly, background: topColor }} />
+      <div
+        className="absolute inset-0"
+        style={{
+          clipPath: rightPoly,
+          background: `linear-gradient(180deg, ${palette.right[0]}, ${palette.right[1]})`,
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          clipPath: leftPoly,
+          background: `linear-gradient(180deg, ${palette.left[0]}, ${palette.left[1]})`,
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          clipPath: topPoly,
+          background: `linear-gradient(135deg, ${palette.top[0]}, ${palette.top[1]})`,
+        }}
+      />
+      {/* 앞쪽 세로 모서리 하이라이트 */}
+      <div
+        className="absolute"
+        style={{
+          left: `${w - 1}px`,
+          top: `${w}px`,
+          width: '2px',
+          height: `${h}px`,
+          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0))',
+        }}
+        aria-hidden="true"
+      />
       <div
         className="absolute flex items-center justify-center"
         style={{ left: `${w}px`, top: `${half}px`, transform: 'translate(-50%, -50%)' }}
@@ -121,12 +208,12 @@ function IsoCube({
             width: `${emblem}px`,
             height: `${emblem}px`,
             transform: 'rotate(45deg) scaleY(0.5)',
-            background: hero ? 'rgba(255, 255, 255, 0.6)' : 'rgba(37, 99, 235, 0.1)',
+            background: palette.emblem,
           }}
           aria-hidden="true"
         />
         <span className="relative">
-          <NodeIcon name={icon} size={w * 0.5} color={hero ? '#1e3a8a' : '#2563eb'} />
+          <NodeIcon name={icon} size={w * 0.5} color={palette.iconColor} />
         </span>
       </div>
     </div>
@@ -139,16 +226,22 @@ function FloatingLabel({
   subText,
   value,
   hero,
+  headerColor,
 }: {
   name: string
   subText: string
   value: string
   hero?: boolean
+  headerColor: string
 }): React.JSX.Element {
   return (
     <div className={`relative ${hero ? 'w-48' : 'w-40'}`}>
       <div className="overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-slate-200">
-        <div className="bg-blue-600 py-1.5 text-center text-xs font-bold tracking-wide text-white">
+        <div
+          className="flex items-center justify-center gap-1.5 py-1.5 text-center text-xs font-bold tracking-wide text-white"
+          style={{ background: headerColor }}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-white/85" />
           {name}
         </div>
         <div className="px-3 py-2 text-center">
@@ -176,6 +269,9 @@ function FloatingLabel({
 function IsoNode({ node }: { node: NodeSpec }): React.JSX.Element {
   const w = node.hero ? 165 : 130
   const h = node.hero ? 118 : 92
+  const p = PALETTE[node.accent]
+  const poolW = node.hero ? 380 : 300
+  const poolH = node.hero ? 150 : 118
 
   return (
     <Link
@@ -188,44 +284,79 @@ function IsoNode({ node }: { node: NodeSpec }): React.JSX.Element {
           subText={node.subText}
           value={node.value}
           hero={node.hero}
+          headerColor={p.header}
         />
-        <div className="relative mt-6 transition-transform duration-200 group-hover:-translate-y-2.5">
-          {node.hero && (
-            <div
-              className="pointer-events-none absolute top-1/2 left-1/2 -z-10 -translate-x-1/2 -translate-y-1/2"
-              style={{
-                width: '540px',
-                height: '460px',
-                background:
-                  'radial-gradient(circle, rgba(37, 99, 235, 0.26), rgba(37, 99, 235, 0) 68%)',
-              }}
-              aria-hidden="true"
-            />
-          )}
-          <IsoCube
-            w={w}
-            h={h}
-            topColor={node.hero ? '#dce8ff' : '#ffffff'}
-            leftColor={node.hero ? '#6f95d8' : '#ccd6e4'}
-            rightColor={node.hero ? '#41639f' : '#b1bed2'}
-            icon={node.icon}
-            hero={node.hero}
+        <div className="relative mt-6">
+          {/* 색 조명 풀 — 노드가 바닥에 색광을 드리운다 */}
+          <div
+            className="pointer-events-none absolute bottom-[-4px] left-1/2 -translate-x-1/2 rounded-[50%]"
+            style={{
+              width: `${poolW}px`,
+              height: `${poolH}px`,
+              background: p.pool,
+              opacity: p.poolOpacity,
+              filter: 'blur(30px)',
+              zIndex: 0,
+            }}
+            aria-hidden="true"
           />
+          {/* 바닥 접지 그림자 */}
+          <div
+            className="pointer-events-none absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-[50%]"
+            style={{
+              width: `${node.hero ? 240 : 190}px`,
+              height: '42px',
+              background: 'rgba(15, 23, 42, 0.18)',
+              filter: 'blur(13px)',
+              zIndex: 0,
+            }}
+            aria-hidden="true"
+          />
+          <div
+            className="relative transition-transform duration-200 group-hover:-translate-y-2.5"
+            style={{ zIndex: 1 }}
+          >
+            <IsoCube w={w} h={h} palette={p} icon={node.icon} />
+          </div>
         </div>
       </div>
     </Link>
   )
 }
 
+/** 노드 라벨용 압축 원화 표기 — 좁은 카드에 들어가도록 만/억 단위로 줄인다 (₩48.2만 · ₩297만 · ₩1.2억). */
+function wonCompact(n: number): string {
+  if (n >= 1e8) {
+    const v = n / 1e8
+    return `₩${Number(v.toFixed(v >= 10 ? 1 : 2))}억`
+  }
+  if (n >= 1e4) {
+    const v = n / 1e4
+    return `₩${(v >= 100 ? Math.round(v) : Number(v.toFixed(1))).toLocaleString('ko-KR')}만`
+  }
+  return `₩${Math.round(n).toLocaleString('ko-KR')}`
+}
+
 export default async function HubPage(): Promise<React.JSX.Element> {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // 인증·할 일·각 거점 데이터를 한 번에 병렬 호출 — 허브 첫 화면에 실데이터를 채운다.
+  const [{ data: userRes }, { data: taskData }, githubResult, commerceResult, agentResult] =
+    await Promise.all([
+      supabase.auth.getUser(),
+      supabase.from('tasks').select('status'),
+      getGithubData(),
+      getCommerceData(),
+      getAgentData(),
+    ])
+  const user = userRes.user
 
-  const { data: taskData } = await supabase.from('tasks').select('status')
   const tasks = (taskData ?? []) as Pick<Task, 'status'>[]
   const openCount = tasks.filter((t) => t.status !== 'done').length
+
+  // 각 거점은 데이터를 못 받으면 '—' 로 우아하게 폴백한다.
+  const gh = githubResult.status === 'ok' ? githubResult : null
+  const com = commerceResult.status === 'ok' ? commerceResult : null
+  const ag = agentResult.status === 'ok' ? agentResult : null
 
   let displayName = user?.email?.split('@')[0] ?? '멤버'
   if (user) {
@@ -242,9 +373,10 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       href: '/hub/github',
       name: 'GitHub',
       icon: 'github',
-      subText: '개발 · README',
-      value: '—',
+      subText: gh ? `오늘 커밋 · ${gh.repoCount} repos` : '개발 · README',
+      value: gh ? `${gh.commitsToday}` : '—',
       position: 'left-[14%] top-[40%]',
+      accent: 'blue',
     },
     {
       href: '/tasks',
@@ -253,23 +385,26 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       subText: '이번 주 할 일',
       value: String(openCount),
       position: 'left-[39%] top-[61%]',
+      accent: 'indigo',
       hero: true,
     },
     {
       href: '/hub/naver',
       name: '네이버',
       icon: 'naver',
-      subText: '판매 · 마케팅',
-      value: '—',
+      subText: com ? `오늘 · 주문 ${com.orderCount}건` : '판매 · 마케팅',
+      value: com ? wonCompact(com.paidRevenue) : '—',
       position: 'left-[63%] top-[38%]',
+      accent: 'amber',
     },
     {
       href: '/hub/agent',
       name: '에이전트',
       icon: 'agent',
-      subText: '관리 · 판매',
-      value: '—',
+      subText: ag ? `운영 ${ag.activeCount} · 이번 달` : '관리 · 판매',
+      value: ag ? wonCompact(ag.monthlyRevenue) : '—',
       position: 'left-[88%] top-[59%]',
+      accent: 'emerald',
     },
   ]
 
@@ -307,42 +442,60 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       <div
         className="relative flex-1 overflow-hidden"
         style={{
-          backgroundColor: '#f1f4f9',
+          backgroundColor: '#eef2f8',
           backgroundImage:
-            'repeating-linear-gradient(30deg, #e4e8f0 0 1.3px, transparent 1.3px 70px), repeating-linear-gradient(-30deg, #e4e8f0 0 1.3px, transparent 1.3px 70px)',
+            'radial-gradient(60% 55% at 42% 78%, rgba(99, 102, 241, 0.07), transparent 70%), repeating-linear-gradient(30deg, #e3e8f0 0 1.3px, transparent 1.3px 70px), repeating-linear-gradient(-30deg, #e3e8f0 0 1.3px, transparent 1.3px 70px)',
         }}
       >
         <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
-          <line
-            x1="14%"
-            y1="47%"
-            x2="39%"
-            y2="68%"
-            stroke="#aeb9cd"
-            strokeWidth="2.5"
-            strokeDasharray="1 9"
-            strokeLinecap="round"
-          />
-          <line
-            x1="39%"
-            y1="68%"
-            x2="63%"
-            y2="45%"
-            stroke="#aeb9cd"
-            strokeWidth="2.5"
-            strokeDasharray="1 9"
-            strokeLinecap="round"
-          />
-          <line
-            x1="63%"
-            y1="45%"
-            x2="88%"
-            y2="66%"
-            stroke="#aeb9cd"
-            strokeWidth="2.5"
-            strokeDasharray="1 9"
-            strokeLinecap="round"
-          />
+          <defs>
+            <linearGradient id="hub-line" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#8b8ef0" />
+              <stop offset="1" stopColor="#5b8af0" />
+            </linearGradient>
+            <filter id="hub-glow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <g filter="url(#hub-glow)" opacity="0.85">
+            <line
+              x1="14%"
+              y1="47%"
+              x2="39%"
+              y2="68%"
+              stroke="url(#hub-line)"
+              strokeWidth="2.5"
+              strokeDasharray="2 8"
+              strokeLinecap="round"
+              className="hub-flow-line"
+            />
+            <line
+              x1="39%"
+              y1="68%"
+              x2="63%"
+              y2="45%"
+              stroke="url(#hub-line)"
+              strokeWidth="2.5"
+              strokeDasharray="2 8"
+              strokeLinecap="round"
+              className="hub-flow-line"
+            />
+            <line
+              x1="63%"
+              y1="45%"
+              x2="88%"
+              y2="66%"
+              stroke="url(#hub-line)"
+              strokeWidth="2.5"
+              strokeDasharray="2 8"
+              strokeLinecap="round"
+              className="hub-flow-line"
+            />
+          </g>
         </svg>
 
         {nodes.map((node) => (

@@ -21,3 +21,20 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* 허브 연결선 — 점선이 허브 쪽으로 천천히 흐르며 '살아있는 시스템' 느낌을 준다. */
+@keyframes hub-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.hub-flow-line {
+  animation: hub-flow 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-flow-line {
+    animation: none;
+  }
+}
