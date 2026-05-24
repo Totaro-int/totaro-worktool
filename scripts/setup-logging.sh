@@ -51,15 +51,17 @@ node -e '
   let s = {};
   try { s = JSON.parse(fs.readFileSync(file, "utf-8")); } catch {}
   s.hooks = s.hooks || {};
-  s.hooks.SessionEnd = Array.isArray(s.hooks.SessionEnd) ? s.hooks.SessionEnd : [];
-  const has = JSON.stringify(s.hooks.SessionEnd).includes("claude-session-logger.mjs");
-  if (!has) {
-    s.hooks.SessionEnd.push({ hooks: [{ type: "command", command: cmd }] });
-    fs.writeFileSync(file, JSON.stringify(s, null, 2));
-    console.log("  ✅ SessionEnd 훅 추가됨 (Code/코워크 실시간 기록)");
-  } else {
-    console.log("  • SessionEnd 훅 이미 있음 (건너뜀)");
+  // SessionEnd(세션 끝 완전 기록) + Stop(긴 세션 3h 쓰로틀 보충) 둘 다 등록
+  for (const ev of ["SessionEnd", "Stop"]) {
+    s.hooks[ev] = Array.isArray(s.hooks[ev]) ? s.hooks[ev] : [];
+    if (!JSON.stringify(s.hooks[ev]).includes("claude-session-logger.mjs")) {
+      s.hooks[ev].push({ hooks: [{ type: "command", command: cmd }] });
+      console.log("  ✅ " + ev + " 훅 추가됨");
+    } else {
+      console.log("  • " + ev + " 훅 이미 있음 (건너뜀)");
+    }
   }
+  fs.writeFileSync(file, JSON.stringify(s, null, 2));
 ' "$SETTINGS" "$HOOK_CMD"
 
 # --- 2) launchd 에이전트 등록 (claude.ai 챗 수집) ---

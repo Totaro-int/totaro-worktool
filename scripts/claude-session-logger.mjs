@@ -234,7 +234,45 @@ async function runWorker(member, transcriptPath, dry) {
   process.exit(0)
 }
 
-/** 훅 모드 — 트랜스크립트 경로만 잡아 분리된 워커를 띄우고 즉시 종료한다. */
+// 세션별 기록 쓰로틀 상태 (~/.totaro/session-log-state.json: { sessionId: 마지막기록 ISO })
+const SESSION_STATE_FILE = path.join(os.homedir(), '.totaro', 'session-log-state.json')
+const STOP_THROTTLE_MS = 3 * 3600e3 // Stop: 같은 세션 3시간에 한 번만
+const SESSIONEND_MIN_GAP_MS = 10 * 60e3 // SessionEnd: 직전 기록 10분 내면 skip(중복 방지)
+
+function loadSessionState() {
+  try {
+    return JSON.parse(fs.readFileSync(SESSION_STATE_FILE, 'utf-8'))
+  } catch {
+    return {}
+  }
+}
+
+/** 이 세션을 지금 기록해야 하나 — Stop 은 3h 쓰로틀, SessionEnd 는 막판 flush. */
+function shouldLog(sessionId, event) {
+  const last = loadSessionState()[sessionId]
+  if (!last) return true
+  const gap = Date.now() - new Date(last).getTime()
+  return event === 'SessionEnd' ? gap > SESSIONEND_MIN_GAP_MS : gap > STOP_THROTTLE_MS
+}
+
+/** 세션 기록 시각을 낙관적으로 남긴다 (spawn 직전). 최근 200개만 유지. */
+function recordSessionLog(sessionId) {
+  try {
+    const st = loadSessionState()
+    st[sessionId] = new Date().toISOString()
+    const trimmed = Object.fromEntries(
+      Object.entries(st)
+        .sort((a, b) => (a[1] < b[1] ? 1 : -1))
+        .slice(0, 200)
+    )
+    fs.mkdirSync(path.dirname(SESSION_STATE_FILE), { recursive: true })
+    fs.writeFileSync(SESSION_STATE_FILE, JSON.stringify(trimmed))
+  } catch {
+    // 상태 저장 실패는 무시 (다음 턴 재시도)
+  }
+}
+
+/** 훅 모드 — 쓰로틀 통과 시 분리된 워커를 띄우고 즉시 종료한다. (Stop/SessionEnd 공용) */
 async function runHook(member, dry) {
   let hook = {}
   try {
@@ -251,7 +289,15 @@ async function runHook(member, dry) {
     return
   }
 
-  // 평소엔 분리된 워커로 띄워 세션 종료를 막지 않는다
+  // 쓰로틀 — 같은 세션을 매 턴(Stop) 기록하지 않게. session_id 있을 때만 적용.
+  const sessionId = hook.session_id || ''
+  const event = hook.hook_event_name || ''
+  if (sessionId) {
+    if (!shouldLog(sessionId, event)) process.exit(0)
+    recordSessionLog(sessionId) // 낙관적 기록 (rapid 중복 spawn 방지)
+  }
+
+  // 분리된 워커로 띄워 세션 종료/응답을 막지 않는다
   const child = spawn(process.execPath, [SCRIPT_PATH, '--worker', member, transcriptPath], {
     detached: true,
     stdio: 'ignore',
