@@ -60,20 +60,34 @@ function buildSignature(
   return createHmac('sha256', secretKey).update(`${timestamp}.${method}.${path}`).digest('base64')
 }
 
+/** 검색광고 API 호출 타임아웃 (ms) — 응답이 없으면 페이지가 무한 대기하지 않도록. */
+const SEARCHAD_TIMEOUT_MS = 8000
+
 /** 검색광고 API GET 요청. path는 쿼리스트링을 제외한 경로(서명 대상)이다. */
 async function searchAdGet<T>(config: SearchAdConfig, path: string, query = ''): Promise<T> {
   const timestamp = Date.now()
-  const res = await fetch(`${SEARCHAD_API}${path}${query}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'X-Timestamp': String(timestamp),
-      'X-API-KEY': config.apiKey,
-      'X-Customer': config.customerId,
-      'X-Signature': buildSignature(config.secretKey, timestamp, 'GET', path),
-    },
-    cache: 'no-store',
-  })
+  let res: Response
+  try {
+    res = await fetch(`${SEARCHAD_API}${path}${query}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Timestamp': String(timestamp),
+        'X-API-KEY': config.apiKey,
+        'X-Customer': config.customerId,
+        'X-Signature': buildSignature(config.secretKey, timestamp, 'GET', path),
+      },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(SEARCHAD_TIMEOUT_MS),
+    })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new Error(
+        `검색광고 API 응답이 ${SEARCHAD_TIMEOUT_MS / 1000}초 안에 오지 않았습니다 (${path}).`
+      )
+    }
+    throw error
+  }
   if (!res.ok) {
     throw new Error(`검색광고 API 오류 (${res.status} · ${path}). API 키·고객 ID를 확인하세요.`)
   }
