@@ -12,6 +12,8 @@
 
 사업영역: `AI 브랜딩` · `B2B 소싱 AI` · `AI 에이전트 판매`
 
+> 👉 **팀원 설치(작업 자동 기록):** [`docs/설치.md`](docs/설치.md) 참고 — 본인 맥에서 1회 설치.
+
 ## 기술 스택
 
 - Next.js 16 (App Router) + TypeScript
