@@ -16,6 +16,7 @@
     "check:drift": "tsx scripts/check-drift.ts",
     "sync:naver": "tsx scripts/sync-naver-commerce.ts",
     "sync:chat": "node scripts/import-claude-desktop-chats.mjs",
+    "status": "node scripts/status.mjs",
     "check:all": "npm run format:check && npm run lint && npm run check:structure",
     "clean": "npm run check:unused-deps && npm run check:large-files && npm run check:drift",
     "prepare": "husky"
