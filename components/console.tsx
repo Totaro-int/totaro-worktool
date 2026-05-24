@@ -9,17 +9,15 @@ const ACCENT_BAR: Record<Accent, string> = {
   emerald: 'bg-emerald-500',
 }
 
-// 글래시 카드 공용 표면 (정의는 app/globals.css 의 .glass-card).
-const GLASS = 'glass-card'
-
-/** 글래시 프리미엄 배경(은은한 그라데이션) + 가운데 정렬 컨테이너. 허브 하위 페이지 공용. */
+/** SF 실험실 톤 배경(아이소 그리드) + 가운데 정렬 컨테이너. 허브 하위 페이지 공용. */
 export function ConsoleShell({ children }: { children: ReactNode }): React.JSX.Element {
   return (
     <div
       className="min-h-screen p-8"
       style={{
+        backgroundColor: '#f1f4f9',
         backgroundImage:
-          'radial-gradient(120% 120% at 0% 0%, #eef2ff 0%, #f1f5f9 45%, #ecfdf5 100%)',
+          'repeating-linear-gradient(30deg, #e4e8f0 0 1.3px, transparent 1.3px 70px), repeating-linear-gradient(-30deg, #e4e8f0 0 1.3px, transparent 1.3px 70px)',
       }}
     >
       <div className="mx-auto max-w-5xl space-y-5">{children}</div>
@@ -42,7 +40,7 @@ export function StatPanel({
   note?: string
 }): React.JSX.Element {
   return (
-    <div className={`relative overflow-hidden rounded-xl p-4 ${GLASS}`}>
+    <div className="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
       <div className={`absolute inset-x-0 top-0 h-[3px] ${ACCENT_BAR[accent]}`} />
       <p className="font-mono text-[10px] tracking-[0.14em] text-slate-400">{label}</p>
       <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
@@ -67,9 +65,9 @@ export function ConsolePanel({
   children: ReactNode
 }): React.JSX.Element {
   return (
-    <section className={`relative overflow-hidden rounded-xl ${GLASS}`}>
+    <section className="relative overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
       <div className={`absolute inset-x-0 top-0 h-[3px] ${ACCENT_BAR[accent]}`} />
-      <div className="flex items-center justify-between border-b border-white/50 px-5 py-3">
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
         <h2 className="font-mono text-[11px] font-semibold tracking-[0.14em] text-slate-500">
           {title}
         </h2>
