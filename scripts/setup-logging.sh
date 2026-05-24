@@ -23,7 +23,8 @@ fi
 # 경로 해석 (이 스크립트가 어디서 실행되든 동작)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOGGER="$SCRIPT_DIR/claude-session-logger.mjs"
-CHAT_IMPORTER="$SCRIPT_DIR/import-claude-desktop-chats.mjs"
+# 챗은 원문 업로더로 통일 (요약은 태준 Mac 중앙 요약기가 담당 → 비개발자와 동일 경로)
+CHAT_IMPORTER="$SCRIPT_DIR/chat-raw-uploader.mjs"
 NODE_BIN="$(command -v node || true)"
 
 echo "── totaro 로그 수집 설치: $MEMBER ──"

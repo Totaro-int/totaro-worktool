@@ -127,6 +127,19 @@ async function markSummarized(ids) {
   return res.status
 }
 
+const RETAIN_DAYS = 30
+
+/** 보존정책 — 이미 요약된(summarized=true) 원문 중 N일 지난 것을 삭제 (민감정보·용량). */
+async function purgeOld() {
+  const cutoff = new Date(Date.now() - RETAIN_DAYS * 86400e3).toISOString()
+  const res = await fetch(
+    `${URL}/rest/v1/chat_raw?summarized=eq.true&created_at=lt.${encodeURIComponent(cutoff)}`,
+    { method: 'DELETE', headers: { ...svcHeaders, Prefer: 'return=minimal' } }
+  )
+  if (res.ok)
+    console.log(`[summarize] 보존정책: 요약완료 ${RETAIN_DAYS}일 경과분 purge (${res.status})`)
+}
+
 async function main() {
   const dry = process.argv.includes('--dry')
 
@@ -192,6 +205,8 @@ async function main() {
       console.error(`[summarize] ${member}: claude_logs 기록 실패 (HTTP ${st}) — 미처리 유지`)
     }
   }
+
+  if (!dry) await purgeOld()
 }
 
 await main()

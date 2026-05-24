@@ -106,9 +106,30 @@ function sanitize(s) {
   return out.trim()
 }
 
+// 민감정보 마스킹 (업로드 전) — 이메일·전화·토큰류.
+function scrubPII(s) {
+  return s
+    .replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, '[email]')
+    .replace(/\b01[0-9][-.\s]?\d{3,4}[-.\s]?\d{4}\b/g, '[phone]')
+    .replace(
+      /\b(?:sk-ant-|sk-|ghp_|gho_|sb_[a-z]+_|xox[bp]-|AKIA|eyJ)[A-Za-z0-9._-]{12,}/g,
+      '[token]'
+    )
+}
+
+// 이 blob 이 "대화" 파일인지 — 설정/statsig 파일은 건너뛰려고 파일 단위로 1차 게이트.
+// (V8 직렬화는 키를 따옴표 없이 저장하므로 마커 문자열로 빠르게 스캔)
+function isConversationFile(buf) {
+  const txt = buf.toString('latin1')
+  if (txt.includes('chat_messages')) return true
+  return txt.includes('sender') && txt.includes('human') && txt.includes('assistant')
+}
+
 function extractMessages(buf) {
+  if (!isConversationFile(buf)) return [] // 설정·시스템 파일은 통째 스킵
   return decodeOrdered(buf)
     .map(sanitize)
+    .map(scrubPII)
     .filter((s) => looksText(s) && !isNoise(s))
 }
 
