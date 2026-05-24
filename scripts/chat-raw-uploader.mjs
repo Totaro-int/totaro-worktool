@@ -95,8 +95,21 @@ function isNoise(s) {
   return false
 }
 
+// NUL·제어문자 제거 — Postgres text 컬럼은 NUL 을 못 받는다 (에러 22P05).
+// 탭(9)·줄바꿈(10)·캐리지리턴(13)·32 이상만 남기고 C0 제어문자/DEL 은 버린다.
+function sanitize(s) {
+  let out = ''
+  for (const ch of s) {
+    const c = ch.codePointAt(0)
+    if (c === 9 || c === 10 || c === 13 || (c >= 32 && c !== 127)) out += ch
+  }
+  return out.trim()
+}
+
 function extractMessages(buf) {
-  return decodeOrdered(buf).filter((s) => looksText(s) && !isNoise(s))
+  return decodeOrdered(buf)
+    .map(sanitize)
+    .filter((s) => looksText(s) && !isNoise(s))
 }
 
 function hash(s) {
@@ -116,18 +129,45 @@ function saveSeen(set) {
   fs.writeFileSync(STATE_FILE, JSON.stringify([...set].slice(-MAX_SEEN)))
 }
 
-async function uploadBatch(rows) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_raw?on_conflict=member,chunk_hash`, {
+const INSERT_HEADERS = {
+  apikey: SUPABASE_ANON_KEY,
+  Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+  'Content-Type': 'application/json',
+  Prefer: 'return=minimal',
+}
+
+async function insertOne(row) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_raw`, {
     method: 'POST',
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal,resolution=ignore-duplicates', // 중복(member,chunk_hash) 무시
-    },
-    body: JSON.stringify(rows),
+    headers: INSERT_HEADERS,
+    body: JSON.stringify([row]),
   })
   return res.status
+}
+
+/** 배치 insert. 중복(409) 포함 시 한 줄씩 재시도하며 중복은 건너뛴다. anon 은 upsert 가 RLS 에 막혀서 plain insert 사용. */
+async function uploadBatch(rows) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_raw`, {
+    method: 'POST',
+    headers: INSERT_HEADERS,
+    body: JSON.stringify(rows),
+  })
+  if (res.status === 201 || res.status === 204) return true
+  if (res.status === 409) {
+    // 배치에 기존 중복이 섞임 → 한 줄씩 (중복은 무시)
+    for (const r of rows) {
+      const st = await insertOne(r)
+      if (st !== 201 && st !== 204 && st !== 409) {
+        console.error(
+          `[chat-raw] 행 insert 실패 ${st}: ${(await Promise.resolve('')) || JSON.stringify(r).slice(0, 120)}`
+        )
+        return false
+      }
+    }
+    return true
+  }
+  console.error(`[chat-raw] 배치 insert 실패 ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  return false
 }
 
 async function main() {
@@ -201,9 +241,8 @@ async function main() {
     // 300개씩 끊어 업로드
     let ok = true
     for (let i = 0; i < rows.length; i += 300) {
-      const status = await uploadBatch(rows.slice(i, i + 300))
-      if (status !== 201 && status !== 204) {
-        console.error(`[chat-raw] 업로드 실패 (HTTP ${status})`)
+      if (!(await uploadBatch(rows.slice(i, i + 300)))) {
+        console.error('[chat-raw] 업로드 실패')
         ok = false
         break
       }

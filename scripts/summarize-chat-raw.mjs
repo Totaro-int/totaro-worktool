@@ -168,8 +168,18 @@ async function main() {
       console.error(`[summarize] ${member}: claude 요약 실패 — 건너뜀 (다음에 재시도)`)
       continue
     }
+    // 업무성 내용이 없다고 판정되면 claude_logs 에 기록하지 않고, 재처리 방지 위해 표시만.
+    const noWork = summary.replace(/\s/g, '').includes('기록할업무성대화없음')
+
     if (dry) {
       console.log(`\n[dry-run] ${member} (${chunks.length}건):\n${summary}`)
+      continue
+    }
+    if (noWork) {
+      const mk = await markSummarized(ids)
+      console.log(
+        `[summarize] • ${member}: 업무성 대화 없음 → 기록 생략, ${ids.length}건 처리표시 (mark ${mk})`
+      )
       continue
     }
     const st = await postLog({ member, summary, turnCount: chunks.length })
