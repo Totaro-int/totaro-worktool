@@ -32,8 +32,9 @@ const SUPABASE_URL = 'https://yxijajcvxlrgoqhzadym.supabase.co'
 const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4aWphamN2eGxyZ29xaHphZHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODYxMDMsImV4cCI6MjA5NDY2MjEwM30.atQqbPG2BqdR3a3CiMa7w61UJVnNtA1rYofL9ia06Qs'
 
-// 요약 모델 — Haiku 3.5 는 이 계정 미지원(404)이라 sonnet 별칭 사용.
-const SUMMARY_MODEL = 'sonnet'
+// 요약 모델 — 고품질 우선으로 Opus 4.7 사용. 'opus' 별칭 = 계정에서 쓸 수 있는 최신 Opus(=4.7).
+// (특정 날짜 문자열은 계정별로 404날 수 있어 별칭이 안전. 각 PC의 claude CLI 가 Opus 접근 가능해야 함.)
+const SUMMARY_MODEL = 'opus'
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
 
 /** 훅이 stdin 으로 넘기는 JSON 을 읽는다. 없으면 1초 후 빈 문자열. */
@@ -120,14 +121,14 @@ function extractInstructions(transcriptPath) {
   return { items, cwd, sessionId }
 }
 
-/** 휴리스틱 폴백 요약 — LLM 호출 실패 시 사용 (헤드라인 + 지시 목록). */
-function heuristicSummary(items) {
-  const headline = items[0].slice(0, 140)
-  const rest = items.slice(1)
-  const MAX_LIST = 12
-  const bullets = rest.slice(0, MAX_LIST).map((t) => `· ${t.slice(0, 110)}`)
-  if (rest.length > MAX_LIST) bullets.push(`· …외 ${rest.length - MAX_LIST}건`)
-  return [headline, ...bullets].join('\n')
+/** LLM 요약 실패 시의 안전 폴백.
+ *  핵심 규칙: 원문(프롬프트·파일경로·URL·에러문자열)을 절대 제목/본문에 노출하지 않는다.
+ *  - 분량 있는 세션(>=3건)이면 프로젝트·건수만 담은 중립 헤드라인을 남긴다.
+ *  - 짧은 세션(<3건)이면 null 을 반환 → 호출부에서 기록 자체를 건너뛴다(쓰레기 방지). */
+function heuristicSummary(items, project) {
+  if (items.length < 3) return null
+  const label = project ? `${project} · 작업 ${items.length}건` : `작업 ${items.length}건`
+  return `${label}\n· 자동 요약을 만들지 못했습니다 (원문 비공개 · 다음 기록 때 재요약)`
 }
 
 /** claude CLI 로 보고서식 요약을 만든다. 실패하면 null. */
@@ -222,14 +223,16 @@ async function runWorker(member, transcriptPath, dry) {
   if (items.length === 0) process.exit(0)
 
   const project = cwd ? cwd.split('/').filter(Boolean).pop() : ''
-  const summary = llmSummary(items) || heuristicSummary(items)
+  // LLM 요약 우선. 실패하면 폴백 — 단, 폴백은 원문을 노출하지 않고, 짧은 세션이면 null(기록 안 함).
+  const summary = llmSummary(items) || heuristicSummary(items, project)
 
   if (dry) {
     console.log(`[dry-run] member=${member} project=${project} 지시 ${items.length}건`)
-    console.log('[dry-run] summary:\n' + summary)
+    console.log('[dry-run] summary:\n' + (summary ?? '(기록 건너뜀 — 요약 실패 + 짧은 세션)'))
     process.exit(0)
   }
 
+  if (!summary) process.exit(0) // 요약 실패 + 짧은 세션 → 쓰레기 대신 아무것도 안 남긴다
   await postLog({ member, summary, project, sessionId, turnCount: items.length })
   process.exit(0)
 }

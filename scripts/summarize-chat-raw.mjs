@@ -23,7 +23,8 @@ nextEnv.loadEnvConfig(repoRoot, undefined, { info() {}, error: (...a) => console
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SVC = process.env.SUPABASE_SERVICE_ROLE_KEY
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const SUMMARY_MODEL = 'sonnet'
+// 고품질 우선: Opus 4.7 ('opus' 별칭 = 계정 최신 Opus). 중앙 요약은 태준 Mac(Opus 접근 가능)에서만 돎.
+const SUMMARY_MODEL = 'opus'
 
 if (!URL || !SVC) {
   console.error(
