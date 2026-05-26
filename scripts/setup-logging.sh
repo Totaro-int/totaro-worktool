@@ -81,8 +81,7 @@ cat > "$PLIST" <<PLIST
     <string>$MEMBER</string>
   </array>
   <key>RunAtLoad</key><true/>
-  <key>StartCalendarInterval</key>
-  <dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StartInterval</key><integer>3600</integer>
   <key>StandardOutPath</key><string>$HOME/.totaro/chatsweep.log</string>
   <key>StandardErrorPath</key><string>$HOME/.totaro/chatsweep.log</string>
 </dict>
@@ -91,11 +90,11 @@ PLIST
 
 launchctl unload "$PLIST" 2>/dev/null || true
 launchctl load -w "$PLIST"
-echo "  ✅ launchd 에이전트 등록됨 (로그인 시 + 매일 새벽 3시 챗 수집)"
+echo "  ✅ launchd 에이전트 등록됨 (로그인 시 + 매시간 챗 수집)"
 
 echo ""
 echo "🎉 설치 완료 — $MEMBER"
 echo "   · Code/코워크: 세션 끝날 때마다 자동"
-echo "   · claude.ai 챗: 로그인할 때마다 + 매일 새벽 (컴퓨터 껐다 켜도 따라잡음)"
+echo "   · claude.ai 챗: 로그인할 때마다 + 매시간 (컴퓨터 껐다 켜도 따라잡음)"
 echo "   · 로그 확인: $HOME/.totaro/chatsweep.log"
 echo "   · 해제: launchctl unload \"$PLIST\""
