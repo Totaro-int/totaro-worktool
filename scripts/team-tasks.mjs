@@ -111,9 +111,12 @@ async function cmdAdd(json) {
   }
 
   const members = await restGet('members?select=id,name')
+  // 표시 이름 → members 테이블 이름 별칭. 승주 계정은 '업플로우' member 로 등록돼 있어 직접 매핑.
+  const MEMBER_ALIAS = { 승주: '업플로우', 송승주: '업플로우' }
   function resolveMember(name) {
     if (!name) return null
-    const n = String(name).trim()
+    const raw = String(name).trim()
+    const n = MEMBER_ALIAS[raw] ?? raw
     return (
       members.find((m) => m.name === n)?.id ??
       members.find((m) => m.name.includes(n) || n.includes(m.name))?.id ??
