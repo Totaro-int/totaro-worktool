@@ -1,0 +1,585 @@
+import type { JSX } from 'react'
+
+import Link from 'next/link'
+
+import type { Metadata } from 'next'
+
+// ─── 회사: 멜라누아 (Melanoir) — 뷰티/반영구 색소. Totaro(식품)와 별개. ───
+// 임시 호스팅: totaro-worktool.vercel.app (멜라누아 자체 도메인 확정 시 이전)
+const SITE_BASE = 'https://totaro-worktool.vercel.app'
+const SLUG = 'melanoir-embo-pmu-safety'
+const CANONICAL = `${SITE_BASE}/insights/${SLUG}`
+const PUBLISHED = '2026-05-29T12:00:00+09:00'
+const MODIFIED = '2026-05-29T12:00:00+09:00'
+const AUTHOR_NAME = 'Melanoir Lab'
+const AUTHOR_URL = `${SITE_BASE}/about`
+const ORG_NAME = 'Melanoir'
+const ORG_URL = SITE_BASE
+const LOGO = `${SITE_BASE}/favicon.ico`
+const PRODUCT_NAME = '멜라누아 엠보 (Melanoir Embo)'
+
+const TITLE = '반영구 색소 안전 기준 5가지 — 멜라누아 엠보 28-FREE 무균 데이터 풀 검증'
+const SUBTITLE_EN = 'Melanoir Embo — 28-FREE Sterile PMU Pigment, Full Safety Data'
+const DESCRIPTION =
+  '멜라누아 엠보는 28종 유해물질 전 항목 N.D.(불검출), 무균시험 Negative, 외부 자극 유발 인자(NO) 51% 감소(14.32→6.90)를 공인기관 시험성적서로 검증한 반영구 시술 전용 색소. 일회용 멸균팩 단위 공급.'
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: CANONICAL },
+  authors: [{ name: AUTHOR_NAME, url: AUTHOR_URL }],
+  openGraph: {
+    type: 'article',
+    title: TITLE,
+    description: DESCRIPTION,
+    url: CANONICAL,
+    siteName: ORG_NAME,
+    publishedTime: PUBLISHED,
+    modifiedTime: MODIFIED,
+    locale: 'ko_KR',
+    alternateLocale: ['en_US'],
+  },
+  twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
+  robots: { index: true, follow: true },
+}
+
+const SAFETY_DATA = [
+  { category: '중금속', kinds: '5종 (납·Cd·As·Hg·Ni)', melanoir: 'N.D.', avg: '1~3종 미량 검출' },
+  { category: '보존제', kinds: '8종 (파라벤·MIT 외)', melanoir: 'N.D.', avg: '1~2종 검출' },
+  { category: '잔류용매', kinds: '7종', melanoir: 'N.D.', avg: '0~1종 미량' },
+  { category: '알러젠', kinds: '8종', melanoir: 'N.D.', avg: '0~2종 검출' },
+] as const
+
+const NO_ASSAY = { control: 14.32, melanoir: 6.9, reduction: 51 }
+
+const CONCERNS = [
+  '점도 불균일로 인한 시술 정밀도 저하',
+  '보존제·중금속의 검출 가능성',
+  '무균 보장 여부',
+  '정품과 위조 유통의 구분 어려움',
+] as const
+
+const FAQS = [
+  {
+    q: '28-FREE 라는 표현은 어떤 의미인가요?',
+    a: '28종의 유해물질 항목에 대해 공인기관 시험을 진행했고 전 항목에서 불검출(N.D.) 판정을 받았다는 의미입니다. 중금속·보존제·잔류용매·알러젠을 포함하며, 항목별 시험성적서 PDF로 확인 가능합니다.',
+  },
+  {
+    q: '일회용 멸균팩은 1회 사용 후 어떻게 처리하나요?',
+    a: '시술 1회분을 사용한 뒤 폐기하는 것이 원칙입니다. 다회 사용 시 무균 상태가 보장되지 않으며, 교차 오염 가능성이 생깁니다. 팩 단위로 -20°C~80°C 온도 범위를 1년 가속 노화 시험에서 통과했습니다.',
+  },
+  {
+    q: '자극 인자 51% 감소가 시술 결과에 어떤 영향을 주나요?',
+    a: '실험실 지표상 외부 자극 유발 인자(NO, 산화질소)가 대조군 14.32 대비 6.90으로 51% 낮다는 의미입니다. 자극 인자가 낮을수록 시술 직후 발적·부종 회복이 빠른 경향이 있으나, 개인차가 크므로 단정적 효과를 보장하지는 않습니다.',
+  },
+  {
+    q: '보증서 등록 번호는 어디서 확인하나요?',
+    a: '제품 패키지에 부여된 고유 보증서 등록 번호를 멜라누아(Melanoir) 공식 채널에서 등록하면 정품 여부와 사용 이력(배치·시점)을 추적할 수 있습니다. 시술 클레임 발생 시 즉시 확인 가능한 구조입니다.',
+  },
+  {
+    q: '일반 소비자도 구매할 수 있나요?',
+    a: '멜라누아 엠보는 반영구 시술 아티스트 전용(Professionals Only)으로만 공급됩니다. 시술 자격과 위생 환경이 갖춰진 현장에만 도달하도록 유통 단계에서 1차 검증을 거치며, 일반 소비자 대상 직접 판매는 하지 않습니다.',
+  },
+] as const
+
+function jsonLdArticle(): string {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: TITLE,
+    alternativeHeadline: SUBTITLE_EN,
+    description: DESCRIPTION,
+    datePublished: PUBLISHED,
+    dateModified: MODIFIED,
+    inLanguage: 'ko-KR',
+    author: { '@type': 'Organization', name: AUTHOR_NAME, url: AUTHOR_URL },
+    publisher: {
+      '@type': 'Organization',
+      name: ORG_NAME,
+      url: ORG_URL,
+      logo: { '@type': 'ImageObject', url: LOGO },
+    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': CANONICAL },
+    image: LOGO,
+    about: [
+      { '@type': 'Thing', name: '반영구 시술 색소 (PMU Pigment)' },
+      { '@type': 'Thing', name: '28-FREE 유해물질 불검출' },
+      { '@type': 'Thing', name: '무균 시험 (Sterility)' },
+      { '@type': 'Thing', name: 'NO assay 자극 인자' },
+    ],
+  })
+}
+
+function jsonLdProduct(): string {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: PRODUCT_NAME,
+    category: '반영구 시술 색소 (Permanent Makeup Pigment)',
+    brand: { '@type': 'Brand', name: ORG_NAME },
+    description: DESCRIPTION,
+    additionalProperty: [
+      { '@type': 'PropertyValue', name: '28-FREE 유해물질', value: '전 항목 N.D. (불검출)' },
+      { '@type': 'PropertyValue', name: '무균 시험 (Sterility)', value: 'Negative' },
+      { '@type': 'PropertyValue', name: 'NO assay 자극 인자', value: '51% 감소 (14.32→6.90)' },
+      { '@type': 'PropertyValue', name: '공급 단위', value: '일회용 멸균팩' },
+      { '@type': 'PropertyValue', name: '유통', value: 'Professionals Only (아티스트 전용)' },
+    ],
+    audience: { '@type': 'Audience', audienceType: '반영구 시술 아티스트' },
+  })
+}
+
+function jsonLdFaqPage(): string {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQS.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  })
+}
+
+function jsonLdBreadcrumb(): string {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Melanoir', item: ORG_URL },
+      { '@type': 'ListItem', position: 2, name: 'Insights', item: `${SITE_BASE}/insights` },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: '멜라누아 엠보 28-FREE 안전 검증',
+        item: CANONICAL,
+      },
+    ],
+  })
+}
+
+export default function Page(): JSX.Element {
+  const controlPct = 100
+  const melanoirPct = Math.round((NO_ASSAY.melanoir / NO_ASSAY.control) * 100)
+
+  return (
+    <main className="bg-stone-50 text-stone-900">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdArticle() }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdProduct() }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdFaqPage() }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdBreadcrumb() }} />
+
+      {/* HERO — noir luxury: 다크 그라데이션 + gold accent */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-stone-950 via-purple-950 to-stone-900 text-stone-100">
+        <div className="absolute -top-24 -right-16 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-rose-500/10 blur-3xl" />
+
+        <div className="relative mx-auto max-w-3xl px-6 pt-12 pb-16">
+          <nav className="mb-8 text-xs text-stone-400">
+            <Link href="/" className="transition-colors hover:text-amber-300">
+              Melanoir
+            </Link>
+            <span className="mx-2 text-stone-600">/</span>
+            <Link href="/insights" className="transition-colors hover:text-amber-300">
+              Insights
+            </Link>
+            <span className="mx-2 text-stone-600">/</span>
+            <span className="text-stone-300">멜라누아 엠보 28-FREE</span>
+          </nav>
+
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 text-xs font-medium tracking-wider text-amber-300 uppercase backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+            Professionals Only · 시험성적서 검증
+          </div>
+
+          <h1
+            itemProp="headline"
+            className="text-4xl leading-[1.15] font-bold tracking-tight text-white md:text-5xl"
+          >
+            반영구 색소 안전 기준{' '}
+            <span className="bg-gradient-to-r from-amber-300 to-rose-300 bg-clip-text text-transparent">
+              5가지
+            </span>
+          </h1>
+          <p className="mt-3 font-serif text-xl text-stone-300 italic md:text-2xl" lang="en">
+            {SUBTITLE_EN}
+          </p>
+
+          <p className="mt-8 text-lg leading-relaxed font-light text-stone-300">
+            <strong className="font-semibold text-white">
+              멜라누아 엠보는 28종 유해물질 전 항목 N.D.(불검출), 무균시험 Negative, 외부 자극 유발
+              인자(NO) 51% 감소
+            </strong>
+            를 공인기관 시험성적서로 검증한 반영구 시술 전용 색소다. 시술 아티스트가 색소 선택에서
+            먼저 봐야 할 것은 색감이 아니라 시험성적서다.
+          </p>
+
+          {/* HERO NUMBER CARDS — gold-rimmed glass on dark */}
+          <div className="mt-10 grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+              <p className="text-[10px] font-medium tracking-wider text-stone-400 uppercase">
+                유해물질
+              </p>
+              <p className="mt-1 font-serif text-3xl font-bold text-amber-300 md:text-4xl">
+                28-FREE
+              </p>
+              <p className="mt-1 text-xs text-stone-400">전 항목 N.D.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+              <p className="text-[10px] font-medium tracking-wider text-stone-400 uppercase">
+                무균 시험
+              </p>
+              <p className="mt-1 font-serif text-3xl font-bold text-emerald-300 md:text-4xl">
+                Negative
+              </p>
+              <p className="mt-1 text-xs text-stone-400">멸균팩 단위</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+              <p className="text-[10px] font-medium tracking-wider text-stone-400 uppercase">
+                NO 자극 인자
+              </p>
+              <p className="mt-1 font-serif text-3xl font-bold text-rose-300 md:text-4xl">51%↓</p>
+              <p className="mt-1 text-xs text-stone-400">14.32 → 6.90</p>
+            </div>
+          </div>
+
+          <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-white/10 pt-6 text-sm md:grid-cols-4">
+            <div>
+              <dt className="text-xs tracking-wide text-stone-500 uppercase">발행</dt>
+              <dd className="mt-1 font-medium text-stone-200">
+                <time itemProp="datePublished" dateTime={PUBLISHED}>
+                  2026년 5월 29일
+                </time>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs tracking-wide text-stone-500 uppercase">브랜드</dt>
+              <dd className="mt-1 font-medium text-stone-200">Melanoir</dd>
+            </div>
+            <div>
+              <dt className="text-xs tracking-wide text-stone-500 uppercase">제품</dt>
+              <dd className="mt-1 font-medium text-stone-200">멜라누아 엠보</dd>
+            </div>
+            <div>
+              <dt className="text-xs tracking-wide text-stone-500 uppercase">공급</dt>
+              <dd className="mt-1 font-medium text-stone-200">아티스트 전용</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <article
+        itemScope
+        itemType="https://schema.org/Article"
+        className="mx-auto max-w-3xl px-6 py-16"
+      >
+        {/* SECTION 1 */}
+        <section className="mb-16">
+          <SectionHeading n={1} title="28-FREE 유해물질 불검출" subtitle="공인기관 시험 데이터" />
+          <p className="mb-6 leading-relaxed text-stone-700">
+            <strong className="text-stone-900">
+              28종 유해물질 — 중금속·보존제·잔류용매·알러젠 — 전 항목에서 불검출(N.D.).
+            </strong>{' '}
+            동일 카테고리 색소군에서 평균 3~5종 이상이 미량 검출되는 것이 일반적이므로, 전 항목
+            불검출은 의미 있는 차이다.
+          </p>
+
+          {/* 28-FREE 항목 배지 그리드 */}
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              ['중금속', '5종'],
+              ['보존제', '8종'],
+              ['잔류용매', '7종'],
+              ['알러젠', '8종'],
+            ].map(([name, count]) => (
+              <div
+                key={name}
+                className="rounded-xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-white p-4 text-center"
+              >
+                <p className="text-xs text-stone-500">{name}</p>
+                <p className="mt-1 text-lg font-bold text-stone-800">{count}</p>
+                <p className="mt-1 text-xs font-semibold text-emerald-700">N.D. ✓</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-stone-200/80 shadow-sm">
+            <table className="w-full border-collapse text-sm">
+              <caption className="caption-bottom bg-stone-50/80 px-4 py-2 text-left text-xs text-stone-500">
+                출처: 공인기관 시험성적서 — 항목별 PDF 확인 가능
+              </caption>
+              <thead>
+                <tr className="bg-gradient-to-r from-purple-50 to-rose-50/60">
+                  <th className="border-b border-stone-200 px-4 py-3 text-left font-semibold text-stone-800">
+                    항목 분류
+                  </th>
+                  <th className="border-b border-stone-200 px-4 py-3 text-left font-semibold text-stone-800">
+                    검사 종류
+                  </th>
+                  <th className="border-b border-stone-200 bg-amber-50/60 px-4 py-3 text-left font-semibold text-amber-900">
+                    멜라누아 엠보
+                  </th>
+                  <th className="border-b border-stone-200 px-4 py-3 text-left font-semibold text-stone-600">
+                    일반 PMU 평균
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {SAFETY_DATA.map((row, i) => (
+                  <tr
+                    key={row.category}
+                    className={`border-b border-stone-100 ${i % 2 === 0 ? 'bg-white' : 'bg-stone-50/40'}`}
+                  >
+                    <td className="px-4 py-3 font-medium text-stone-800">{row.category}</td>
+                    <td className="px-4 py-3 text-stone-600">{row.kinds}</td>
+                    <td className="bg-amber-50/40 px-4 py-3 font-bold text-emerald-700">
+                      {row.melanoir}
+                    </td>
+                    <td className="px-4 py-3 text-stone-500">{row.avg}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <blockquote className="relative my-8 rounded-2xl border border-stone-200/80 bg-gradient-to-br from-purple-50/50 to-white p-8 shadow-sm">
+            <div className="absolute -top-2 left-6 font-serif text-7xl leading-none text-purple-200 select-none">
+              &ldquo;
+            </div>
+            <p className="font-serif text-lg leading-relaxed text-stone-800 italic">
+              안전하다는 말보다 <strong className="not-italic">검출되지 않았다는 팩트</strong>를
+              믿어야 한다. 시험성적서는 거짓말을 하지 않는다.
+            </p>
+          </blockquote>
+        </section>
+
+        {/* SECTION 2 — NO assay bar chart (시각화) */}
+        <section className="mb-16">
+          <SectionHeading
+            n={2}
+            title="무균 시험 + 자극 인자 51% 감소"
+            subtitle="Sterility Negative · NO assay"
+            tone="rose"
+          />
+          <p className="mb-6 leading-relaxed text-stone-700">
+            일회용 멸균팩 단위로{' '}
+            <strong className="text-stone-900">무균 시험(Sterility) Negative</strong> 판정. 외부
+            자극 유발 인자(NO, 산화질소)는 대조군 14.32 대비{' '}
+            <strong className="text-stone-900">6.90으로 51% 낮게</strong> 측정됐다.
+          </p>
+
+          {/* CSS Bar Chart */}
+          <div className="mb-6 rounded-2xl border border-stone-200/80 bg-white p-6 shadow-sm">
+            <p className="mb-4 text-xs font-medium tracking-wider text-stone-500 uppercase">
+              NO assay — 외부 자극 유발 인자 (낮을수록 좋음)
+            </p>
+            <div className="space-y-4">
+              <div>
+                <div className="mb-1 flex items-center justify-between text-sm">
+                  <span className="text-stone-600">대조군</span>
+                  <span className="font-mono font-semibold text-stone-700">14.32</span>
+                </div>
+                <div className="h-6 w-full overflow-hidden rounded-full bg-stone-100">
+                  <div
+                    className="flex h-full items-center justify-end rounded-full bg-gradient-to-r from-stone-400 to-stone-500 pr-3"
+                    style={{ width: `${controlPct}%` }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="mb-1 flex items-center justify-between text-sm">
+                  <span className="font-medium text-rose-700">멜라누아 엠보</span>
+                  <span className="font-mono font-bold text-rose-700">6.90 · -51%</span>
+                </div>
+                <div className="h-6 w-full overflow-hidden rounded-full bg-stone-100">
+                  <div
+                    className="flex h-full items-center justify-end rounded-full bg-gradient-to-r from-rose-400 to-amber-400 pr-3 text-xs font-bold text-white"
+                    style={{ width: `${melanoirPct}%` }}
+                  >
+                    51%↓
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-sm leading-relaxed text-stone-600">
+            자극 인자가 낮을수록 시술 직후 발적·부종이 가라앉는 시간이 짧은 경향이 있다. 다만 회복
+            패턴은 개인차가 크고, 시술자 숙련도·위생 환경·사후 관리까지 결합된 결과로 해석해야 한다.
+          </p>
+        </section>
+
+        {/* SECTION 3 — 일회용 멸균 시스템 */}
+        <section className="mb-16">
+          <SectionHeading n={3} title="일회용 멸균 시스템" subtitle="단 한 명을 위한 단위" />
+          <p className="mb-6 leading-relaxed text-stone-700">
+            모든 1회분은 개별 멸균팩에 봉입되어 출고된다. 팩 단위로{' '}
+            <strong className="text-stone-900">
+              -20°C ~ 80°C 온도 범위를 1년 가속 노화 시험에서 통과
+            </strong>
+            했다.
+          </p>
+          <ul className="space-y-3 text-stone-700">
+            {[
+              '단 한 명의 고객을 위해 한 팩 사용 후 폐기',
+              '다회 사용 색소의 농도 균질성 저하 문제 제거',
+              '외부 입자 유입·미세 오염 가능성 사실상 제거',
+              '시술 정밀도와 안전성 동시 향상',
+            ].map((t) => (
+              <li key={t} className="flex gap-3">
+                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700">
+                  ✓
+                </span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* SECTION 4 — 왜 안전 검증이 먼저인가 */}
+        <section className="mb-16">
+          <SectionHeading
+            n={4}
+            title="왜 색감보다 안전 검증이 먼저인가"
+            subtitle="시술 운영 안정성"
+          />
+          <p className="mb-6 leading-relaxed text-stone-700">
+            반영구 시술의 본질은 발색이 아닌{' '}
+            <strong className="text-stone-900">안전 검증의 추적 가능성</strong>이다. 트러블 발생 시
+            책임이 아티스트에게 돌아오므로, 사용 색소의 이력 추적성이 운영 안정성을 좌우한다.
+            현장에서 자주 거론되는 4가지 우려:
+          </p>
+          <ol className="space-y-3 text-stone-700">
+            {CONCERNS.map((c, i) => (
+              <li key={c} className="flex gap-3">
+                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-stone-200 text-xs font-bold text-stone-600">
+                  {i + 1}
+                </span>
+                <span>{c}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-4 text-sm text-stone-600">
+            멜라누아 엠보는 이 우려들을 <strong>시험성적서 + 일회용 멸균 포장</strong> 두 축으로
+            대응하며, 정품 보증서 등록 번호로 배치·시점까지 추적할 수 있다.
+          </p>
+        </section>
+
+        {/* SECTION 5 — FAQ */}
+        <section className="mb-16">
+          <SectionHeading n={5} title="자주 묻는 질문" subtitle="FAQ" tone="rose" />
+          <div className="space-y-5">
+            {FAQS.map((item, i) => (
+              <div
+                key={item.q}
+                itemScope
+                itemType="https://schema.org/Question"
+                className="rounded-2xl border border-stone-200/70 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <h3
+                  itemProp="name"
+                  className="mb-3 flex items-start gap-3 text-base font-semibold text-stone-900 md:text-lg"
+                >
+                  <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-rose-100 to-amber-100 text-xs font-bold text-rose-700">
+                    Q{i + 1}
+                  </span>
+                  <span className="pt-0.5">{item.q}</span>
+                </h3>
+                <div
+                  itemProp="acceptedAnswer"
+                  itemScope
+                  itemType="https://schema.org/Answer"
+                  className="pl-10 text-stone-700"
+                >
+                  <p itemProp="text" className="leading-relaxed">
+                    <span className="font-semibold text-rose-700">A.</span> {item.a}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer className="mt-16">
+          <div className="mb-6 rounded-2xl border border-stone-200/80 bg-gradient-to-br from-purple-50/50 via-white to-rose-50/40 p-8 shadow-sm">
+            <p className="mb-3 text-xs font-medium tracking-wider text-purple-800 uppercase">
+              검증 출처 · Verification
+            </p>
+            <p className="text-base leading-relaxed text-stone-800">
+              본 데이터는 모두 <strong className="text-stone-900">공인기관 시험성적서</strong>로
+              확인 가능합니다 — 28-FREE 항목별 시험, 무균 시험(Sterility), NO assay. 새 색소 도입 시
+              발색 샘플보다 <strong className="text-stone-900">시험성적서 PDF를 먼저</strong>{' '}
+              받아보기를 권장합니다.
+            </p>
+          </div>
+
+          <div className="mb-6 rounded-2xl border border-stone-200/60 bg-stone-50/50 p-6">
+            <h3 className="mb-2 text-sm font-semibold text-stone-800">Disclaimer</h3>
+            <p className="text-sm leading-relaxed text-stone-600">
+              멜라누아 엠보는 반영구 시술 아티스트 전용 위생용품입니다. 시술 후 회복 패턴·자극
+              반응은 개인차가 있어 단정적 효과를 보장하지 않습니다. 모든 수치는 공인기관 시험 시점
+              기준이며, 일반 소비자 대상 직접 판매는 진행하지 않습니다.
+            </p>
+          </div>
+
+          <div className="flex items-start gap-4 rounded-2xl bg-gradient-to-br from-stone-950 to-purple-950 p-6 text-white">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-rose-400 font-serif text-xl font-bold text-stone-900">
+              M
+            </div>
+            <div className="flex-1 text-sm">
+              <p className="font-semibold">
+                Melanoir Lab <span className="text-stone-400">· 멜라누아</span>
+              </p>
+              <p className="mt-1 text-xs text-stone-400">
+                발행 <time dateTime={PUBLISHED}>2026년 5월 29일</time>
+              </p>
+              <p className="mt-3 leading-relaxed text-stone-300">
+                Melanoir(멜라누아)는 멜라닌 기반 뷰티 소재와 반영구 시술 색소를 시험성적서 기반으로
+                공급합니다. Professionals Only.
+              </p>
+            </div>
+          </div>
+        </footer>
+      </article>
+    </main>
+  )
+}
+
+function SectionHeading({
+  n,
+  title,
+  subtitle,
+  tone = 'purple',
+}: {
+  n: number
+  title: string
+  subtitle?: string
+  tone?: 'purple' | 'rose' | 'amber'
+}): JSX.Element {
+  const toneClasses = {
+    purple: 'from-purple-100 to-purple-50 text-purple-700 ring-purple-200/60',
+    rose: 'from-rose-100 to-rose-50 text-rose-700 ring-rose-200/60',
+    amber: 'from-amber-100 to-amber-50 text-amber-700 ring-amber-200/60',
+  }[tone]
+
+  return (
+    <div className="mb-6 flex items-baseline gap-4">
+      <span
+        className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${toneClasses} font-serif text-lg font-bold shadow-sm ring-1`}
+      >
+        {n}
+      </span>
+      <div>
+        <h2 className="text-2xl leading-tight font-bold tracking-tight text-stone-900 md:text-[1.75rem]">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="mt-0.5 font-serif text-sm tracking-wide text-stone-500 italic">
+            {subtitle}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
