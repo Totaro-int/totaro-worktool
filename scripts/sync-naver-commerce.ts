@@ -23,13 +23,13 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import nextEnv from '@next/env'
+import { loadEnvConfig } from '@next/env'
 
 import { fetchNaverCommerceLive } from '../lib/naver/commerce-live'
 
 // .env.local 을 저장소 루트 기준으로 로드 (어느 위치에서 실행하든 동작)
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-nextEnv.loadEnvConfig(repoRoot, undefined, { info() {}, error: (...a) => console.error(...a) })
+loadEnvConfig(repoRoot, undefined, { info() {}, error: (...a) => console.error(...a) })
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -127,4 +127,7 @@ async function main(): Promise<void> {
   }
 }
 
-await main()
+main().catch((e) => {
+  console.error('[sync-naver-commerce] 치명적 오류:', e instanceof Error ? e.message : String(e))
+  process.exit(1)
+})
