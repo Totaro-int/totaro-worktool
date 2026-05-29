@@ -163,50 +163,46 @@ export default function Page(): JSX.Element {
   const melanoirPct = Math.round((NO_ASSAY.melanoir / NO_ASSAY.control) * 100)
 
   return (
-    <main className="bg-stone-50 text-stone-900">
+    <main className="bg-white text-black">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdArticle() }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdProduct() }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdFaqPage() }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdBreadcrumb() }} />
 
-      {/* HERO — noir luxury: 다크 그라데이션 + gold accent */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-stone-950 via-purple-950 to-stone-900 text-stone-100">
-        <div className="absolute -top-24 -right-16 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl" />
-        <div className="absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-rose-500/10 blur-3xl" />
-
-        <div className="relative mx-auto max-w-3xl px-6 pt-12 pb-16">
-          <nav className="mb-8 text-xs text-stone-400">
-            <Link href="/" className="transition-colors hover:text-amber-300">
+      {/* HERO — 순흑백 프리미엄: 검정 배경 + 흰 텍스트 + serif */}
+      <div className="bg-black text-white">
+        <div className="mx-auto max-w-3xl px-6 pt-12 pb-20">
+          <nav className="mb-12 text-xs tracking-wide text-neutral-500">
+            <Link href="/" className="transition-colors hover:text-white">
               Melanoir
             </Link>
-            <span className="mx-2 text-stone-600">/</span>
-            <Link href="/insights" className="transition-colors hover:text-amber-300">
+            <span className="mx-2 text-neutral-700">/</span>
+            <Link href="/insights" className="transition-colors hover:text-white">
               Insights
             </Link>
-            <span className="mx-2 text-stone-600">/</span>
-            <span className="text-stone-300">멜라누아 엠보 28-FREE</span>
+            <span className="mx-2 text-neutral-700">/</span>
+            <span className="text-neutral-300">멜라누아 엠보 28-FREE</span>
           </nav>
 
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 text-xs font-medium tracking-wider text-amber-300 uppercase backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+          <div className="mb-8 inline-flex items-center gap-2 border border-white/25 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-neutral-300 uppercase">
+            <span className="h-1 w-1 rounded-full bg-white" />
             Professionals Only · 시험성적서 검증
           </div>
 
           <h1
             itemProp="headline"
-            className="text-4xl leading-[1.15] font-bold tracking-tight text-white md:text-5xl"
+            className="font-serif text-5xl leading-[1.1] font-medium tracking-tight text-white md:text-6xl"
           >
-            반영구 색소 안전 기준{' '}
-            <span className="bg-gradient-to-r from-amber-300 to-rose-300 bg-clip-text text-transparent">
-              5가지
-            </span>
+            반영구 색소
+            <br />
+            안전 기준 <span className="italic">5가지</span>
           </h1>
-          <p className="mt-3 font-serif text-xl text-stone-300 italic md:text-2xl" lang="en">
+          <p className="mt-6 font-serif text-xl text-neutral-400 italic md:text-2xl" lang="en">
             {SUBTITLE_EN}
           </p>
 
-          <p className="mt-8 text-lg leading-relaxed font-light text-stone-300">
-            <strong className="font-semibold text-white">
+          <p className="mt-10 max-w-2xl text-lg leading-relaxed font-light text-neutral-300">
+            <strong className="font-medium text-white">
               멜라누아 엠보는 28종 유해물질 전 항목 N.D.(불검출), 무균시험 Negative, 외부 자극 유발
               인자(NO) 51% 감소
             </strong>
@@ -214,55 +210,49 @@ export default function Page(): JSX.Element {
             먼저 봐야 할 것은 색감이 아니라 시험성적서다.
           </p>
 
-          {/* HERO NUMBER CARDS — gold-rimmed glass on dark */}
-          <div className="mt-10 grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-              <p className="text-[10px] font-medium tracking-wider text-stone-400 uppercase">
-                유해물질
-              </p>
-              <p className="mt-1 font-serif text-3xl font-bold text-amber-300 md:text-4xl">
-                28-FREE
-              </p>
-              <p className="mt-1 text-xs text-stone-400">전 항목 N.D.</p>
+          {/* HERO NUMBERS — 흑백, hairline 구분선 */}
+          <div className="mt-12 grid grid-cols-3 divide-x divide-white/15 border-y border-white/15">
+            <div className="py-6 pr-4">
+              <p className="text-[10px] tracking-[0.15em] text-neutral-500 uppercase">유해물질</p>
+              <p className="mt-2 font-serif text-3xl font-medium text-white md:text-4xl">28-FREE</p>
+              <p className="mt-1 text-xs text-neutral-500">전 항목 N.D.</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-              <p className="text-[10px] font-medium tracking-wider text-stone-400 uppercase">
-                무균 시험
-              </p>
-              <p className="mt-1 font-serif text-3xl font-bold text-emerald-300 md:text-4xl">
+            <div className="px-4 py-6">
+              <p className="text-[10px] tracking-[0.15em] text-neutral-500 uppercase">무균 시험</p>
+              <p className="mt-2 font-serif text-3xl font-medium text-white md:text-4xl">
                 Negative
               </p>
-              <p className="mt-1 text-xs text-stone-400">멸균팩 단위</p>
+              <p className="mt-1 text-xs text-neutral-500">멸균팩 단위</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-              <p className="text-[10px] font-medium tracking-wider text-stone-400 uppercase">
+            <div className="py-6 pl-4">
+              <p className="text-[10px] tracking-[0.15em] text-neutral-500 uppercase">
                 NO 자극 인자
               </p>
-              <p className="mt-1 font-serif text-3xl font-bold text-rose-300 md:text-4xl">51%↓</p>
-              <p className="mt-1 text-xs text-stone-400">14.32 → 6.90</p>
+              <p className="mt-2 font-serif text-3xl font-medium text-white md:text-4xl">51%↓</p>
+              <p className="mt-1 text-xs text-neutral-500">14.32 → 6.90</p>
             </div>
           </div>
 
-          <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-white/10 pt-6 text-sm md:grid-cols-4">
+          <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-4">
             <div>
-              <dt className="text-xs tracking-wide text-stone-500 uppercase">발행</dt>
-              <dd className="mt-1 font-medium text-stone-200">
+              <dt className="text-[10px] tracking-[0.15em] text-neutral-600 uppercase">발행</dt>
+              <dd className="mt-1 text-neutral-300">
                 <time itemProp="datePublished" dateTime={PUBLISHED}>
                   2026년 5월 29일
                 </time>
               </dd>
             </div>
             <div>
-              <dt className="text-xs tracking-wide text-stone-500 uppercase">브랜드</dt>
-              <dd className="mt-1 font-medium text-stone-200">Melanoir</dd>
+              <dt className="text-[10px] tracking-[0.15em] text-neutral-600 uppercase">브랜드</dt>
+              <dd className="mt-1 text-neutral-300">Melanoir</dd>
             </div>
             <div>
-              <dt className="text-xs tracking-wide text-stone-500 uppercase">제품</dt>
-              <dd className="mt-1 font-medium text-stone-200">멜라누아 엠보</dd>
+              <dt className="text-[10px] tracking-[0.15em] text-neutral-600 uppercase">제품</dt>
+              <dd className="mt-1 text-neutral-300">멜라누아 엠보</dd>
             </div>
             <div>
-              <dt className="text-xs tracking-wide text-stone-500 uppercase">공급</dt>
-              <dd className="mt-1 font-medium text-stone-200">아티스트 전용</dd>
+              <dt className="text-[10px] tracking-[0.15em] text-neutral-600 uppercase">공급</dt>
+              <dd className="mt-1 text-neutral-300">아티스트 전용</dd>
             </div>
           </dl>
         </div>
@@ -271,55 +261,46 @@ export default function Page(): JSX.Element {
       <article
         itemScope
         itemType="https://schema.org/Article"
-        className="mx-auto max-w-3xl px-6 py-16"
+        className="mx-auto max-w-3xl px-6 py-20"
       >
         {/* SECTION 1 */}
-        <section className="mb-16">
+        <section className="mb-20">
           <SectionHeading n={1} title="28-FREE 유해물질 불검출" subtitle="공인기관 시험 데이터" />
-          <p className="mb-6 leading-relaxed text-stone-700">
-            <strong className="text-stone-900">
+          <p className="mb-8 leading-relaxed text-neutral-700">
+            <strong className="text-black">
               28종 유해물질 — 중금속·보존제·잔류용매·알러젠 — 전 항목에서 불검출(N.D.).
             </strong>{' '}
             동일 카테고리 색소군에서 평균 3~5종 이상이 미량 검출되는 것이 일반적이므로, 전 항목
             불검출은 의미 있는 차이다.
           </p>
 
-          {/* 28-FREE 항목 배지 그리드 */}
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {/* 28-FREE 항목 그리드 — hairline 박스 */}
+          <div className="mb-8 grid grid-cols-2 gap-px bg-neutral-200 sm:grid-cols-4">
             {[
               ['중금속', '5종'],
               ['보존제', '8종'],
               ['잔류용매', '7종'],
               ['알러젠', '8종'],
             ].map(([name, count]) => (
-              <div
-                key={name}
-                className="rounded-xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-white p-4 text-center"
-              >
-                <p className="text-xs text-stone-500">{name}</p>
-                <p className="mt-1 text-lg font-bold text-stone-800">{count}</p>
-                <p className="mt-1 text-xs font-semibold text-emerald-700">N.D. ✓</p>
+              <div key={name} className="bg-white p-5 text-center">
+                <p className="text-xs tracking-wide text-neutral-500">{name}</p>
+                <p className="mt-1 font-serif text-2xl font-medium text-black">{count}</p>
+                <p className="mt-1 text-xs font-medium tracking-widest text-black">N.D.</p>
               </div>
             ))}
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-stone-200/80 shadow-sm">
+          <div className="overflow-hidden border border-neutral-900">
             <table className="w-full border-collapse text-sm">
-              <caption className="caption-bottom bg-stone-50/80 px-4 py-2 text-left text-xs text-stone-500">
+              <caption className="caption-bottom border-t border-neutral-200 bg-neutral-50 px-4 py-2 text-left text-xs text-neutral-500">
                 출처: 공인기관 시험성적서 — 항목별 PDF 확인 가능
               </caption>
               <thead>
-                <tr className="bg-gradient-to-r from-purple-50 to-rose-50/60">
-                  <th className="border-b border-stone-200 px-4 py-3 text-left font-semibold text-stone-800">
-                    항목 분류
-                  </th>
-                  <th className="border-b border-stone-200 px-4 py-3 text-left font-semibold text-stone-800">
-                    검사 종류
-                  </th>
-                  <th className="border-b border-stone-200 bg-amber-50/60 px-4 py-3 text-left font-semibold text-amber-900">
-                    멜라누아 엠보
-                  </th>
-                  <th className="border-b border-stone-200 px-4 py-3 text-left font-semibold text-stone-600">
+                <tr className="bg-black text-white">
+                  <th className="px-4 py-3 text-left font-medium tracking-wide">항목 분류</th>
+                  <th className="px-4 py-3 text-left font-medium tracking-wide">검사 종류</th>
+                  <th className="px-4 py-3 text-left font-medium tracking-wide">멜라누아 엠보</th>
+                  <th className="px-4 py-3 text-left font-medium tracking-wide text-neutral-400">
                     일반 PMU 평균
                   </th>
                 </tr>
@@ -328,171 +309,155 @@ export default function Page(): JSX.Element {
                 {SAFETY_DATA.map((row, i) => (
                   <tr
                     key={row.category}
-                    className={`border-b border-stone-100 ${i % 2 === 0 ? 'bg-white' : 'bg-stone-50/40'}`}
+                    className={`border-t border-neutral-200 ${i % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}`}
                   >
-                    <td className="px-4 py-3 font-medium text-stone-800">{row.category}</td>
-                    <td className="px-4 py-3 text-stone-600">{row.kinds}</td>
-                    <td className="bg-amber-50/40 px-4 py-3 font-bold text-emerald-700">
+                    <td className="px-4 py-3 font-medium text-black">{row.category}</td>
+                    <td className="px-4 py-3 text-neutral-600">{row.kinds}</td>
+                    <td className="bg-neutral-900 px-4 py-3 font-bold tracking-widest text-white">
                       {row.melanoir}
                     </td>
-                    <td className="px-4 py-3 text-stone-500">{row.avg}</td>
+                    <td className="px-4 py-3 text-neutral-500">{row.avg}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <blockquote className="relative my-8 rounded-2xl border border-stone-200/80 bg-gradient-to-br from-purple-50/50 to-white p-8 shadow-sm">
-            <div className="absolute -top-2 left-6 font-serif text-7xl leading-none text-purple-200 select-none">
+          <blockquote className="relative my-10 border-l-2 border-black pl-8">
+            <div className="absolute -top-4 -left-1 font-serif text-7xl leading-none text-neutral-200 select-none">
               &ldquo;
             </div>
-            <p className="font-serif text-lg leading-relaxed text-stone-800 italic">
+            <p className="font-serif text-xl leading-relaxed text-black italic">
               안전하다는 말보다 <strong className="not-italic">검출되지 않았다는 팩트</strong>를
               믿어야 한다. 시험성적서는 거짓말을 하지 않는다.
             </p>
           </blockquote>
         </section>
 
-        {/* SECTION 2 — NO assay bar chart (시각화) */}
-        <section className="mb-16">
+        {/* SECTION 2 — NO assay bar chart (흑백) */}
+        <section className="mb-20">
           <SectionHeading
             n={2}
             title="무균 시험 + 자극 인자 51% 감소"
             subtitle="Sterility Negative · NO assay"
-            tone="rose"
           />
-          <p className="mb-6 leading-relaxed text-stone-700">
+          <p className="mb-8 leading-relaxed text-neutral-700">
             일회용 멸균팩 단위로{' '}
-            <strong className="text-stone-900">무균 시험(Sterility) Negative</strong> 판정. 외부
-            자극 유발 인자(NO, 산화질소)는 대조군 14.32 대비{' '}
-            <strong className="text-stone-900">6.90으로 51% 낮게</strong> 측정됐다.
+            <strong className="text-black">무균 시험(Sterility) Negative</strong> 판정. 외부 자극
+            유발 인자(NO, 산화질소)는 대조군 14.32 대비{' '}
+            <strong className="text-black">6.90으로 51% 낮게</strong> 측정됐다.
           </p>
 
-          {/* CSS Bar Chart */}
-          <div className="mb-6 rounded-2xl border border-stone-200/80 bg-white p-6 shadow-sm">
-            <p className="mb-4 text-xs font-medium tracking-wider text-stone-500 uppercase">
+          <div className="mb-8 border border-neutral-900 p-8">
+            <p className="mb-6 text-[10px] tracking-[0.2em] text-neutral-500 uppercase">
               NO assay — 외부 자극 유발 인자 (낮을수록 좋음)
             </p>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <div className="mb-1 flex items-center justify-between text-sm">
-                  <span className="text-stone-600">대조군</span>
-                  <span className="font-mono font-semibold text-stone-700">14.32</span>
+                <div className="mb-2 flex items-baseline justify-between">
+                  <span className="text-sm text-neutral-500">대조군</span>
+                  <span className="font-serif text-lg text-neutral-500">14.32</span>
                 </div>
-                <div className="h-6 w-full overflow-hidden rounded-full bg-stone-100">
-                  <div
-                    className="flex h-full items-center justify-end rounded-full bg-gradient-to-r from-stone-400 to-stone-500 pr-3"
-                    style={{ width: `${controlPct}%` }}
-                  />
+                <div className="h-3 w-full bg-neutral-100">
+                  <div className="h-full bg-neutral-300" style={{ width: `${controlPct}%` }} />
                 </div>
               </div>
               <div>
-                <div className="mb-1 flex items-center justify-between text-sm">
-                  <span className="font-medium text-rose-700">멜라누아 엠보</span>
-                  <span className="font-mono font-bold text-rose-700">6.90 · -51%</span>
+                <div className="mb-2 flex items-baseline justify-between">
+                  <span className="text-sm font-medium text-black">멜라누아 엠보</span>
+                  <span className="font-serif text-lg font-bold text-black">6.90 · −51%</span>
                 </div>
-                <div className="h-6 w-full overflow-hidden rounded-full bg-stone-100">
-                  <div
-                    className="flex h-full items-center justify-end rounded-full bg-gradient-to-r from-rose-400 to-amber-400 pr-3 text-xs font-bold text-white"
-                    style={{ width: `${melanoirPct}%` }}
-                  >
-                    51%↓
-                  </div>
+                <div className="h-3 w-full bg-neutral-100">
+                  <div className="h-full bg-black" style={{ width: `${melanoirPct}%` }} />
                 </div>
               </div>
             </div>
           </div>
 
-          <p className="text-sm leading-relaxed text-stone-600">
+          <p className="text-sm leading-relaxed text-neutral-600">
             자극 인자가 낮을수록 시술 직후 발적·부종이 가라앉는 시간이 짧은 경향이 있다. 다만 회복
             패턴은 개인차가 크고, 시술자 숙련도·위생 환경·사후 관리까지 결합된 결과로 해석해야 한다.
           </p>
         </section>
 
-        {/* SECTION 3 — 일회용 멸균 시스템 */}
-        <section className="mb-16">
+        {/* SECTION 3 */}
+        <section className="mb-20">
           <SectionHeading n={3} title="일회용 멸균 시스템" subtitle="단 한 명을 위한 단위" />
-          <p className="mb-6 leading-relaxed text-stone-700">
+          <p className="mb-8 leading-relaxed text-neutral-700">
             모든 1회분은 개별 멸균팩에 봉입되어 출고된다. 팩 단위로{' '}
-            <strong className="text-stone-900">
+            <strong className="text-black">
               -20°C ~ 80°C 온도 범위를 1년 가속 노화 시험에서 통과
             </strong>
             했다.
           </p>
-          <ul className="space-y-3 text-stone-700">
+          <ul className="divide-y divide-neutral-200 border-y border-neutral-200">
             {[
               '단 한 명의 고객을 위해 한 팩 사용 후 폐기',
               '다회 사용 색소의 농도 균질성 저하 문제 제거',
               '외부 입자 유입·미세 오염 가능성 사실상 제거',
               '시술 정밀도와 안전성 동시 향상',
             ].map((t) => (
-              <li key={t} className="flex gap-3">
-                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700">
-                  ✓
-                </span>
+              <li key={t} className="flex gap-4 py-4 text-neutral-700">
+                <span className="font-serif text-sm text-neutral-400">—</span>
                 <span>{t}</span>
               </li>
             ))}
           </ul>
         </section>
 
-        {/* SECTION 4 — 왜 안전 검증이 먼저인가 */}
-        <section className="mb-16">
+        {/* SECTION 4 */}
+        <section className="mb-20">
           <SectionHeading
             n={4}
             title="왜 색감보다 안전 검증이 먼저인가"
             subtitle="시술 운영 안정성"
           />
-          <p className="mb-6 leading-relaxed text-stone-700">
+          <p className="mb-8 leading-relaxed text-neutral-700">
             반영구 시술의 본질은 발색이 아닌{' '}
-            <strong className="text-stone-900">안전 검증의 추적 가능성</strong>이다. 트러블 발생 시
+            <strong className="text-black">안전 검증의 추적 가능성</strong>이다. 트러블 발생 시
             책임이 아티스트에게 돌아오므로, 사용 색소의 이력 추적성이 운영 안정성을 좌우한다.
             현장에서 자주 거론되는 4가지 우려:
           </p>
-          <ol className="space-y-3 text-stone-700">
+          <ol className="space-y-4">
             {CONCERNS.map((c, i) => (
-              <li key={c} className="flex gap-3">
-                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-stone-200 text-xs font-bold text-stone-600">
-                  {i + 1}
+              <li key={c} className="flex gap-4 text-neutral-700">
+                <span className="font-serif text-lg font-medium text-black tabular-nums">
+                  0{i + 1}
                 </span>
-                <span>{c}</span>
+                <span className="pt-0.5">{c}</span>
               </li>
             ))}
           </ol>
-          <p className="mt-4 text-sm text-stone-600">
-            멜라누아 엠보는 이 우려들을 <strong>시험성적서 + 일회용 멸균 포장</strong> 두 축으로
+          <p className="mt-6 text-sm text-neutral-600">
+            멜라누아 엠보는 이 우려들을{' '}
+            <strong className="text-black">시험성적서 + 일회용 멸균 포장</strong> 두 축으로
             대응하며, 정품 보증서 등록 번호로 배치·시점까지 추적할 수 있다.
           </p>
         </section>
 
         {/* SECTION 5 — FAQ */}
-        <section className="mb-16">
-          <SectionHeading n={5} title="자주 묻는 질문" subtitle="FAQ" tone="rose" />
-          <div className="space-y-5">
+        <section className="mb-20">
+          <SectionHeading n={5} title="자주 묻는 질문" subtitle="FAQ" />
+          <div className="divide-y divide-neutral-200 border-y border-neutral-200">
             {FAQS.map((item, i) => (
-              <div
-                key={item.q}
-                itemScope
-                itemType="https://schema.org/Question"
-                className="rounded-2xl border border-stone-200/70 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-              >
+              <div key={item.q} itemScope itemType="https://schema.org/Question" className="py-7">
                 <h3
                   itemProp="name"
-                  className="mb-3 flex items-start gap-3 text-base font-semibold text-stone-900 md:text-lg"
+                  className="mb-3 flex items-start gap-4 text-base font-medium text-black md:text-lg"
                 >
-                  <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-rose-100 to-amber-100 text-xs font-bold text-rose-700">
+                  <span className="font-serif text-sm font-medium text-neutral-400 tabular-nums">
                     Q{i + 1}
                   </span>
-                  <span className="pt-0.5">{item.q}</span>
+                  <span>{item.q}</span>
                 </h3>
                 <div
                   itemProp="acceptedAnswer"
                   itemScope
                   itemType="https://schema.org/Answer"
-                  className="pl-10 text-stone-700"
+                  className="pl-9 text-neutral-700"
                 >
                   <p itemProp="text" className="leading-relaxed">
-                    <span className="font-semibold text-rose-700">A.</span> {item.a}
+                    {item.a}
                   </p>
                 </div>
               </div>
@@ -501,40 +466,39 @@ export default function Page(): JSX.Element {
         </section>
 
         {/* FOOTER */}
-        <footer className="mt-16">
-          <div className="mb-6 rounded-2xl border border-stone-200/80 bg-gradient-to-br from-purple-50/50 via-white to-rose-50/40 p-8 shadow-sm">
-            <p className="mb-3 text-xs font-medium tracking-wider text-purple-800 uppercase">
-              검증 출처 · Verification
-            </p>
-            <p className="text-base leading-relaxed text-stone-800">
-              본 데이터는 모두 <strong className="text-stone-900">공인기관 시험성적서</strong>로
-              확인 가능합니다 — 28-FREE 항목별 시험, 무균 시험(Sterility), NO assay. 새 색소 도입 시
-              발색 샘플보다 <strong className="text-stone-900">시험성적서 PDF를 먼저</strong>{' '}
-              받아보기를 권장합니다.
-            </p>
-          </div>
+        <footer className="mt-20 border-t border-neutral-200 pt-10">
+          <p className="mb-3 text-[10px] tracking-[0.2em] text-neutral-500 uppercase">
+            검증 출처 · Verification
+          </p>
+          <p className="mb-10 font-serif text-lg leading-relaxed text-black">
+            본 데이터는 모두 공인기관 시험성적서로 확인 가능합니다 — 28-FREE 항목별 시험, 무균
+            시험(Sterility), NO assay. 새 색소 도입 시 발색 샘플보다{' '}
+            <strong>시험성적서 PDF를 먼저</strong> 받아보기를 권장합니다.
+          </p>
 
-          <div className="mb-6 rounded-2xl border border-stone-200/60 bg-stone-50/50 p-6">
-            <h3 className="mb-2 text-sm font-semibold text-stone-800">Disclaimer</h3>
-            <p className="text-sm leading-relaxed text-stone-600">
+          <div className="mb-10 border-l-2 border-neutral-300 pl-6">
+            <h3 className="mb-2 text-xs tracking-[0.15em] text-neutral-500 uppercase">
+              Disclaimer
+            </h3>
+            <p className="text-sm leading-relaxed text-neutral-600">
               멜라누아 엠보는 반영구 시술 아티스트 전용 위생용품입니다. 시술 후 회복 패턴·자극
               반응은 개인차가 있어 단정적 효과를 보장하지 않습니다. 모든 수치는 공인기관 시험 시점
               기준이며, 일반 소비자 대상 직접 판매는 진행하지 않습니다.
             </p>
           </div>
 
-          <div className="flex items-start gap-4 rounded-2xl bg-gradient-to-br from-stone-950 to-purple-950 p-6 text-white">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-rose-400 font-serif text-xl font-bold text-stone-900">
+          <div className="flex items-start gap-5 bg-black p-8 text-white">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white font-serif text-xl font-medium text-black">
               M
             </div>
             <div className="flex-1 text-sm">
-              <p className="font-semibold">
-                Melanoir Lab <span className="text-stone-400">· 멜라누아</span>
+              <p className="font-medium tracking-wide">
+                Melanoir Lab <span className="text-neutral-500">· 멜라누아</span>
               </p>
-              <p className="mt-1 text-xs text-stone-400">
+              <p className="mt-1 text-xs text-neutral-500">
                 발행 <time dateTime={PUBLISHED}>2026년 5월 29일</time>
               </p>
-              <p className="mt-3 leading-relaxed text-stone-300">
+              <p className="mt-4 leading-relaxed text-neutral-400">
                 Melanoir(멜라누아)는 멜라닌 기반 뷰티 소재와 반영구 시술 색소를 시험성적서 기반으로
                 공급합니다. Professionals Only.
               </p>
@@ -550,35 +514,25 @@ function SectionHeading({
   n,
   title,
   subtitle,
-  tone = 'purple',
 }: {
   n: number
   title: string
   subtitle?: string
-  tone?: 'purple' | 'rose' | 'amber'
 }): JSX.Element {
-  const toneClasses = {
-    purple: 'from-purple-100 to-purple-50 text-purple-700 ring-purple-200/60',
-    rose: 'from-rose-100 to-rose-50 text-rose-700 ring-rose-200/60',
-    amber: 'from-amber-100 to-amber-50 text-amber-700 ring-amber-200/60',
-  }[tone]
-
   return (
-    <div className="mb-6 flex items-baseline gap-4">
-      <span
-        className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${toneClasses} font-serif text-lg font-bold shadow-sm ring-1`}
-      >
-        {n}
-      </span>
-      <div>
-        <h2 className="text-2xl leading-tight font-bold tracking-tight text-stone-900 md:text-[1.75rem]">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="mt-0.5 font-serif text-sm tracking-wide text-stone-500 italic">
-            {subtitle}
-          </p>
-        )}
+    <div className="mb-8 border-t-2 border-black pt-5">
+      <div className="flex items-baseline gap-4">
+        <span className="font-serif text-2xl font-medium text-black tabular-nums">
+          {String(n).padStart(2, '0')}
+        </span>
+        <div>
+          <h2 className="font-serif text-2xl leading-tight font-medium tracking-tight text-black md:text-[1.75rem]">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="mt-1 text-xs tracking-[0.15em] text-neutral-500 uppercase">{subtitle}</p>
+          )}
+        </div>
       </div>
     </div>
   )
