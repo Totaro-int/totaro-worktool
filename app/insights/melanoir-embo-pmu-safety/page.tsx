@@ -2,6 +2,8 @@ import type { JSX } from 'react'
 
 import Link from 'next/link'
 
+import { pretendard } from '@/app/fonts'
+
 import type { Metadata } from 'next'
 
 // ─── 회사: 멜라누아 (Melanoir) — 뷰티/반영구 색소. Totaro(식품)와 별개. ───
@@ -163,7 +165,7 @@ export default function Page(): JSX.Element {
   const melanoirPct = Math.round((NO_ASSAY.melanoir / NO_ASSAY.control) * 100)
 
   return (
-    <main className="bg-white text-black">
+    <main className={`${pretendard.className} bg-white text-black`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdArticle() }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdProduct() }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdFaqPage() }} />
@@ -191,13 +193,13 @@ export default function Page(): JSX.Element {
 
           <h1
             itemProp="headline"
-            className="font-serif text-5xl leading-[1.1] font-medium tracking-tight text-white md:text-6xl"
+            className="text-5xl leading-[1.1] font-medium tracking-tight text-white md:text-6xl"
           >
             반영구 색소
             <br />
             안전 기준 <span className="italic">5가지</span>
           </h1>
-          <p className="mt-6 font-serif text-xl text-neutral-400 italic md:text-2xl" lang="en">
+          <p className="mt-6 text-xl text-neutral-400 italic md:text-2xl" lang="en">
             {SUBTITLE_EN}
           </p>
 
@@ -214,21 +216,19 @@ export default function Page(): JSX.Element {
           <div className="mt-12 grid grid-cols-3 divide-x divide-white/15 border-y border-white/15">
             <div className="py-6 pr-4">
               <p className="text-[10px] tracking-[0.15em] text-neutral-500 uppercase">유해물질</p>
-              <p className="mt-2 font-serif text-3xl font-medium text-white md:text-4xl">28-FREE</p>
+              <p className="mt-2 text-3xl font-medium text-white md:text-4xl">28-FREE</p>
               <p className="mt-1 text-xs text-neutral-500">전 항목 N.D.</p>
             </div>
             <div className="px-4 py-6">
               <p className="text-[10px] tracking-[0.15em] text-neutral-500 uppercase">무균 시험</p>
-              <p className="mt-2 font-serif text-3xl font-medium text-white md:text-4xl">
-                Negative
-              </p>
+              <p className="mt-2 text-3xl font-medium text-white md:text-4xl">Negative</p>
               <p className="mt-1 text-xs text-neutral-500">멸균팩 단위</p>
             </div>
             <div className="py-6 pl-4">
               <p className="text-[10px] tracking-[0.15em] text-neutral-500 uppercase">
                 NO 자극 인자
               </p>
-              <p className="mt-2 font-serif text-3xl font-medium text-white md:text-4xl">51%↓</p>
+              <p className="mt-2 text-3xl font-medium text-white md:text-4xl">51%↓</p>
               <p className="mt-1 text-xs text-neutral-500">14.32 → 6.90</p>
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function Page(): JSX.Element {
             ].map(([name, count]) => (
               <div key={name} className="bg-white p-5 text-center">
                 <p className="text-xs tracking-wide text-neutral-500">{name}</p>
-                <p className="mt-1 font-serif text-2xl font-medium text-black">{count}</p>
+                <p className="mt-1 text-2xl font-medium text-black">{count}</p>
                 <p className="mt-1 text-xs font-medium tracking-widest text-black">N.D.</p>
               </div>
             ))}
@@ -324,10 +324,10 @@ export default function Page(): JSX.Element {
           </div>
 
           <blockquote className="relative my-10 border-l-2 border-black pl-8">
-            <div className="absolute -top-4 -left-1 font-serif text-7xl leading-none text-neutral-200 select-none">
+            <div className="absolute -top-4 -left-1 text-7xl leading-none text-neutral-200 select-none">
               &ldquo;
             </div>
-            <p className="font-serif text-xl leading-relaxed text-black italic">
+            <p className="text-xl leading-relaxed text-black italic">
               안전하다는 말보다 <strong className="not-italic">검출되지 않았다는 팩트</strong>를
               믿어야 한다. 시험성적서는 거짓말을 하지 않는다.
             </p>
@@ -356,7 +356,7 @@ export default function Page(): JSX.Element {
               <div>
                 <div className="mb-2 flex items-baseline justify-between">
                   <span className="text-sm text-neutral-500">대조군</span>
-                  <span className="font-serif text-lg text-neutral-500">14.32</span>
+                  <span className="text-lg text-neutral-500">14.32</span>
                 </div>
                 <div className="h-3 w-full bg-neutral-100">
                   <div className="h-full bg-neutral-300" style={{ width: `${controlPct}%` }} />
@@ -365,7 +365,7 @@ export default function Page(): JSX.Element {
               <div>
                 <div className="mb-2 flex items-baseline justify-between">
                   <span className="text-sm font-medium text-black">멜라누아 엠보</span>
-                  <span className="font-serif text-lg font-bold text-black">6.90 · −51%</span>
+                  <span className="text-lg font-bold text-black">6.90 · −51%</span>
                 </div>
                 <div className="h-3 w-full bg-neutral-100">
                   <div className="h-full bg-black" style={{ width: `${melanoirPct}%` }} />
@@ -398,7 +398,7 @@ export default function Page(): JSX.Element {
               '시술 정밀도와 안전성 동시 향상',
             ].map((t) => (
               <li key={t} className="flex gap-4 py-4 text-neutral-700">
-                <span className="font-serif text-sm text-neutral-400">—</span>
+                <span className="text-sm text-neutral-400">—</span>
                 <span>{t}</span>
               </li>
             ))}
@@ -421,9 +421,7 @@ export default function Page(): JSX.Element {
           <ol className="space-y-4">
             {CONCERNS.map((c, i) => (
               <li key={c} className="flex gap-4 text-neutral-700">
-                <span className="font-serif text-lg font-medium text-black tabular-nums">
-                  0{i + 1}
-                </span>
+                <span className="text-lg font-medium text-black tabular-nums">0{i + 1}</span>
                 <span className="pt-0.5">{c}</span>
               </li>
             ))}
@@ -445,7 +443,7 @@ export default function Page(): JSX.Element {
                   itemProp="name"
                   className="mb-3 flex items-start gap-4 text-base font-medium text-black md:text-lg"
                 >
-                  <span className="font-serif text-sm font-medium text-neutral-400 tabular-nums">
+                  <span className="text-sm font-medium text-neutral-400 tabular-nums">
                     Q{i + 1}
                   </span>
                   <span>{item.q}</span>
@@ -470,7 +468,7 @@ export default function Page(): JSX.Element {
           <p className="mb-3 text-[10px] tracking-[0.2em] text-neutral-500 uppercase">
             검증 출처 · Verification
           </p>
-          <p className="mb-10 font-serif text-lg leading-relaxed text-black">
+          <p className="mb-10 text-lg leading-relaxed text-black">
             본 데이터는 모두 공인기관 시험성적서로 확인 가능합니다 — 28-FREE 항목별 시험, 무균
             시험(Sterility), NO assay. 새 색소 도입 시 발색 샘플보다{' '}
             <strong>시험성적서 PDF를 먼저</strong> 받아보기를 권장합니다.
@@ -488,7 +486,7 @@ export default function Page(): JSX.Element {
           </div>
 
           <div className="flex items-start gap-5 bg-black p-8 text-white">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white font-serif text-xl font-medium text-black">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white text-xl font-medium text-black">
               M
             </div>
             <div className="flex-1 text-sm">
@@ -522,11 +520,11 @@ function SectionHeading({
   return (
     <div className="mb-8 border-t-2 border-black pt-5">
       <div className="flex items-baseline gap-4">
-        <span className="font-serif text-2xl font-medium text-black tabular-nums">
+        <span className="text-2xl font-medium text-black tabular-nums">
           {String(n).padStart(2, '0')}
         </span>
         <div>
-          <h2 className="font-serif text-2xl leading-tight font-medium tracking-tight text-black md:text-[1.75rem]">
+          <h2 className="text-2xl leading-tight font-medium tracking-tight text-black md:text-[1.75rem]">
             {title}
           </h2>
           {subtitle && (
