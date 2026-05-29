@@ -481,7 +481,7 @@ export default function Page(): JSX.Element {
             <p className="text-sm leading-relaxed text-neutral-600">
               멜라누아 엠보는 반영구 시술 아티스트 전용 위생용품입니다. 시술 후 회복 패턴·자극
               반응은 개인차가 있어 단정적 효과를 보장하지 않습니다. 모든 수치는 공인기관 시험 시점
-              기준이며, 일반 소비자 대상 직접 판매는 진행하지 않습니다.
+              기준입니다.
             </p>
           </div>
 
