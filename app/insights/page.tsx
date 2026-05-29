@@ -22,6 +22,12 @@ const CARDS = [
     description: 'HACCP·할랄·SKU·평균 단가 한 페이지 정리 (2025)',
     date: '2026-05-28',
   },
+  {
+    slug: 'fungal-melanin-uv-protection-rsc-2021',
+    title: '진균 멜라닌 자외선 차단 데이터',
+    description: '2021 RSC 논문이 정리한 SPF·UVA/UVB·항산화·세포 안전성',
+    date: '2026-05-29',
+  },
 ] as const
 
 export default function Page(): JSX.Element {
