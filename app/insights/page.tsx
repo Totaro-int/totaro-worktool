@@ -16,6 +16,12 @@ const CARDS = [
     description: 'HACCP·FDA·MOQ·평균 단가 한 페이지 정리 (2025)',
     date: '2026-05-28',
   },
+  {
+    slug: 'korea-ramen-oem-supplier-verification',
+    title: '한국 라면 OEM 공급사 검증 가이드',
+    description: 'HACCP·할랄·SKU·평균 단가 한 페이지 정리 (2025)',
+    date: '2026-05-28',
+  },
 ] as const
 
 export default function Page(): JSX.Element {
