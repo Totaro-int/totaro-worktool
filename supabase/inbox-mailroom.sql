@@ -1,11 +1,11 @@
--- 내부 AI 우편실 v0 — 스키마
+고-- 내부 AI 우편실 v0 — 스키마
 -- 적용: Supabase 대시보드 SQL Editor 에 통째로 붙여넣고 실행
 -- 설계 문서: docs/internal-mailroom-v0.md
 
 -- ─────────────────────────────────────────────────────────────────────
 -- 1) documents — 업로드된 문서의 메타·인덱스
 -- ─────────────────────────────────────────────────────────────────────
-create table if not exists public.documents (
+create table if not exists public.inbox_documents (
   id uuid primary key default gen_random_uuid(),
   filename text not null,
   description text,
@@ -26,12 +26,12 @@ create table if not exists public.documents (
   updated_at timestamptz default now()
 );
 
-create index if not exists documents_status_created_idx
-  on public.documents (status, created_at desc);
-create index if not exists documents_uploader_idx
-  on public.documents (uploaded_by, created_at desc);
-create index if not exists documents_folder_idx
-  on public.documents (folder_path);
+create index if not exists inbox_documents_status_created_idx
+  on public.inbox_documents (status, created_at desc);
+create index if not exists inbox_documents_uploader_idx
+  on public.inbox_documents (uploaded_by, created_at desc);
+create index if not exists inbox_documents_folder_idx
+  on public.inbox_documents (folder_path);
 
 -- updated_at 자동 갱신
 create or replace function public.touch_updated_at()
@@ -42,17 +42,17 @@ begin
 end;
 $$;
 
-drop trigger if exists documents_touch on public.documents;
-create trigger documents_touch
-  before update on public.documents
+drop trigger if exists inbox_documents_touch on public.inbox_documents;
+create trigger inbox_documents_touch
+  before update on public.inbox_documents
   for each row execute function public.touch_updated_at();
 
 -- ─────────────────────────────────────────────────────────────────────
--- 2) document_moves — 이동·이름변경 감사 로그 (undo 기능 지원)
+-- 2) inbox_document_moves — 이동·이름변경 감사 로그 (undo 기능 지원)
 -- ─────────────────────────────────────────────────────────────────────
-create table if not exists public.document_moves (
+create table if not exists public.inbox_document_moves (
   id uuid primary key default gen_random_uuid(),
-  document_id uuid references public.documents(id) on delete cascade,
+  document_id uuid references public.inbox_documents(id) on delete cascade,
   from_folder_path text,
   to_folder_path text,
   moved_by uuid references public.members(id),
@@ -62,10 +62,10 @@ create table if not exists public.document_moves (
   created_at timestamptz default now()
 );
 
-create index if not exists document_moves_doc_idx
-  on public.document_moves (document_id, created_at desc);
-create index if not exists document_moves_reversible_idx
-  on public.document_moves (reversible_until)
+create index if not exists inbox_document_moves_doc_idx
+  on public.inbox_document_moves (document_id, created_at desc);
+create index if not exists inbox_document_moves_reversible_idx
+  on public.inbox_document_moves (reversible_until)
   where reverted = false;
 
 -- ─────────────────────────────────────────────────────────────────────
@@ -93,34 +93,34 @@ create index if not exists notifications_recipient_idx
 -- ─────────────────────────────────────────────────────────────────────
 -- 4) RLS — Row Level Security 정책
 -- ─────────────────────────────────────────────────────────────────────
-alter table public.documents enable row level security;
-alter table public.document_moves enable row level security;
+alter table public.inbox_documents enable row level security;
+alter table public.inbox_document_moves enable row level security;
 alter table public.notifications enable row level security;
 
 -- documents: 인증된 멤버 모두 read/write (v0 단순 권한 풀)
-drop policy if exists documents_auth_read on public.documents;
-create policy documents_auth_read on public.documents
+drop policy if exists inbox_documents_auth_read on public.inbox_documents;
+create policy inbox_documents_auth_read on public.inbox_documents
   for select using (auth.role() = 'authenticated');
 
-drop policy if exists documents_auth_insert on public.documents;
-create policy documents_auth_insert on public.documents
+drop policy if exists inbox_documents_auth_insert on public.inbox_documents;
+create policy inbox_documents_auth_insert on public.inbox_documents
   for insert with check (auth.role() = 'authenticated');
 
-drop policy if exists documents_auth_update on public.documents;
-create policy documents_auth_update on public.documents
+drop policy if exists inbox_documents_auth_update on public.inbox_documents;
+create policy inbox_documents_auth_update on public.inbox_documents
   for update using (auth.role() = 'authenticated');
 
--- document_moves: 인증 멤버 read·write
-drop policy if exists moves_auth_read on public.document_moves;
-create policy moves_auth_read on public.document_moves
+-- inbox_document_moves: 인증 멤버 read·write
+drop policy if exists moves_auth_read on public.inbox_document_moves;
+create policy moves_auth_read on public.inbox_document_moves
   for select using (auth.role() = 'authenticated');
 
-drop policy if exists moves_auth_insert on public.document_moves;
-create policy moves_auth_insert on public.document_moves
+drop policy if exists moves_auth_insert on public.inbox_document_moves;
+create policy moves_auth_insert on public.inbox_document_moves
   for insert with check (auth.role() = 'authenticated');
 
-drop policy if exists moves_auth_update on public.document_moves;
-create policy moves_auth_update on public.document_moves
+drop policy if exists moves_auth_update on public.inbox_document_moves;
+create policy moves_auth_update on public.inbox_document_moves
   for update using (auth.role() = 'authenticated');
 
 -- notifications: 본인 것만 read·update, write 는 service_role 또는 인증 멤버
@@ -139,6 +139,6 @@ create policy notif_own_update on public.notifications
 -- ─────────────────────────────────────────────────────────────────────
 -- 끝. 적용 검증: 아래 쿼리로 확인
 --   select tablename from pg_tables where schemaname='public'
---     and tablename in ('documents','document_moves','notifications');
+--     and tablename in ('inbox_documents','inbox_document_moves','notifications');
 -- 세 줄 다 나오면 성공.
 -- ─────────────────────────────────────────────────────────────────────

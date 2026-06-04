@@ -97,7 +97,7 @@ export async function uploadAndClassify(formData: FormData): Promise<ClassifyRes
   const notifyIds = notifyMerged.map((n) => nameToId.get(n)).filter((v): v is string => Boolean(v))
 
   const { data: doc, error } = await supabase
-    .from('documents')
+    .from('inbox_documents')
     .insert({
       filename: file.name,
       description: userDescription || null,
@@ -178,7 +178,7 @@ export async function confirmClassification(formData: FormData): Promise<Classif
 
     // documents 업데이트
     await supabase
-      .from('documents')
+      .from('inbox_documents')
       .update({
         drive_file_id: driveFileId,
         drive_folder_id: folderId,
@@ -197,7 +197,7 @@ export async function confirmClassification(formData: FormData): Promise<Classif
       : []
     if (notifyIds.length > 0) {
       const { data: doc } = await supabase
-        .from('documents')
+        .from('inbox_documents')
         .select('filename, doc_type')
         .eq('id', documentId)
         .single()
@@ -207,7 +207,7 @@ export async function confirmClassification(formData: FormData): Promise<Classif
         notifyIds.map((rid) => ({
           recipient_id: rid,
           type: 'document_uploaded',
-          related_table: 'documents',
+          related_table: 'inbox_documents',
           related_id: documentId,
           title,
           body,
@@ -224,7 +224,7 @@ export async function confirmClassification(formData: FormData): Promise<Classif
     }
   } catch (e) {
     await supabase
-      .from('documents')
+      .from('inbox_documents')
       .update({ status: 'failed', ai_reasoning: e instanceof Error ? e.message : String(e) })
       .eq('id', documentId)
     return { ok: false, error: e instanceof Error ? e.message : String(e) }
@@ -234,7 +234,7 @@ export async function confirmClassification(formData: FormData): Promise<Classif
 /** 분류 결과를 사용자가 거부 (저장 안 함). documents 상태만 rejected. */
 export async function rejectClassification(documentId: string): Promise<{ ok: boolean }> {
   const supabase = await createClient()
-  await supabase.from('documents').update({ status: 'rejected' }).eq('id', documentId)
+  await supabase.from('inbox_documents').update({ status: 'rejected' }).eq('id', documentId)
   revalidatePath('/inbox')
   return { ok: true }
 }
