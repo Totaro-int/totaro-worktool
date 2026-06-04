@@ -1,4 +1,4 @@
-고-- 내부 AI 우편실 v0 — 스키마
+-- 내부 AI 우편실 v0 — 스키마
 -- 적용: Supabase 대시보드 SQL Editor 에 통째로 붙여넣고 실행
 -- 설계 문서: docs/internal-mailroom-v0.md
 
