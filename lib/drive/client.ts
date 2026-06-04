@@ -46,7 +46,7 @@ export function getRootFolderId(): string {
   return id
 }
 
-/** 한 폴더 안의 자식 폴더 목록 반환. */
+/** 한 폴더 안의 자식 폴더 목록 반환. Shared Drive 호환. */
 export async function listSubfolders(
   drive: drive_v3.Drive,
   parentId: string
@@ -55,6 +55,8 @@ export async function listSubfolders(
     q: `'${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false`,
     fields: 'files(id, name)',
     pageSize: 100,
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   })
   return (res.data.files ?? []).map((f) => ({ id: f.id ?? '', name: f.name ?? '' }))
 }
@@ -83,6 +85,7 @@ export async function ensureFolderPath(
           parents: [parent],
         },
         fields: 'id',
+        supportsAllDrives: true,
       })
       parent = created.data.id ?? ''
       if (!parent) throw new Error(`폴더 생성 실패: ${segment}`)
@@ -133,6 +136,7 @@ export async function uploadFile(
       body: stream,
     },
     fields: 'id, webViewLink',
+    supportsAllDrives: true,
   })
   return {
     id: res.data.id ?? '',
@@ -146,13 +150,18 @@ export async function moveFile(
   fileId: string,
   newParentId: string
 ): Promise<void> {
-  const current = await drive.files.get({ fileId, fields: 'parents' })
+  const current = await drive.files.get({
+    fileId,
+    fields: 'parents',
+    supportsAllDrives: true,
+  })
   const previousParents = (current.data.parents ?? []).join(',')
   await drive.files.update({
     fileId,
     addParents: newParentId,
     removeParents: previousParents,
     fields: 'id, parents',
+    supportsAllDrives: true,
   })
 }
 
@@ -161,6 +170,7 @@ export async function trashFile(drive: drive_v3.Drive, fileId: string): Promise<
   await drive.files.update({
     fileId,
     requestBody: { trashed: true },
+    supportsAllDrives: true,
   })
 }
 
@@ -170,7 +180,11 @@ export async function pathOfFolder(drive: drive_v3.Drive, folderId: string): Pro
   let current = folderId
   const rootId = getRootFolderId()
   while (current && current !== rootId) {
-    const f = await drive.files.get({ fileId: current, fields: 'name, parents' })
+    const f = await drive.files.get({
+      fileId: current,
+      fields: 'name, parents',
+      supportsAllDrives: true,
+    })
     parts.unshift(f.data.name ?? '?')
     current = (f.data.parents ?? [])[0] ?? ''
   }
