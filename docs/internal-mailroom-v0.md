@@ -388,11 +388,30 @@ create policy "own update notifications" on public.notifications
 
 v0 successful → v1에서 채널별 통합 wave:
 
-- Gmail + 네이버 메일 (IMAP) → 통합 받은편지함 + 첨부 자동 백업
-- Figma → 자동 export to Drive
-- 로컬 폴더 watch (`~/totaro-inbox/`)
-- GitHub README 자동 보강
-- Claude conversation 검색 layer (메모리 layer 시작)
+- ✅ Claude MCP 서버 (`scripts/mailroom-mcp.ts`) — Claude Code/Desktop 에서 우편실 검색·읽기·업로드 4 도구
+- 🟡 Gmail 자동 백업 (`lib/gmail/client.ts` + `scripts/gmail-sync.ts`) — OAuth 인증 골격 완성, 첫 sync 대기
+- ⏳ 네이버 메일 (IMAP) → 통합 받은편지함
+- ⏳ Figma → 자동 export to Drive
+- ⏳ 로컬 폴더 watch (`~/totaro-inbox/`)
+- ⏳ GitHub README 자동 보강
+- ⏳ Claude conversation 검색 layer (메모리 layer 시작)
+
+### Gmail v1 사용 순서
+
+1. **Google Cloud Console 준비** (한 번만)
+   - `totaro-mailroom` 프로젝트 > APIs & Services > Gmail API "Enable"
+   - OAuth consent screen 만들기 (External, scopes: `gmail.readonly` + `gmail.modify`)
+   - Credentials > Create OAuth client > **Desktop app** → Client ID / Secret 받기
+2. **인증** (한 번만)
+   - `.env.local` 에 `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET` 임시 박기
+   - `npx tsx scripts/gmail-auth.ts` → 브라우저 동의 → `GMAIL_REFRESH_TOKEN` 받아서 `.env.local` 에 박기
+3. **스키마 마이그레이션** (한 번만)
+   - Supabase SQL Editor 에 `supabase/inbox-mailroom-source-column.sql` 통째로 붙여넣기 + Run
+4. **첫 sync 시운전**
+   - `npx tsx scripts/gmail-sync.ts --days 1 --dry-run` — 분류만 보고 실제 저장 X
+   - 분류 결과 괜찮으면 → `npx tsx scripts/gmail-sync.ts --days 1`
+5. **자동화** (다음 세션)
+   - launchd LaunchAgent 또는 Vercel Cron 으로 매 1 시간마다 sync
 
 ---
 
