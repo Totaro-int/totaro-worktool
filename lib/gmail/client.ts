@@ -45,6 +45,8 @@ export type MessageSummary = {
   subject: string
   snippet: string
   hasAttachments: boolean
+  /** 메시지에 붙은 라벨 ID 목록 — 동기화 라벨 기반 중복 제거(dedup)에 사용. */
+  labelIds: string[]
 }
 
 /** 받은편지함 최근 N일 메시지 ID·요약 리스트. */
@@ -87,6 +89,7 @@ export async function listRecentMessages(
       subject: get('Subject'),
       snippet: detail.data.snippet ?? '',
       hasAttachments,
+      labelIds: detail.data.labelIds ?? [],
     })
   }
   return out

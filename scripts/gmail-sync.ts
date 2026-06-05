@@ -79,13 +79,22 @@ async function main(): Promise<void> {
   const syncLabelId = await ensureLabel(gmail, SYNC_LABEL)
   console.log(`[gmail-sync] sync 라벨 ID: ${syncLabelId}`)
 
-  // 라벨 없는 메일만
-  const query = `-label:"${SYNC_LABEL}"`
-  const messages = await listRecentMessages(gmail, {
+  // 이미 동기화된 메일 제외 (검색 쿼리 1차 + 라벨 ID 백스톱 2차).
+  // 주의: 라벨 이름에 콜론(":")이 있으면 Gmail 검색에서 따옴표로 감싸면 안 된다.
+  //   -label:"토타로:동기화됨"  → 콜론이 label: 연산자와 충돌해 아무것도 매칭 못함(전부 반환)
+  //   -label:토타로:동기화됨    → 정상 (검증: label ID 매칭 20건과 동일)
+  const query = `-label:${SYNC_LABEL}`
+  const listed = await listRecentMessages(gmail, {
     days: args.days,
     maxResults: args.maxResults,
     query,
   })
+  // 백스톱: 검색 쿼리가 혹시 놓쳐도 라벨 ID 로 한 번 더 거른다 (cron 중복 폭발 방지).
+  const messages = listed.filter((m) => !m.labelIds.includes(syncLabelId))
+  const dedupSkipped = listed.length - messages.length
+  if (dedupSkipped > 0) {
+    console.log(`[gmail-sync] 이미 동기화됨 ${dedupSkipped}건 제외 (라벨 ID 백스톱)`)
+  }
   console.log(`[gmail-sync] 처리 대상: ${messages.length}건`)
 
   if (messages.length === 0) {
