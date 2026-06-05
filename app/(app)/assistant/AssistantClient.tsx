@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from 'react'
 
 import type { ChatTurn } from '@/lib/assistant/answer'
+import type { AssistantSource } from '@/lib/assistant/context'
 
 import { askAssistant, clearAssistantHistory, saveAssistantMessage } from './actions'
 
-import type { AssistantSource, StoredMessage } from './actions'
+import type { StoredMessage } from './actions'
 
 type Message = {
   role: 'user' | 'assistant'

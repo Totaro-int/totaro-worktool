@@ -6,7 +6,10 @@ import { citedSources, retrieveContext, toSource } from '@/lib/assistant/context
 import type { AssistantSource } from '@/lib/assistant/context'
 import { createClient } from '@/lib/supabase/server'
 
-export type { AssistantSource }
+// NOTE: AssistantSource 를 여기서 re-export 하지 않는다.
+// Next.js Turbopack 의 server-action 번들러가 'use server' 파일의
+// `export type { X }` 를 runtime export 로 잘못 처리해 빌드가 깨진다.
+// 소비자는 '@/lib/assistant/context' 에서 직접 import 할 것.
 
 export type AskResult = {
   ok: boolean
