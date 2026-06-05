@@ -68,7 +68,12 @@ async function sbPost(pathQuery: string, body: unknown): Promise<unknown> {
 type SearchInput = { query?: string; axis?: string; doc_type?: string; limit?: number }
 async function handleSearch(input: SearchInput): Promise<string> {
   const limit = Math.min(Math.max(input.limit ?? 10, 1), 50)
-  const conditions: string[] = ['status=eq.confirmed']
+  // 살아있는(휴지통/반려/실패 아님) + 실제 Drive 에 있는 문서만. Gmail 문서는
+  // status='classified' 라 confirmed 로 거르면 148건이 통째로 안 보인다(웹 AI 직원과 동일 필터).
+  const conditions: string[] = [
+    'drive_file_id=not.is.null',
+    'status=not.in.(trashed,rejected,failed)',
+  ]
   if (input.axis) conditions.push(`folder_path=ilike.*${encodeURIComponent(input.axis)}*`)
   if (input.doc_type) conditions.push(`doc_type=ilike.*${encodeURIComponent(input.doc_type)}*`)
   // query 는 OR 매칭 — filename·description·ai_reasoning·doc_type 어디든 부분일치
@@ -160,7 +165,7 @@ async function handleList(input: ListInput): Promise<string> {
   const limit = Math.min(Math.max(input.limit ?? 30, 1), 100)
   const fp = encodeURIComponent(input.folder_path)
   const rows = (await sbGet(
-    `inbox_documents?folder_path=ilike.*${fp}*&status=eq.confirmed&select=id,filename,doc_type,size_bytes,created_at&order=created_at.desc&limit=${limit}`
+    `inbox_documents?folder_path=ilike.*${fp}*&drive_file_id=not.is.null&status=not.in.(trashed,rejected,failed)&select=id,filename,doc_type,size_bytes,created_at&order=created_at.desc&limit=${limit}`
   )) as Array<Record<string, unknown>>
   if (rows.length === 0) return `폴더 '${input.folder_path}' 안에 파일 없음.`
   return rows

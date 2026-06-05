@@ -8,9 +8,9 @@ import { getCommerceData } from '@/lib/naver/commerce'
 import { createClient } from '@/lib/supabase/server'
 import type { Task } from '@/lib/types'
 
-type IconName = 'tasks' | 'github' | 'naver' | 'agent' | 'mailroom'
+type IconName = 'tasks' | 'github' | 'naver' | 'agent' | 'mailroom' | 'assistant'
 
-type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose'
+type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose' | 'violet'
 
 /** 노드 큐브의 재질(면별 그라데이션)·조명·라벨 색을 한 묶음으로 정의한다. */
 type CubePalette = {
@@ -75,6 +75,16 @@ const PALETTE: Record<Accent, CubePalette> = {
     header: '#e06a80',
     pool: '#f43f5e',
     poolOpacity: 0.22,
+  },
+  violet: {
+    top: ['#f5f0ff', '#e7dbff'],
+    left: ['#c4a9ec', '#b092e0'],
+    right: ['#9d77d4', '#8961c0'],
+    emblem: 'rgba(124, 58, 237, 0.12)',
+    iconColor: '#6b21c8',
+    header: '#8b5cf6',
+    pool: '#8b5cf6',
+    poolOpacity: 0.26,
   },
 }
 
@@ -141,6 +151,16 @@ function NodeIcon({
       <svg {...props}>
         <rect x="3" y="5" width="18" height="14" rx="2.5" />
         <path d="M3.6 7.5 L12 13 L20.4 7.5" />
+      </svg>
+    )
+  }
+  if (name === 'assistant') {
+    return (
+      <svg {...props}>
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+        <circle cx="8.5" cy="12" r="1" fill={color} stroke="none" />
+        <circle cx="12" cy="12" r="1" fill={color} stroke="none" />
+        <circle cx="15.5" cy="12" r="1" fill={color} stroke="none" />
       </svg>
     )
   }
@@ -366,6 +386,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
     commerceResult,
     agentResult,
     mailroomResult,
+    { count: assistantCount },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from('tasks').select('status'),
@@ -373,6 +394,11 @@ export default async function HubPage(): Promise<React.JSX.Element> {
     getCommerceData(),
     getAgentData(),
     getMailroomData(),
+    supabase
+      .from('inbox_documents')
+      .select('id', { count: 'exact', head: true })
+      .not('drive_file_id', 'is', null)
+      .not('status', 'in', '(trashed,rejected,failed)'),
   ])
   const user = userRes.user
 
@@ -399,6 +425,15 @@ export default async function HubPage(): Promise<React.JSX.Element> {
   // 전면의 공통(hero)이 맨 위에 깔린다. 가운데 공통을 중심으로 모듈이 스포크로 붙는 구성.
   const nodes: NodeSpec[] = [
     {
+      href: '/assistant',
+      name: 'AI 직원',
+      icon: 'assistant',
+      subText: '근거 문서',
+      value: typeof assistantCount === 'number' ? assistantCount.toLocaleString('ko-KR') : '—',
+      position: 'left-[50%] top-[24%]',
+      accent: 'violet',
+    },
+    {
       href: '/inbox',
       name: '우편실',
       icon: 'mailroom',
@@ -408,7 +443,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
           : `오늘 ${mr.todayCount} · Gmail ${mr.gmailCount}`
         : 'Gmail · 자동분류',
       value: mr ? String(mr.total) : '—',
-      position: 'left-[30%] top-[28%]',
+      position: 'left-[22%] top-[28%]',
       accent: 'rose',
     },
     {
@@ -417,7 +452,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       icon: 'naver',
       subText: com ? `오늘 · 주문 ${com.orderCount}건` : '판매 · 마케팅',
       value: com ? wonCompact(com.paidRevenue) : '—',
-      position: 'left-[70%] top-[28%]',
+      position: 'left-[78%] top-[28%]',
       accent: 'amber',
     },
     {
@@ -508,7 +543,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
             <line
               x1="50%"
               y1="64%"
-              x2="30%"
+              x2="22%"
               y2="37%"
               stroke="url(#hub-line)"
               strokeWidth="2.5"
@@ -519,7 +554,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
             <line
               x1="50%"
               y1="64%"
-              x2="70%"
+              x2="78%"
               y2="37%"
               stroke="url(#hub-line)"
               strokeWidth="2.5"

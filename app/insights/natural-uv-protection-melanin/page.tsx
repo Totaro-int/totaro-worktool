@@ -101,6 +101,16 @@ const CHECKLIST = [
   '근거가 peer-review 논문 또는 공인기관 시험인가',
 ] as const
 
+// 목차 (relate.kr 스타일 TOC)
+const TOC = [
+  { id: 'problem', title: '화학 자외선 차단제의 고민' },
+  { id: 'criteria', title: '천연 차단 성분의 3대 조건' },
+  { id: 'science', title: '멜라닌은 어떻게 자외선을 막나' },
+  { id: 'comparison', title: '천연 멜라닌 vs 화학·무기 차단제' },
+  { id: 'limits', title: '아직 남은 한계' },
+  { id: 'faq', title: '자주 묻는 질문' },
+] as const
+
 function jsonLdArticle(): string {
   return JSON.stringify({
     '@context': 'https://schema.org',
@@ -263,11 +273,38 @@ export default function Page(): JSX.Element {
       <article
         itemScope
         itemType="https://schema.org/Article"
-        className="mx-auto max-w-3xl px-6 py-20"
+        className="mx-auto max-w-2xl px-6 py-20"
       >
+        {/* 목차 — relate 스타일 TOC */}
+        <nav aria-label="목차" className="mb-16 border border-neutral-300 p-6">
+          <p className="mb-4 text-[11px] font-medium tracking-[0.2em] text-neutral-500 uppercase">
+            목차 · Table of Contents
+          </p>
+          <ol className="space-y-2.5 text-sm">
+            {TOC.map((t, i) => (
+              <li key={t.id}>
+                <a
+                  href={`#${t.id}`}
+                  className="group flex items-baseline gap-3 text-neutral-700 transition-colors hover:text-black"
+                >
+                  <span className="text-neutral-400 tabular-nums">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="group-hover:underline">{t.title}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
         {/* SECTION 1 — 문제 */}
         <section className="mb-20">
-          <SectionHeading n={1} title="화학 자외선 차단제의 고민" subtitle="The Problem" />
+          <SectionHeading
+            n={1}
+            id="problem"
+            title="화학 자외선 차단제의 고민"
+            subtitle="The Problem"
+          />
           <p className="mb-6 leading-relaxed text-neutral-700">
             옥시벤존·옥티노세이트 같은 유기 자외선 차단 성분은 차단력이 강하지만,{' '}
             <strong className="text-black">산호초 백화와 내분비 교란 가능성</strong>으로
@@ -285,7 +322,12 @@ export default function Page(): JSX.Element {
 
         {/* SECTION 2 — 천연 차단 성분 3대 조건 (지식) */}
         <section className="mb-20">
-          <SectionHeading n={2} title="천연 차단 성분의 3대 조건" subtitle="The 3 Criteria" />
+          <SectionHeading
+            n={2}
+            id="criteria"
+            title="천연 차단 성분의 3대 조건"
+            subtitle="The 3 Criteria"
+          />
           <p className="mb-8 leading-relaxed text-neutral-700">
             천연이라고 다 좋은 건 아니다. 자외선 차단 소재로 쓰이려면 다음 3가지를 정량 데이터로
             입증해야 한다.
@@ -307,13 +349,21 @@ export default function Page(): JSX.Element {
 
         {/* SECTION 3 — 멜라닌 메커니즘 + 연구 데이터 (근거) */}
         <section className="mb-20">
-          <SectionHeading n={3} title="멜라닌은 어떻게 자외선을 막나" subtitle="The Science" />
+          <SectionHeading
+            n={3}
+            id="science"
+            title="멜라닌은 어떻게 자외선을 막나"
+            subtitle="The Science"
+          />
           <p className="mb-6 leading-relaxed text-neutral-700">
             멜라닌은 분자 내 <strong className="text-black">π-공액 구조</strong>가 넓은 파장의 빛을
             흡수하고, 동시에 활성산소(ROS)를 소거하는 항산화 작용을 한다. 즉{' '}
             <strong className="text-black">차단(1차)과 항산화(2차)를 한 분자가 동시에</strong> 하는
             것이 합성 차단 성분과 결정적으로 다른 점이다.
           </p>
+          <blockquote className="my-9 border-l-2 border-black pl-6 text-xl leading-relaxed font-medium text-black">
+            빛을 막으면서 동시에 산화 손상을 줄인다 — 멜라닌이 다른 천연 후보와 구분되는 지점이다.
+          </blockquote>
           <p className="mb-8 leading-relaxed text-neutral-700">
             실제 데이터는 어떨까. <strong className="text-black">RSC Advances 2021</strong> 연구는
             Amorphotheca resinae 유래 진균 멜라닌을 크림에 5% 혼합해 정량 측정했다:
@@ -368,7 +418,12 @@ export default function Page(): JSX.Element {
 
         {/* SECTION 4 — 천연 vs 화학 비교 */}
         <section className="mb-20">
-          <SectionHeading n={4} title="천연 멜라닌 vs 화학·무기 차단제" subtitle="Comparison" />
+          <SectionHeading
+            n={4}
+            id="comparison"
+            title="천연 멜라닌 vs 화학·무기 차단제"
+            subtitle="Comparison"
+          />
           <div className="overflow-hidden border border-neutral-900">
             <table className="w-full border-collapse text-sm">
               <thead>
@@ -411,7 +466,7 @@ export default function Page(): JSX.Element {
 
         {/* SECTION 5 — 한계 (솔직히) */}
         <section className="mb-20">
-          <SectionHeading n={5} title="아직 남은 한계" subtitle="The Limits" />
+          <SectionHeading n={5} id="limits" title="아직 남은 한계" subtitle="The Limits" />
           <div className="space-y-5 leading-relaxed text-neutral-700">
             <p>
               <strong className="text-black">SPF가 상업 기준에 못 미친다.</strong> 5% 멜라닌 크림의
@@ -438,7 +493,7 @@ export default function Page(): JSX.Element {
 
         {/* SECTION 6 — FAQ */}
         <section className="mb-20">
-          <SectionHeading n={6} title="자주 묻는 질문" subtitle="FAQ" />
+          <SectionHeading n={6} id="faq" title="자주 묻는 질문" subtitle="FAQ" />
           <div className="divide-y divide-neutral-200 border-y border-neutral-200">
             {FAQS.map((item, i) => (
               <div key={item.q} itemScope itemType="https://schema.org/Question" className="py-7">
@@ -466,8 +521,16 @@ export default function Page(): JSX.Element {
           </div>
         </section>
 
+        {/* 점 구분 — relate 스타일 */}
+        <div
+          className="my-4 text-center text-xl tracking-[0.6em] text-neutral-300"
+          aria-hidden="true"
+        >
+          · · ·
+        </div>
+
         {/* 마무리 — 독자 가치 (체크리스트) */}
-        <footer className="mt-20 border-t border-neutral-200 pt-10">
+        <footer className="mt-12 border-t border-neutral-200 pt-10">
           <p className="text-xl leading-relaxed font-bold text-black">
             &lsquo;천연&rsquo;이라는 단어가 아니라, 데이터를 보라.
           </p>
@@ -513,13 +576,15 @@ function SectionHeading({
   n,
   title,
   subtitle,
+  id,
 }: {
   n: number
   title: string
   subtitle?: string
+  id?: string
 }): JSX.Element {
   return (
-    <div className="mb-8 border-t-2 border-black pt-5">
+    <div id={id} className="mb-8 scroll-mt-8 border-t-2 border-black pt-5">
       <div className="flex items-baseline gap-4">
         <span className="text-2xl font-bold text-black tabular-nums">
           {String(n).padStart(2, '0')}

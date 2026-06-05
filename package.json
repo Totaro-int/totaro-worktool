@@ -15,6 +15,7 @@
     "check:large-files": "tsx scripts/check-large-files.ts",
     "check:drift": "tsx scripts/check-drift.ts",
     "sync:naver": "tsx scripts/sync-naver-commerce.ts",
+    "embed:backfill": "tsx scripts/embed-backfill.ts",
     "sync:chat": "node scripts/chat-raw-uploader.mjs",
     "summarize:chat": "node scripts/summarize-chat-raw.mjs",
     "status": "node scripts/status.mjs",

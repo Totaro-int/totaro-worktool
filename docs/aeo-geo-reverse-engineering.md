@@ -359,7 +359,7 @@ Allow: /
 
 ## 9. 실행 체크리스트 (Totaro 1주일 plan)
 
-- [ ] Day 1: 타겟 query 20개 정의 (영어 + 한국어 각 10개)
+- [x] Day 1: 타겟 query 20개 정의 (영어 + 한국어 각 10개) → `docs/aeo-method1-citation-queries.md`
 - [ ] Day 2~3: Method 1 (Citation Source Mapping) 200 runs
 - [ ] Day 4: Method 3 (Content Format Analysis) top 30 URL 분석
 - [ ] Day 4: Method 4 (Schema Detection) 동일 30 URL
