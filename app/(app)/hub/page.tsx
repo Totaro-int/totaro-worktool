@@ -3,13 +3,14 @@ import Link from 'next/link'
 import { signOut } from '@/app/auth/actions'
 import { getAgentData } from '@/lib/agents'
 import { getGithubData } from '@/lib/github'
+import { getMailroomData } from '@/lib/mailroom/stats'
 import { getCommerceData } from '@/lib/naver/commerce'
 import { createClient } from '@/lib/supabase/server'
 import type { Task } from '@/lib/types'
 
-type IconName = 'tasks' | 'github' | 'naver' | 'agent'
+type IconName = 'tasks' | 'github' | 'naver' | 'agent' | 'mailroom'
 
-type Accent = 'blue' | 'amber' | 'emerald' | 'indigo'
+type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose'
 
 /** 노드 큐브의 재질(면별 그라데이션)·조명·라벨 색을 한 묶음으로 정의한다. */
 type CubePalette = {
@@ -64,6 +65,16 @@ const PALETTE: Record<Accent, CubePalette> = {
     header: '#6d70e0',
     pool: '#6366f1',
     poolOpacity: 0.34,
+  },
+  rose: {
+    top: ['#fff8f9', '#f6e7ea'],
+    left: ['#ecccd2', '#ddb0b9'],
+    right: ['#dcb3bb', '#c9a0a9'],
+    emblem: 'rgba(190, 24, 60, 0.1)',
+    iconColor: '#c14a5e',
+    header: '#e06a80',
+    pool: '#f43f5e',
+    poolOpacity: 0.22,
   },
 }
 
@@ -122,6 +133,14 @@ function NodeIcon({
         <circle cx="12" cy="4" r="1.5" fill={color} stroke="none" />
         <circle cx="9.4" cy="14.6" r="1.3" fill={color} stroke="none" />
         <circle cx="14.6" cy="14.6" r="1.3" fill={color} stroke="none" />
+      </svg>
+    )
+  }
+  if (name === 'mailroom') {
+    return (
+      <svg {...props}>
+        <rect x="3" y="5" width="18" height="14" rx="2.5" />
+        <path d="M3.6 7.5 L12 13 L20.4 7.5" />
       </svg>
     )
   }
@@ -340,14 +359,21 @@ function wonCompact(n: number): string {
 export default async function HubPage(): Promise<React.JSX.Element> {
   const supabase = await createClient()
   // 인증·할 일·각 거점 데이터를 한 번에 병렬 호출 — 허브 첫 화면에 실데이터를 채운다.
-  const [{ data: userRes }, { data: taskData }, githubResult, commerceResult, agentResult] =
-    await Promise.all([
-      supabase.auth.getUser(),
-      supabase.from('tasks').select('status'),
-      getGithubData(),
-      getCommerceData(),
-      getAgentData(),
-    ])
+  const [
+    { data: userRes },
+    { data: taskData },
+    githubResult,
+    commerceResult,
+    agentResult,
+    mailroomResult,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('tasks').select('status'),
+    getGithubData(),
+    getCommerceData(),
+    getAgentData(),
+    getMailroomData(),
+  ])
   const user = userRes.user
 
   const tasks = (taskData ?? []) as Pick<Task, 'status'>[]
@@ -357,6 +383,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
   const gh = githubResult.status === 'ok' ? githubResult : null
   const com = commerceResult.status === 'ok' ? commerceResult : null
   const ag = agentResult.status === 'ok' ? agentResult : null
+  const mr = mailroomResult.status === 'ok' ? mailroomResult : null
 
   let displayName = user?.email?.split('@')[0] ?? '멤버'
   if (user) {
@@ -368,25 +395,21 @@ export default async function HubPage(): Promise<React.JSX.Element> {
     if (memberRow?.name) displayName = memberRow.name
   }
 
+  // 배열 순서 = 페인트 순서(뒤→앞). 화면 위쪽(top% 작은) 노드를 먼저 그려야
+  // 전면의 공통(hero)이 맨 위에 깔린다. 가운데 공통을 중심으로 모듈이 스포크로 붙는 구성.
   const nodes: NodeSpec[] = [
     {
-      href: '/hub/github',
-      name: 'GitHub',
-      icon: 'github',
-      subText: gh ? `오늘 커밋 · ${gh.repoCount} repos` : '개발 · README',
-      value: gh ? `${gh.commitsToday}` : '—',
-      position: 'left-[14%] top-[40%]',
-      accent: 'blue',
-    },
-    {
-      href: '/tasks',
-      name: '공통',
-      icon: 'tasks',
-      subText: '이번 주 할 일',
-      value: String(openCount),
-      position: 'left-[39%] top-[61%]',
-      accent: 'indigo',
-      hero: true,
+      href: '/inbox',
+      name: '우편실',
+      icon: 'mailroom',
+      subText: mr
+        ? mr.pendingReview > 0
+          ? `검토 대기 ${mr.pendingReview}건`
+          : `오늘 ${mr.todayCount} · Gmail ${mr.gmailCount}`
+        : 'Gmail · 자동분류',
+      value: mr ? String(mr.total) : '—',
+      position: 'left-[30%] top-[28%]',
+      accent: 'rose',
     },
     {
       href: '/hub/naver',
@@ -394,8 +417,17 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       icon: 'naver',
       subText: com ? `오늘 · 주문 ${com.orderCount}건` : '판매 · 마케팅',
       value: com ? wonCompact(com.paidRevenue) : '—',
-      position: 'left-[63%] top-[38%]',
+      position: 'left-[70%] top-[28%]',
       accent: 'amber',
+    },
+    {
+      href: '/hub/github',
+      name: 'GitHub',
+      icon: 'github',
+      subText: gh ? `오늘 커밋 · ${gh.repoCount} repos` : '개발 · README',
+      value: gh ? `${gh.commitsToday}` : '—',
+      position: 'left-[12%] top-[46%]',
+      accent: 'blue',
     },
     {
       href: '/hub/agent',
@@ -403,8 +435,18 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       icon: 'agent',
       subText: ag ? `운영 ${ag.activeCount} · 이번 달` : '관리 · 판매',
       value: ag ? wonCompact(ag.monthlyRevenue) : '—',
-      position: 'left-[88%] top-[59%]',
+      position: 'left-[88%] top-[46%]',
       accent: 'emerald',
+    },
+    {
+      href: '/tasks',
+      name: '공통',
+      icon: 'tasks',
+      subText: '이번 주 할 일',
+      value: String(openCount),
+      position: 'left-[50%] top-[60%]',
+      accent: 'indigo',
+      hero: true,
     },
   ]
 
@@ -461,12 +503,13 @@ export default async function HubPage(): Promise<React.JSX.Element> {
               </feMerge>
             </filter>
           </defs>
+          {/* 공통(중앙 허브) 큐브에서 4개 모듈로 뻗는 스포크 — 점선이 허브 쪽으로 흐른다. */}
           <g filter="url(#hub-glow)" opacity="0.85">
             <line
-              x1="14%"
-              y1="47%"
-              x2="39%"
-              y2="68%"
+              x1="50%"
+              y1="64%"
+              x2="30%"
+              y2="37%"
               stroke="url(#hub-line)"
               strokeWidth="2.5"
               strokeDasharray="2 8"
@@ -474,10 +517,10 @@ export default async function HubPage(): Promise<React.JSX.Element> {
               className="hub-flow-line"
             />
             <line
-              x1="39%"
-              y1="68%"
-              x2="63%"
-              y2="45%"
+              x1="50%"
+              y1="64%"
+              x2="70%"
+              y2="37%"
               stroke="url(#hub-line)"
               strokeWidth="2.5"
               strokeDasharray="2 8"
@@ -485,10 +528,21 @@ export default async function HubPage(): Promise<React.JSX.Element> {
               className="hub-flow-line"
             />
             <line
-              x1="63%"
-              y1="45%"
+              x1="50%"
+              y1="64%"
+              x2="12%"
+              y2="53%"
+              stroke="url(#hub-line)"
+              strokeWidth="2.5"
+              strokeDasharray="2 8"
+              strokeLinecap="round"
+              className="hub-flow-line"
+            />
+            <line
+              x1="50%"
+              y1="64%"
               x2="88%"
-              y2="66%"
+              y2="53%"
               stroke="url(#hub-line)"
               strokeWidth="2.5"
               strokeDasharray="2 8"
