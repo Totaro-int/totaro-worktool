@@ -1,13 +1,19 @@
 /**
- * Claude 자동 분류 — 내부 AI 우편실 v0.
+ * 자동 분류 — 내부 AI 우편실.
  *
- * Claude CLI (구독 사용)를 통해 파일 메타·텍스트를 보내고 적절한 폴더·알림·요약을 받는다.
+ * 시도 순서(위에서부터 되는 걸 사용):
+ *   1) Vertex Gemini — `GOOGLE_SERVICE_ACCOUNT_JSON` 재사용. Vercel 서버리스에서 동작. 비용 0(GCP 크레딧).
+ *   2) Claude CLI — 로컬 Mac 개발 환경 폴백(`claude` 바이너리). Vercel 에는 없음.
+ *   3) 파일명 휴리스틱 — 모두 실패해도 절대 안 깨지게.
+ *
  * v0는 텍스트 추출 기반 분류(tier 1). 이미지·hwp·음성은 파일명 기반 폴백(낮은 confidence).
  * v1에서 Vision·Whisper 추가 예정.
  */
 import { spawnSync } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
+
+import { generateGemini } from '@/lib/assistant/gemini'
 
 import type { ExtractedContent } from './extract'
 
@@ -34,22 +40,77 @@ export type ClassificationResult = {
   confidence: number
   alternatives?: Array<{ folder: string; confidence: number }>
   /** 디버그 — 어떤 모드로 분류했는지 */
-  method: 'claude' | 'filename-fallback' | 'error'
+  method: 'gemini' | 'claude' | 'filename-fallback' | 'error'
   /** 디버그 — 원본 응답 (에러 추적용) */
   raw?: string
 }
 
-/** 분류 메인 함수. Claude 호출 실패하면 파일명 기반 폴백. */
+/** 분류 메인 함수. Gemini → Claude CLI → 파일명 순으로 폴백. */
 export async function classifyDocument(input: ClassificationInput): Promise<ClassificationResult> {
-  // tier 3 (파일명만) 거나 텍스트 너무 짧으면 → Claude는 호출하되 input은 메타만
-  // 일단 모두 Claude로 가 보고 안되면 폴백
+  // 1) Vertex Gemini — Vercel + 로컬 모두 동작. GOOGLE_SERVICE_ACCOUNT_JSON 으로 인증.
+  try {
+    const result = await callGeminiClassifier(input)
+    if (result) return result
+  } catch {
+    // 무시 → 다음 경로
+  }
+
+  // 2) Claude CLI — 로컬 dev 폴백. Vercel 에는 `claude` 바이너리 없음 → ENOENT 로 빠짐.
   try {
     const result = callClaudeClassifier(input)
     if (result) return { ...result, method: 'claude' }
   } catch {
-    // 무시하고 폴백
+    // 무시 → 다음 경로
   }
+
+  // 3) 파일명 휴리스틱 — 최후의 안전망.
   return filenameBasedFallback(input)
+}
+
+/** Vertex Gemini 호출해 분류 결과(JSON) 받음. 실패하면 null. */
+async function callGeminiClassifier(
+  input: ClassificationInput
+): Promise<ClassificationResult | null> {
+  const prompt = buildPrompt(input)
+  const result = await generateGemini(prompt)
+  if (!result.available || !result.text) return null
+  return parseClassificationJson(result.text, 'gemini')
+}
+
+/** 모델 응답에서 JSON 한 덩이를 파싱해 ClassificationResult 로. 실패하면 null. */
+function parseClassificationJson(
+  raw: string,
+  method: 'gemini' | 'claude'
+): ClassificationResult | null {
+  // 모델이 가끔 ```json ... ``` 으로 감싸기 때문에 폴백 파싱
+  const cleaned = raw
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/```$/i, '')
+    .trim()
+  try {
+    const parsed = JSON.parse(cleaned)
+    return {
+      target_folder_path: String(parsed.target_folder_path ?? ''),
+      create_folder_if_missing: Boolean(parsed.create_folder_if_missing ?? false),
+      notify_users: Array.isArray(parsed.notify_users)
+        ? parsed.notify_users.map((u: unknown) => String(u))
+        : [],
+      summary: String(parsed.summary ?? ''),
+      doc_type: String(parsed.doc_type ?? ''),
+      confidence: Number(parsed.confidence ?? 0),
+      alternatives: Array.isArray(parsed.alternatives)
+        ? parsed.alternatives.map((a: { folder?: unknown; confidence?: unknown }) => ({
+            folder: String(a.folder ?? ''),
+            confidence: Number(a.confidence ?? 0),
+          }))
+        : undefined,
+      method,
+      raw: raw.slice(0, 1000),
+    }
+  } catch {
+    return null
+  }
 }
 
 /** Claude CLI 호출해 분류 결과(JSON) 받음. 실패하면 null. */
@@ -97,36 +158,7 @@ function callClaudeClassifier(input: ClassificationInput): ClassificationResult 
     break
   }
   if (!ok) return null
-
-  // JSON 추출 — 모델이 가끔 ```json ... ``` 으로 감싸기 때문에 폴백 파싱
-  const cleaned = raw
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/```$/i, '')
-    .trim()
-  try {
-    const parsed = JSON.parse(cleaned)
-    return {
-      target_folder_path: String(parsed.target_folder_path ?? ''),
-      create_folder_if_missing: Boolean(parsed.create_folder_if_missing ?? false),
-      notify_users: Array.isArray(parsed.notify_users)
-        ? parsed.notify_users.map((u: unknown) => String(u))
-        : [],
-      summary: String(parsed.summary ?? ''),
-      doc_type: String(parsed.doc_type ?? ''),
-      confidence: Number(parsed.confidence ?? 0),
-      alternatives: Array.isArray(parsed.alternatives)
-        ? parsed.alternatives.map((a: { folder?: unknown; confidence?: unknown }) => ({
-            folder: String(a.folder ?? ''),
-            confidence: Number(a.confidence ?? 0),
-          }))
-        : undefined,
-      method: 'claude',
-      raw: raw.slice(0, 1000),
-    }
-  } catch {
-    return null
-  }
+  return parseClassificationJson(raw, 'claude')
 }
 
 function buildPrompt(input: ClassificationInput): string {
