@@ -155,7 +155,7 @@ async function main(): Promise<void> {
 
       await indexInSupabase({
         driveFileId: bodyUploaded.id,
-        driveWebLink: bodyUploaded.webViewLink,
+        driveFolderId: folderId,
         filename: bodyFilename,
         mimeType: 'text/markdown',
         folderPath: classification.target_folder_path,
@@ -163,6 +163,7 @@ async function main(): Promise<void> {
         docType: classification.doc_type,
         aiReasoning: `Gmail: ${full.from} | ${full.subject}`,
         sizeBytes: Buffer.byteLength(bodyMd, 'utf-8'),
+        confidence: classification.confidence,
       })
 
       // 2) 첨부도 같은 폴더에
@@ -172,7 +173,7 @@ async function main(): Promise<void> {
         console.log(`   ✓ 첨부 업로드: ${att.filename} (${attUploaded.id})`)
         await indexInSupabase({
           driveFileId: attUploaded.id,
-          driveWebLink: attUploaded.webViewLink,
+          driveFolderId: folderId,
           filename: att.filename,
           mimeType: att.mimeType,
           folderPath: classification.target_folder_path,
@@ -180,6 +181,7 @@ async function main(): Promise<void> {
           docType: classification.doc_type,
           aiReasoning: `Gmail 첨부: ${full.from} | ${full.subject}`,
           sizeBytes: att.sizeBytes,
+          confidence: classification.confidence,
         })
       }
 
@@ -233,7 +235,7 @@ function sanitizeFilename(s: string): string {
 
 async function indexInSupabase(row: {
   driveFileId: string
-  driveWebLink: string | null
+  driveFolderId: string
   filename: string
   mimeType: string
   folderPath: string
@@ -241,6 +243,7 @@ async function indexInSupabase(row: {
   docType: string
   aiReasoning: string
   sizeBytes: number
+  confidence: number
 }): Promise<void> {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/inbox_documents`, {
     method: 'POST',
@@ -252,13 +255,15 @@ async function indexInSupabase(row: {
     },
     body: JSON.stringify({
       drive_file_id: row.driveFileId,
-      drive_web_link: row.driveWebLink,
+      drive_folder_id: row.driveFolderId,
       filename: row.filename,
       mime_type: row.mimeType,
       folder_path: row.folderPath,
       description: row.description,
       doc_type: row.docType,
       ai_reasoning: row.aiReasoning,
+      classification_confidence: row.confidence,
+      classified_by_ai: true,
       size_bytes: row.sizeBytes,
       source: 'gmail',
       status: 'classified',

@@ -16,7 +16,9 @@
  *   4) 출력된 URL 브라우저에서 열기 → 동의 → 자동으로 localhost 콜백 → refresh_token 출력
  *   5) refresh_token 을 .env.local 의 GMAIL_REFRESH_TOKEN 에 박기
  */
+import fs from 'node:fs'
 import http from 'node:http'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -34,12 +36,81 @@ const SCOPES = [
 const PORT = 53682
 const REDIRECT_URI = `http://localhost:${PORT}/oauth2callback`
 
+// 환경변수에 client_id/secret 이 없으면 다운받은 OAuth JSON 에서 직접 읽기.
+// 우선순위: argv 로 넘긴 .json 경로 → ~/Downloads/client_secret_*.json
+function loadClientCredsFromJson(): { clientId: string; clientSecret: string } | null {
+  const candidates: string[] = []
+  const argPath = process.argv.slice(2).find((a) => a.endsWith('.json'))
+  if (argPath) candidates.push(argPath)
+  const downloads = path.join(os.homedir(), 'Downloads')
+  try {
+    for (const f of fs.readdirSync(downloads)) {
+      if (f.startsWith('client_secret_') && f.endsWith('.json')) {
+        candidates.push(path.join(downloads, f))
+      }
+    }
+  } catch {
+    // Downloads 폴더 없으면 무시
+  }
+  for (const file of candidates) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(file, 'utf-8')) as {
+        installed?: { client_id?: string; client_secret?: string }
+        web?: { client_id?: string; client_secret?: string }
+      }
+      const node = parsed.installed ?? parsed.web
+      if (node?.client_id && node?.client_secret) {
+        console.log(`[gmail-auth] client 자격증명 읽음: ${file}`)
+        return { clientId: node.client_id, clientSecret: node.client_secret }
+      }
+    } catch {
+      // 파싱 실패하면 다음 후보 시도
+    }
+  }
+  return null
+}
+
+// .env.local 에 빠진 키만 골라서 추가 (이미 있으면 건드리지 않음).
+function appendEnvIfMissing(entries: Record<string, string>): void {
+  const envPath = path.join(repoRoot, '.env.local')
+  let existing = ''
+  try {
+    existing = fs.readFileSync(envPath, 'utf-8')
+  } catch {
+    // .env.local 없으면 새로 생성됨
+  }
+  const toAdd: string[] = []
+  for (const [key, value] of Object.entries(entries)) {
+    if (!new RegExp(`^${key}=`, 'm').test(existing)) {
+      toAdd.push(`${key}=${value}`)
+    }
+  }
+  if (toAdd.length === 0) {
+    console.log('[gmail-auth] .env.local 에 이미 모두 존재 — 변경 없음')
+    return
+  }
+  const prefix = existing === '' || existing.endsWith('\n') ? '' : '\n'
+  fs.appendFileSync(
+    envPath,
+    `${prefix}\n# Gmail OAuth (gmail-auth.ts 자동 추가)\n${toAdd.join('\n')}\n`
+  )
+  console.log(`[gmail-auth] .env.local 에 추가됨: ${toAdd.map((l) => l.split('=')[0]).join(', ')}`)
+}
+
 async function main(): Promise<void> {
-  const clientId = process.env.GMAIL_CLIENT_ID
-  const clientSecret = process.env.GMAIL_CLIENT_SECRET
+  let clientId = process.env.GMAIL_CLIENT_ID
+  let clientSecret = process.env.GMAIL_CLIENT_SECRET
   if (!clientId || !clientSecret) {
-    console.error('GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET 가 .env.local 에 없습니다.')
-    console.error('Google Cloud Console > Credentials 에서 Desktop OAuth client 만들고 받으세요.')
+    const fromJson = loadClientCredsFromJson()
+    if (fromJson) {
+      clientId = fromJson.clientId
+      clientSecret = fromJson.clientSecret
+    }
+  }
+  if (!clientId || !clientSecret) {
+    console.error('GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET 를 찾을 수 없습니다.')
+    console.error('.env.local 에 넣거나, ~/Downloads 에 client_secret_*.json 을 두세요.')
+    console.error('또는: npx tsx scripts/gmail-auth.ts /경로/client_secret.json')
     process.exit(1)
   }
 
@@ -112,12 +183,19 @@ async function main(): Promise<void> {
     process.exit(1)
   }
 
+  const refreshToken: string = tokens.refresh_token
+
+  appendEnvIfMissing({
+    GMAIL_CLIENT_ID: clientId,
+    GMAIL_CLIENT_SECRET: clientSecret,
+    GMAIL_REFRESH_TOKEN: refreshToken,
+  })
+
   console.log('')
   console.log('='.repeat(70))
-  console.log('✅ refresh_token 발급 완료. .env.local 에 다음을 추가하세요:')
-  console.log('')
-  console.log(`GMAIL_REFRESH_TOKEN=${tokens.refresh_token}`)
-  console.log('')
+  console.log('✅ Gmail 인증 완료 — .env.local 자동 설정됨.')
+  console.log('   이제 동기화 테스트:')
+  console.log('   npx tsx scripts/gmail-sync.ts --days 1 --dry-run --max 3')
   console.log('='.repeat(70))
 }
 
