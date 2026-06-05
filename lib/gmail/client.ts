@@ -80,7 +80,9 @@ export async function listRecentMessages(
     const dateStr = get('Date')
     const date = dateStr ? new Date(dateStr) : null
     const parts = collectParts(detail.data.payload)
-    const hasAttachments = parts.some((p) => Boolean(p.filename) && Boolean(p.body?.attachmentId))
+    // getMessage 의 첨부 수집과 동일 기준(attachmentId 존재)으로 통일.
+    // 파일명 없는 첨부(인라인 이미지 등)도 getMessage 는 합성 이름으로 받으므로 여기서도 true.
+    const hasAttachments = parts.some((p) => Boolean(p.body?.attachmentId))
     out.push({
       id,
       threadId: detail.data.threadId ?? '',
@@ -140,13 +142,14 @@ export async function getMessage(gmail: gmail_v1.Gmail, id: string): Promise<Mes
   }
 
   const attachments: AttachmentRef[] = parts
-    .filter((p) => Boolean(p.filename) && Boolean(p.body?.attachmentId))
-    .map((p) => ({
-      attachmentId: p.body!.attachmentId!,
-      filename: p.filename ?? 'unnamed',
-      mimeType: p.mimeType ?? 'application/octet-stream',
-      sizeBytes: p.body?.size ?? 0,
-    }))
+    .filter((p) => Boolean(p.body?.attachmentId))
+    .map((p) => {
+      const attachmentId = p.body!.attachmentId!
+      const mimeType = p.mimeType ?? 'application/octet-stream'
+      // 파일명 없는 첨부(인라인 이미지·일부 전달 파트)는 Drive 에서 'noname' 이 되므로 합성.
+      const filename = (p.filename ?? '').trim() || synthesizeAttachmentName(attachmentId, mimeType)
+      return { attachmentId, filename, mimeType, sizeBytes: p.body?.size ?? 0 }
+    })
 
   return {
     id,
@@ -230,4 +233,36 @@ function stripHtml(html: string): string {
     .replace(/&quot;/g, '"')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+/** mimeType → 파일 확장자. 매핑에 없으면 subtype 에서 유추, 그래도 애매하면 bin. */
+const MIME_EXT: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+  'image/svg+xml': 'svg',
+  'application/pdf': 'pdf',
+  'application/zip': 'zip',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'text/plain': 'txt',
+  'text/csv': 'csv',
+  'application/octet-stream': 'bin',
+}
+
+function extFromMimeType(mimeType: string): string {
+  const normalized = mimeType.toLowerCase().split(';')[0]?.trim() ?? ''
+  const known = MIME_EXT[normalized]
+  if (known) return known
+  const sub = normalized.split('/')[1]?.split('+')[0]?.trim() ?? ''
+  return /^[a-z0-9]{1,5}$/.test(sub) ? sub : 'bin'
+}
+
+/** 파일명 없는 첨부용 안정적 합성 이름: attachment-<id앞부분>.<ext> */
+function synthesizeAttachmentName(attachmentId: string, mimeType: string): string {
+  const short = attachmentId.replace(/[^A-Za-z0-9]/g, '').slice(0, 12) || 'unknown'
+  return `attachment-${short}.${extFromMimeType(mimeType)}`
 }
