@@ -153,6 +153,14 @@ async function handleMethod(msg: JsonRpcRequest): Promise<JsonRpcResponse | null
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
+  console.log(
+    '[mcp] POST',
+    req.url,
+    'auth=',
+    req.headers.get('authorization') ? 'yes' : 'no',
+    'ua=',
+    req.headers.get('user-agent')?.slice(0, 60)
+  )
   // 1) Bearer 인증 — env 토큰 또는 OAuth 토큰
   if (!(await checkAuth(req))) return unauthorized(req)
 
@@ -195,11 +203,12 @@ export async function DELETE(): Promise<Response> {
 }
 
 /**
- * GET — MCP Streamable HTTP 사양상 GET 는 서버→클라 SSE 스트림 용도.
- * 우리는 stateless 라 SSE 미지원 → 405 + WWW-Authenticate (인증 안내).
- * 디버그 확인이 필요하면 ?debug=1 쿼리로 server info JSON 받기.
+ * GET — MCP Streamable HTTP 사양상 서버→클라 SSE 채널.
+ * stateless 라 즉시 닫는 빈 SSE 스트림으로 응답 (호환성).
+ * `?debug=1` 으로 server info JSON 도 받을 수 있음.
  */
 export async function GET(req: NextRequest): Promise<Response> {
+  console.log('[mcp] GET', req.url, 'auth=', req.headers.get('authorization') ? 'yes' : 'no')
   const url = new URL(req.url)
   if (url.searchParams.get('debug') === '1') {
     return NextResponse.json(
@@ -208,23 +217,23 @@ export async function GET(req: NextRequest): Promise<Response> {
         version: SERVER_INFO.version,
         protocol: PROTOCOL_VERSION,
         tools: TOOLS.length,
-        message: 'POST JSON-RPC 으로 호출하세요. 인증: Authorization: Bearer <token>',
       },
       { headers: CORS_HEADERS }
     )
   }
-  const issuer = getIssuer(req)
-  const resourceMeta = `${issuer}/.well-known/oauth-protected-resource`
-  return new Response(
-    JSON.stringify({ error: 'Method Not Allowed', message: 'Use POST for JSON-RPC' }),
-    {
-      status: 405,
-      headers: {
-        'Content-Type': 'application/json',
-        Allow: 'POST, DELETE, OPTIONS',
-        'WWW-Authenticate': `Bearer realm="MCP", resource_metadata="${resourceMeta}"`,
-        ...CORS_HEADERS,
-      },
-    }
-  )
+  // 즉시 닫는 SSE 스트림 — 사양 요구만 만족하고 빠져나옴.
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(': mcp-keepalive\n\n'))
+      controller.close()
+    },
+  })
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      ...CORS_HEADERS,
+    },
+  })
 }
