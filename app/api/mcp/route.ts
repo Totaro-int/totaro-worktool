@@ -186,6 +186,14 @@ export async function OPTIONS(): Promise<Response> {
   return new Response(null, { status: 204, headers: CORS_HEADERS })
 }
 
+/**
+ * MCP Streamable HTTP 사양 — 클라이언트가 세션 종료 시 DELETE.
+ * 우리는 stateless (Mcp-Session-Id 미사용) 라 단순 ack.
+ */
+export async function DELETE(): Promise<Response> {
+  return new Response(null, { status: 204, headers: CORS_HEADERS })
+}
+
 /** GET — 살아있는지 점검용 (claude.ai 가 호출하지 않음). */
 export async function GET(): Promise<Response> {
   return NextResponse.json(
