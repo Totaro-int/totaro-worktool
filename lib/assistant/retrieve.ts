@@ -28,10 +28,12 @@ export type RetrievedDoc = {
   source: string | null
   createdAt: string
   confidence: number | null
+  /** 본문 발췌 캐시 (최대 1500자). 백필 후 채워짐. null = 미백필 or 비텍스트형. */
+  bodyExcerpt: string | null
 }
 
 const COLS =
-  'id, filename, description, doc_type, folder_path, ai_reasoning, drive_file_id, mime_type, source, created_at, classification_confidence'
+  'id, filename, description, doc_type, folder_path, ai_reasoning, drive_file_id, mime_type, source, created_at, classification_confidence, body_excerpt'
 
 /** ilike OR-매칭 대상 컬럼. */
 const MATCH_COLS = ['filename', 'description', 'doc_type', 'folder_path', 'ai_reasoning']
@@ -48,6 +50,7 @@ type Row = {
   source: string | null
   created_at: string
   classification_confidence: number | null
+  body_excerpt: string | null
 }
 
 function toDoc(r: Row): RetrievedDoc {
@@ -63,6 +66,7 @@ function toDoc(r: Row): RetrievedDoc {
     source: r.source,
     createdAt: r.created_at,
     confidence: r.classification_confidence,
+    bodyExcerpt: r.body_excerpt,
   }
 }
 
