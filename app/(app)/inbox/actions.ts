@@ -7,14 +7,21 @@ import { classifyDocument } from '@/lib/mailroom/classify'
 import { extractContent } from '@/lib/mailroom/extract'
 import { createClient } from '@/lib/supabase/server'
 
+/**
+ * 8축 구조 (v2 — 2026-06):
+ *   01: AI 소싱 플랫폼 (본진 — 옛 01/02/03/04 통합)
+ *   05: 마케팅·콘텐츠
+ *   06: 회사 운영
+ *   07: 에이전트 제작 외주 (멜라누아 등)
+ *   08: E커머스 (베로티·청원농산 등)
+ *   99: 휴지통
+ */
 const ALLOWED_AXES = [
-  '01 제품 (Product)',
-  '02 AI 시스템',
-  '03 공급사 운영 (sourcing 측)',
-  '04 바이어 운영 (buyer 측)',
+  '01 AI 소싱 플랫폼',
   '05 마케팅·콘텐츠',
   '06 회사 운영',
-  '07 외부 프로젝트 (곁가지·외주)',
+  '07 에이전트 제작 외주',
+  '08 E커머스',
   '99 휴지통',
 ]
 
@@ -153,7 +160,7 @@ export async function confirmClassification(formData: FormData): Promise<Classif
   }
 
   if (!ALLOWED_AXES.some((axis) => folderPath.includes(axis))) {
-    return { ok: false, error: '허용된 7-axis 폴더 안에만 저장 가능' }
+    return { ok: false, error: '허용된 8축 폴더 안에만 저장 가능' }
   }
 
   const supabase = await createClient()

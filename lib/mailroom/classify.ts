@@ -197,8 +197,16 @@ ${extractedSnippet}
 [멤버 목록 (notify_users 후보)]
 ${input.members.join(', ')}
 
+[허용된 8축 — 반드시 이 안에서 선택]
+  01 AI 소싱 플랫폼 — 본진 제품(워크허브 / totaro_web / totaro_cos / AI 시스템 / 공급사 운영 / 바이어 운영)
+  05 마케팅·콘텐츠
+  06 회사 운영 — 인사·계약·근로 / 재무·세무·인보이스 / 회의록·전략 / 정부 지원사업 / 브랜드·로고·CI
+  07 에이전트 제작 외주 — 현재 계약: 멜라누아 마케팅 에이전트
+  08 E커머스 — 현재 계약: 베로티, 청원농산
+  99 휴지통
+
 [작업]
-1. 가장 적합한 폴더 경로 결정. 기존 폴더에 안 맞으면 새 폴더 제안 (7-axis 구조 유지: 01~07 + 99).
+1. 가장 적합한 폴더 경로 결정. 위 8축 안에서만 선택. 기존 sub-폴더에 안 맞으면 새 sub-폴더 제안.
 2. 알림 받아야 할 멤버 결정 (관련 task 담당자 우선, 사용자 명시도 존중).
 3. 문서 한 줄 요약 (40자 내외, 능동형 동사).
 4. 문서 종류 라벨 (계약서/견적서/회의록/PoC 인포 시트/리서치 자료/디자인 자료/지원사업/마케팅 자료/기타).
@@ -209,7 +217,7 @@ ${input.members.join(', ')}
 JSON 한 덩어리만 출력. 마크다운·설명·코드블록 없이 순수 JSON.
 
 {
-  "target_folder_path": "/03 공급사 운영/...",
+  "target_folder_path": "/01 AI 소싱 플랫폼/공급사 운영/...",
   "create_folder_if_missing": false,
   "notify_users": ["윤태준", "최준빈"],
   "summary": "...",
@@ -219,20 +227,20 @@ JSON 한 덩어리만 출력. 마크다운·설명·코드블록 없이 순수 J
 }`
 }
 
-/** 파일명 기반 폴백 — Claude 안 될 때 또는 tier 3. */
+/** 파일명 기반 폴백 — Claude 안 될 때 또는 tier 3. v2: 8축 구조. */
 function filenameBasedFallback(input: ClassificationInput): ClassificationResult {
   const fname = input.filename.toLowerCase()
   // 매우 단순 휴리스틱
-  let folder = '/07 외부 프로젝트 (곁가지·외주)/'
+  let folder = '/99 휴지통/'
   let docType = '기타'
   if (/계약|contract/.test(fname)) {
     folder = '/06 회사 운영/인사·계약·근로/'
     docType = '계약서'
   } else if (/견적|quote|estimate/.test(fname)) {
-    folder = '/02 AI 시스템/견적 자동화/'
+    folder = '/01 AI 소싱 플랫폼/AI 시스템/견적 자동화/'
     docType = '견적서'
   } else if (/poc|인포\s*시트/.test(fname)) {
-    folder = '/03 공급사 운영 (sourcing 측)/PoC 인포 시트/'
+    folder = '/01 AI 소싱 플랫폼/공급사 운영/PoC 인포 시트/'
     docType = 'PoC 인포 시트'
   } else if (/회의|미팅|meeting|minutes/.test(fname)) {
     folder = '/06 회사 운영/회의록·전략 문서/'
@@ -240,6 +248,12 @@ function filenameBasedFallback(input: ClassificationInput): ClassificationResult
   } else if (/지원사업|grant/.test(fname)) {
     folder = '/06 회사 운영/정부 지원사업/'
     docType = '지원사업'
+  } else if (/멜라누아|melanoir/.test(fname)) {
+    folder = '/07 에이전트 제작 외주/멜라누아 마케팅 에이전트/'
+    docType = '에이전트 외주'
+  } else if (/베로티|청원농산/.test(fname)) {
+    folder = '/08 E커머스/'
+    docType = 'E커머스'
   }
   return {
     target_folder_path: folder,
