@@ -22,7 +22,7 @@ const ALLOWED_AXES = [
   '06 회사 운영',
   '07 에이전트 제작 외주',
   '08 E커머스',
-  '99 휴지통',
+  '99 분류미정',
 ]
 
 export type ClassifyResponse = {

@@ -203,7 +203,7 @@ ${input.members.join(', ')}
   06 회사 운영 — 인사·계약·근로 / 재무·세무·인보이스 / 회의록·전략 / 정부 지원사업 / 브랜드·로고·CI
   07 에이전트 제작 외주 — 현재 계약: 멜라누아 마케팅 에이전트
   08 E커머스 — 현재 계약: 베로티, 청원농산
-  99 휴지통
+  99 분류미정
 
 [작업]
 1. 가장 적합한 폴더 경로 결정. 위 8축 안에서만 선택. 기존 sub-폴더에 안 맞으면 새 sub-폴더 제안.
@@ -231,7 +231,7 @@ JSON 한 덩어리만 출력. 마크다운·설명·코드블록 없이 순수 J
 function filenameBasedFallback(input: ClassificationInput): ClassificationResult {
   const fname = input.filename.toLowerCase()
   // 매우 단순 휴리스틱
-  let folder = '/99 휴지통/'
+  let folder = '/99 분류미정/'
   let docType = '기타'
   if (/계약|contract/.test(fname)) {
     folder = '/06 회사 운영/인사·계약·근로/'
