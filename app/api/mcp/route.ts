@@ -21,6 +21,7 @@ import { NextResponse } from 'next/server'
 
 import { dispatchTool } from '@/lib/mcp/handlers'
 import { TOOLS } from '@/lib/mcp/tools'
+import { getIssuer, getServiceSupabase, hashToken } from '@/lib/oauth/utils'
 
 import type { NextRequest } from 'next/server'
 
@@ -60,14 +61,50 @@ function jsonRpcResult(id: number | string | null, result: unknown): JsonRpcResp
   return { jsonrpc: '2.0', id, result }
 }
 
-/** Bearer 토큰 검증. 일치하면 true. */
-function checkAuth(req: NextRequest): boolean {
-  const expected = process.env.MCP_BEARER_TOKEN
-  if (!expected) return false // 서버에 토큰 미설정이면 거부 (안전 기본값)
+/**
+ * Bearer 토큰 검증 — 두 경로 모두 허용:
+ *   1) MCP_BEARER_TOKEN env (직접 테스트 / 로컬 dev 용)
+ *   2) OAuth 액세스 토큰 (oauth_tokens 테이블, claude.ai 정식 경로)
+ * 둘 다 실패하면 false.
+ */
+async function checkAuth(req: NextRequest): Promise<boolean> {
   const auth = req.headers.get('authorization') ?? ''
   const match = /^Bearer\s+(.+)$/i.exec(auth.trim())
   if (!match) return false
-  return match[1] === expected
+  const token = match[1]
+
+  // 1) env 정적 토큰
+  const staticToken = process.env.MCP_BEARER_TOKEN
+  if (staticToken && token === staticToken) return true
+
+  // 2) DB 의 OAuth 토큰
+  try {
+    const supabase = getServiceSupabase()
+    const { data } = await supabase
+      .from('oauth_tokens')
+      .select('token_hash, expires_at')
+      .eq('token_hash', hashToken(token))
+      .maybeSingle()
+    if (!data) return false
+    if (new Date(data.expires_at as string).getTime() < Date.now()) return false
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** 401 응답 — WWW-Authenticate 헤더에 디스커버리 URL 을 실어 claude.ai 가 OAuth 흐름을 시작하게 한다. */
+function unauthorized(req: NextRequest): Response {
+  const issuer = getIssuer(req)
+  const resourceMeta = `${issuer}/.well-known/oauth-protected-resource`
+  return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    status: 401,
+    headers: {
+      'Content-Type': 'application/json',
+      'WWW-Authenticate': `Bearer realm="MCP", resource_metadata="${resourceMeta}"`,
+      ...CORS_HEADERS,
+    },
+  })
 }
 
 /** JSON-RPC 메서드 처리 — 메인 디스패치. */
@@ -116,13 +153,8 @@ async function handleMethod(msg: JsonRpcRequest): Promise<JsonRpcResponse | null
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
-  // 1) Bearer 인증
-  if (!checkAuth(req)) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
-    })
-  }
+  // 1) Bearer 인증 — env 토큰 또는 OAuth 토큰
+  if (!(await checkAuth(req))) return unauthorized(req)
 
   // 2) JSON-RPC 파싱
   let body: JsonRpcRequest | JsonRpcRequest[]
