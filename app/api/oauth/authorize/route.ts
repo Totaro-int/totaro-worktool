@@ -224,7 +224,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     redirect.searchParams.set('error', 'access_denied')
     redirect.searchParams.set('error_description', 'User denied')
     if (params.state) redirect.searchParams.set('state', params.state)
-    return NextResponse.redirect(redirect)
+    // 303 See Other — POST → GET 으로 메서드 강제 변환 (OAuth 콜백은 GET 필수)
+    return NextResponse.redirect(redirect, 303)
   }
 
   // 인가 코드 발급
@@ -247,5 +248,6 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   redirect.searchParams.set('code', code)
   if (params.state) redirect.searchParams.set('state', params.state)
-  return NextResponse.redirect(redirect)
+  // 303 See Other — POST → GET 으로 메서드 강제 변환 (OAuth 콜백은 GET 필수)
+  return NextResponse.redirect(redirect, 303)
 }
