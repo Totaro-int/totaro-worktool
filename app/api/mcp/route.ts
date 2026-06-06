@@ -176,8 +176,8 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const response = await handleMethod(body)
   if (response === null) {
-    // 알림 — 204 No Content
-    return new Response(null, { status: 204, headers: CORS_HEADERS })
+    // 알림 — MCP Streamable HTTP 사양상 202 Accepted (204 X)
+    return new Response(null, { status: 202, headers: CORS_HEADERS })
   }
   return NextResponse.json(response, { headers: CORS_HEADERS })
 }
@@ -194,16 +194,37 @@ export async function DELETE(): Promise<Response> {
   return new Response(null, { status: 204, headers: CORS_HEADERS })
 }
 
-/** GET — 살아있는지 점검용 (claude.ai 가 호출하지 않음). */
-export async function GET(): Promise<Response> {
-  return NextResponse.json(
+/**
+ * GET — MCP Streamable HTTP 사양상 GET 는 서버→클라 SSE 스트림 용도.
+ * 우리는 stateless 라 SSE 미지원 → 405 + WWW-Authenticate (인증 안내).
+ * 디버그 확인이 필요하면 ?debug=1 쿼리로 server info JSON 받기.
+ */
+export async function GET(req: NextRequest): Promise<Response> {
+  const url = new URL(req.url)
+  if (url.searchParams.get('debug') === '1') {
+    return NextResponse.json(
+      {
+        name: SERVER_INFO.name,
+        version: SERVER_INFO.version,
+        protocol: PROTOCOL_VERSION,
+        tools: TOOLS.length,
+        message: 'POST JSON-RPC 으로 호출하세요. 인증: Authorization: Bearer <token>',
+      },
+      { headers: CORS_HEADERS }
+    )
+  }
+  const issuer = getIssuer(req)
+  const resourceMeta = `${issuer}/.well-known/oauth-protected-resource`
+  return new Response(
+    JSON.stringify({ error: 'Method Not Allowed', message: 'Use POST for JSON-RPC' }),
     {
-      name: SERVER_INFO.name,
-      version: SERVER_INFO.version,
-      protocol: PROTOCOL_VERSION,
-      tools: TOOLS.length,
-      message: 'POST JSON-RPC 으로 호출하세요. 인증: Authorization: Bearer <token>',
-    },
-    { headers: CORS_HEADERS }
+      status: 405,
+      headers: {
+        'Content-Type': 'application/json',
+        Allow: 'POST, DELETE, OPTIONS',
+        'WWW-Authenticate': `Bearer realm="MCP", resource_metadata="${resourceMeta}"`,
+        ...CORS_HEADERS,
+      },
+    }
   )
 }
