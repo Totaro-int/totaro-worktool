@@ -7,6 +7,7 @@
  */
 import { embedText } from '../assistant/embedding'
 import { ensureFolderPath, getDriveClient, uploadFile } from '../drive/client'
+import { ghListDir, ghReadFile, ghRecentCommits, ghSearchCode } from '../github'
 import { extractContent } from '../mailroom/extract'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -309,6 +310,73 @@ export async function handleUpload(input: UploadInput): Promise<string> {
 }
 
 // ─────────────────────────────────────────────────────────────
+// 핸들러: GitHub — 코드/문서 read 전용 (정책: .md / .json / 코드 = GitHub 단일 소스)
+// ─────────────────────────────────────────────────────────────
+
+export type GithubSearchInput = { query: string; repo?: string; limit?: number }
+
+export async function handleGithubSearch(input: GithubSearchInput): Promise<string> {
+  if (!input.query) throw new Error('query 필요')
+  const limit = Math.min(Math.max(input.limit ?? 10, 1), 30)
+  const items = await ghSearchCode(input.query, input.repo, limit)
+  if (items.length === 0) return 'GitHub 코드 검색 결과 없음.'
+  return items
+    .map((it, i) => {
+      const frag = it.textMatches?.[0]?.fragment.replace(/\s+/g, ' ').slice(0, 200)
+      return [`[${i + 1}] ${it.path}  ·  ${it.repo}`, `    ${it.url}`, frag && `    ${frag}`]
+        .filter(Boolean)
+        .join('\n')
+    })
+    .join('\n\n')
+}
+
+export type GithubReadInput = { path: string; repo?: string; ref?: string }
+
+export async function handleGithubRead(input: GithubReadInput): Promise<string> {
+  if (!input.path) throw new Error('path 필요')
+  const file = await ghReadFile(input.path, input.repo, input.ref)
+  const header = [
+    `파일: ${file.path}`,
+    `Repo: ${file.repo} @ ${file.ref}`,
+    `크기: ${file.size} 바이트`,
+    '─'.repeat(40),
+    '',
+  ].join('\n')
+  const MAX = 12000
+  if (file.content.length <= MAX) return header + file.content
+  return header + file.content.slice(0, MAX) + `\n... [생략, ${MAX}자 초과]`
+}
+
+export type GithubListInput = { path?: string; repo?: string; ref?: string }
+
+export async function handleGithubList(input: GithubListInput): Promise<string> {
+  const entries = await ghListDir(input.path ?? '', input.repo, input.ref)
+  if (entries.length === 0) return '폴더 비어있음.'
+  const header = `폴더: ${input.path || '(루트)'}  ·  ${input.repo ?? '(default repo)'}\n${'─'.repeat(40)}\n`
+  return (
+    header +
+    entries
+      .map((e) => {
+        const tag = e.type === 'dir' ? '📁' : e.type === 'file' ? '📄' : '🔗'
+        const size = e.type === 'file' ? `  ·  ${e.size} B` : ''
+        return `${tag} ${e.name}${size}`
+      })
+      .join('\n')
+  )
+}
+
+export type GithubCommitsInput = { repo?: string; limit?: number; ref?: string }
+
+export async function handleGithubCommits(input: GithubCommitsInput): Promise<string> {
+  const limit = Math.min(Math.max(input.limit ?? 10, 1), 30)
+  const commits = await ghRecentCommits(input.repo, limit, input.ref)
+  if (commits.length === 0) return '최근 커밋 없음.'
+  return commits
+    .map((c, i) => `[${i + 1}] ${c.sha} · ${c.author} · ${c.relativeTime}\n    ${c.message}`)
+    .join('\n\n')
+}
+
+// ─────────────────────────────────────────────────────────────
 // 통합 dispatch — 도구 이름으로 핸들러 호출
 // ─────────────────────────────────────────────────────────────
 
@@ -328,6 +396,14 @@ export async function dispatchTool(name: string, args: Record<string, unknown>):
       return handleMembersList()
     case 'mailroom_upload':
       return handleUpload(args as UploadInput)
+    case 'github_search_code':
+      return handleGithubSearch(args as GithubSearchInput)
+    case 'github_read_file':
+      return handleGithubRead(args as GithubReadInput)
+    case 'github_list_dir':
+      return handleGithubList(args as GithubListInput)
+    case 'github_recent_commits':
+      return handleGithubCommits(args as GithubCommitsInput)
     default:
       throw new Error(`알 수 없는 도구: ${name}`)
   }

@@ -156,3 +156,165 @@ export async function getGithubData(): Promise<GithubResult> {
     }
   }
 }
+
+// ─────────────────────────────────────────────────────────────
+// MCP 용 헬퍼 — 코드/문서 검색·읽기·목록·커밋
+// ─────────────────────────────────────────────────────────────
+
+function ghAuth(): { token: string; defaultRepo: string } {
+  const token = process.env.GITHUB_TOKEN
+  const defaultRepo = process.env.GITHUB_REPO ?? ''
+  if (!token) throw new Error('GITHUB_TOKEN 환경변수가 없습니다.')
+  return { token, defaultRepo }
+}
+
+/** "owner/repo" 또는 입력 그대로 반환. 없으면 GITHUB_REPO 사용. */
+function resolveRepo(repo: string | undefined, defaultRepo: string): string {
+  const r = (repo ?? defaultRepo).trim()
+  if (!r.includes('/')) throw new Error(`repo 형식 잘못됨 (owner/name 필요): "${r}"`)
+  return r
+}
+
+export type GhSearchResult = {
+  path: string
+  repo: string
+  url: string
+  textMatches?: Array<{ fragment: string }>
+}
+
+/** 코드 검색 — GitHub Code Search API (org/repo 한정 가능). */
+export async function ghSearchCode(
+  query: string,
+  repo?: string,
+  limit = 10
+): Promise<GhSearchResult[]> {
+  const { token, defaultRepo } = ghAuth()
+  const r = resolveRepo(repo, defaultRepo)
+  const q = `${query} repo:${r}`
+  const res = await fetch(
+    `${GITHUB_API}/search/code?q=${encodeURIComponent(q)}&per_page=${Math.min(limit, 30)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.text-match+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'totaro-worktool',
+      },
+    }
+  )
+  if (!res.ok) throw new Error(`GitHub search ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  const json = (await res.json()) as {
+    items?: Array<{
+      path: string
+      html_url: string
+      repository: { full_name: string }
+      text_matches?: Array<{ fragment: string }>
+    }>
+  }
+  return (json.items ?? []).map((it) => ({
+    path: it.path,
+    repo: it.repository.full_name,
+    url: it.html_url,
+    textMatches: it.text_matches?.map((m) => ({ fragment: m.fragment })),
+  }))
+}
+
+/** 파일 한 개 읽기 (텍스트). 큰 파일은 일부만. */
+export async function ghReadFile(
+  filePath: string,
+  repo?: string,
+  ref?: string
+): Promise<{ path: string; repo: string; ref: string; size: number; content: string }> {
+  const { token, defaultRepo } = ghAuth()
+  const r = resolveRepo(repo, defaultRepo)
+  const refQ = ref ? `?ref=${encodeURIComponent(ref)}` : ''
+  const res = await fetch(`${GITHUB_API}/repos/${r}/contents/${encodeURI(filePath)}${refQ}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'totaro-worktool',
+    },
+  })
+  if (!res.ok) throw new Error(`GitHub read ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  const json = (await res.json()) as {
+    type: string
+    name: string
+    path: string
+    size: number
+    content?: string
+    encoding?: string
+    sha: string
+  }
+  if (json.type !== 'file') throw new Error(`경로가 파일이 아님: ${filePath} (type=${json.type})`)
+  const content =
+    json.encoding === 'base64' && json.content
+      ? Buffer.from(json.content, 'base64').toString('utf-8')
+      : (json.content ?? '')
+  return { path: json.path, repo: r, ref: ref ?? 'HEAD', size: json.size, content }
+}
+
+export type GhDirEntry = {
+  type: 'file' | 'dir' | 'symlink' | 'submodule'
+  name: string
+  path: string
+  size: number
+}
+
+/** 폴더 안 목록. path 비우면 repo 루트. */
+export async function ghListDir(
+  dirPath: string,
+  repo?: string,
+  ref?: string
+): Promise<GhDirEntry[]> {
+  const { token, defaultRepo } = ghAuth()
+  const r = resolveRepo(repo, defaultRepo)
+  const refQ = ref ? `?ref=${encodeURIComponent(ref)}` : ''
+  const p = dirPath ? encodeURI(dirPath) : ''
+  const res = await fetch(`${GITHUB_API}/repos/${r}/contents/${p}${refQ}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'totaro-worktool',
+    },
+  })
+  if (!res.ok) throw new Error(`GitHub list ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  const json = (await res.json()) as
+    | Array<{ type: GhDirEntry['type']; name: string; path: string; size: number }>
+    | { message?: string }
+  if (!Array.isArray(json)) throw new Error(`경로가 폴더가 아님: ${dirPath || '(루트)'}`)
+  return json.map((e) => ({ type: e.type, name: e.name, path: e.path, size: e.size }))
+}
+
+/** 최근 커밋 — 특정 repo 의 메인 브랜치 기준 (또는 ref). */
+export async function ghRecentCommits(
+  repo?: string,
+  limit = 10,
+  ref?: string
+): Promise<GithubCommit[]> {
+  const { token, defaultRepo } = ghAuth()
+  const r = resolveRepo(repo, defaultRepo)
+  const sha = ref ? `&sha=${encodeURIComponent(ref)}` : ''
+  const res = await fetch(
+    `${GITHUB_API}/repos/${r}/commits?per_page=${Math.min(limit, 30)}${sha}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'totaro-worktool',
+      },
+    }
+  )
+  if (!res.ok) throw new Error(`GitHub commits ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  const items = (await res.json()) as RawCommit[]
+  return items.map((c) => ({
+    repo: r,
+    sha: c.sha.slice(0, 7),
+    message: c.commit.message.split('\n')[0],
+    author: c.author?.login ?? c.commit.author?.name ?? '알 수 없음',
+    relativeTime: c.commit.author ? timeAgo(c.commit.author.date) : '',
+    url: c.html_url,
+  }))
+}

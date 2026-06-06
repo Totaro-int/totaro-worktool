@@ -96,9 +96,62 @@ export const TOOLS: ToolDefinition[] = [
     inputSchema: { type: 'object', properties: {} },
   },
   {
+    name: 'github_search_code',
+    description:
+      '토타로 GitHub 코드/문서 검색. .md (README·CHANGELOG·spec), .json (config), .ts/.tsx (코드) 등 — 개발 문서는 Drive 가 아니라 여기 있음. 정책: "개발 문서 = GitHub, 비즈니스 문서 = Drive". repo 생략 시 GITHUB_REPO 기본값(totaro-worktool).',
+    inputSchema: {
+      type: 'object',
+      required: ['query'],
+      properties: {
+        query: { type: 'string', description: '검색어 (코드·텍스트 어디든 매칭)' },
+        repo: { type: 'string', description: 'owner/name 형식 (기본: GITHUB_REPO env)' },
+        limit: { type: 'number', description: '결과 개수 (기본 10, 최대 30)' },
+      },
+    },
+  },
+  {
+    name: 'github_read_file',
+    description:
+      'GitHub 저장소의 특정 파일 본문 읽기 (최대 12000자). README·spec·코드 파일 등을 직접 봄. path 는 repo 루트 기준 (예: "docs/architecture.md", "lib/assistant/vertex.ts").',
+    inputSchema: {
+      type: 'object',
+      required: ['path'],
+      properties: {
+        path: { type: 'string', description: '파일 경로 (repo 루트 기준)' },
+        repo: { type: 'string', description: 'owner/name (기본: GITHUB_REPO env)' },
+        ref: { type: 'string', description: '브랜치·태그·SHA (기본: 디폴트 브랜치)' },
+      },
+    },
+  },
+  {
+    name: 'github_list_dir',
+    description:
+      'GitHub 저장소의 폴더 안 파일/하위폴더 목록. path 비우면 루트. 코드베이스 탐색 시작점.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: '폴더 경로 (비우면 루트)' },
+        repo: { type: 'string', description: 'owner/name (기본: GITHUB_REPO env)' },
+        ref: { type: 'string', description: '브랜치·태그·SHA (기본: 디폴트 브랜치)' },
+      },
+    },
+  },
+  {
+    name: 'github_recent_commits',
+    description: '특정 GitHub 저장소의 최근 커밋. 어제·오늘 뭐가 바뀌었는지 파악.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        repo: { type: 'string', description: 'owner/name (기본: GITHUB_REPO env)' },
+        limit: { type: 'number', description: '결과 개수 (기본 10, 최대 30)' },
+        ref: { type: 'string', description: '브랜치·태그 (기본: 디폴트 브랜치)' },
+      },
+    },
+  },
+  {
     name: 'mailroom_upload',
     description:
-      'Claude 가 생성한 텍스트/마크다운을 우편실에 새 파일로 저장. Drive 업로드 + Supabase 인덱싱 + 폴더 자동 생성.',
+      'Claude 가 생성한 텍스트/마크다운을 우편실에 새 파일로 저장. Drive 업로드 + Supabase 인덱싱 + 폴더 자동 생성. **개발 문서(.md/.json/코드) 는 여기가 아니라 GitHub PR 로** — github_* 도구로 안내.',
     inputSchema: {
       type: 'object',
       required: ['text', 'target_path'],
