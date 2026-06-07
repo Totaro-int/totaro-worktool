@@ -202,7 +202,7 @@ ${input.members.join(', ')}
   05 마케팅·콘텐츠
   06 회사 운영 — 인사·계약·근로 / 재무·세무·인보이스 / 회의록·전략 / 정부 지원사업 / 브랜드·로고·CI
   07 에이전트 제작 외주 — 현재 계약: 멜라누아 마케팅 에이전트
-  08 E커머스 — 현재 계약: 베로티, 청원농산
+  08 E커머스 — 현재 계약: 베로티, 청원농산, 모네하우스 (마케팅 이미지 sub-folder)
   99 분류미정
 
 [작업]
@@ -251,7 +251,10 @@ function filenameBasedFallback(input: ClassificationInput): ClassificationResult
   } else if (/멜라누아|melanoir/.test(fname)) {
     folder = '/07 에이전트 제작 외주/멜라누아 마케팅 에이전트/'
     docType = '에이전트 외주'
-  } else if (/베로티|청원농산/.test(fname)) {
+  } else if (/모네하우스|monet/i.test(fname) && /이미지|마케팅|디자인|배너|썸네일/i.test(fname)) {
+    folder = '/08 E커머스/모네하우스 마케팅 이미지/'
+    docType = '마케팅 이미지'
+  } else if (/베로티|청원농산|모네하우스/.test(fname)) {
     folder = '/08 E커머스/'
     docType = 'E커머스'
   }
