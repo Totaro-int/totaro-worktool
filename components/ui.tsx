@@ -25,7 +25,8 @@ export function PageHeader({
     <header className="border-b border-slate-200 bg-white px-8 py-5">
       <Link
         href="/hub"
-        className="group inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition-colors hover:text-indigo-600"
+        className="group inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-100 hover:text-slate-900"
+        aria-label="워크 허브로 돌아가기"
       >
         <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">
           ←

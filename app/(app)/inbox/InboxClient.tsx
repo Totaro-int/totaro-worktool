@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useTransition } from 'react'
 
+import Link from 'next/link'
 import { useDropzone } from 'react-dropzone'
 
 import {
@@ -299,6 +300,16 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
       <div className="mx-auto max-w-3xl space-y-5">
         {/* 헤더 */}
         <header className="flex items-center gap-3">
+          <Link
+            href="/hub"
+            className="group inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-50 hover:text-slate-900"
+            aria-label="허브로 돌아가기"
+          >
+            <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">
+              ←
+            </span>
+            허브
+          </Link>
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-2xl shadow-lg shadow-indigo-200/60">
             📥
           </div>
