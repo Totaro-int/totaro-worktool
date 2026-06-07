@@ -42,11 +42,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args = {} } = req.params
   try {
-    const text = await dispatchTool(name, args as Record<string, unknown>)
-    return { content: [{ type: 'text', text }] }
+    const result = await dispatchTool(name, args as Record<string, unknown>)
+    const content =
+      typeof result === 'string'
+        ? [{ type: 'text' as const, text: result }]
+        : [
+            { type: 'text' as const, text: result.text },
+            ...(result.images ?? []).map((img) => ({
+              type: 'image' as const,
+              data: img.base64,
+              mimeType: img.mimeType,
+            })),
+          ]
+    return { content }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
-    return { content: [{ type: 'text', text: `❌ 에러: ${msg}` }], isError: true }
+    return { content: [{ type: 'text' as const, text: `❌ 에러: ${msg}` }], isError: true }
   }
 })
 

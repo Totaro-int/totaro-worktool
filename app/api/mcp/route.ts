@@ -132,10 +132,19 @@ async function handleMethod(msg: JsonRpcRequest): Promise<JsonRpcResponse | null
       const name = String(params.name ?? '')
       const args = (params.arguments as Record<string, unknown>) ?? {}
       try {
-        const text = await dispatchTool(name, args)
-        return jsonRpcResult(id, {
-          content: [{ type: 'text', text }],
-        })
+        const result = await dispatchTool(name, args)
+        const content =
+          typeof result === 'string'
+            ? [{ type: 'text', text: result }]
+            : [
+                { type: 'text', text: result.text },
+                ...(result.images ?? []).map((img) => ({
+                  type: 'image',
+                  data: img.base64,
+                  mimeType: img.mimeType,
+                })),
+              ]
+        return jsonRpcResult(id, { content })
       } catch (e) {
         const msgText = e instanceof Error ? e.message : String(e)
         return jsonRpcResult(id, {

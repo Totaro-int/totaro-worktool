@@ -98,7 +98,27 @@ export async function handleSearch(input: SearchInput): Promise<string> {
 
 export type ReadInput = { file_id: string }
 
-export async function handleRead(input: ReadInput): Promise<string> {
+/** 디스패치 결과 — 텍스트 한 줄이거나, 이미지 컨텐츠(텍스트 헤더 + base64 이미지). */
+export type ToolResult =
+  | string
+  | {
+      kind: 'mixed'
+      text: string
+      images?: Array<{ mimeType: string; base64: string }>
+    }
+
+const IMAGE_MIMES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+])
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024 // 4MB 원본 (base64 후 ~5.3MB) — claude 한도 보호
+
+export async function handleRead(input: ReadInput): Promise<ToolResult> {
   if (!input.file_id) throw new Error('file_id 필요')
   const rows = (await sbGet(
     `inbox_documents?id=eq.${encodeURIComponent(input.file_id)}&select=id,filename,mime_type,drive_file_id,folder_path,description,ai_reasoning`
@@ -115,30 +135,58 @@ export async function handleRead(input: ReadInput): Promise<string> {
   )
   const buf = Buffer.from(res.data as ArrayBuffer)
   const filename = String(doc.filename ?? '')
-  const mime = String(doc.mime_type ?? '')
-  const extracted = await extractContent(buf, filename, mime)
+  let mime = String(doc.mime_type ?? '').toLowerCase()
+  // mime 비어있으면 확장자에서 추정 (이미지일 가능성 대비)
+  if (!mime) {
+    const ext = filename.toLowerCase().split('.').pop() ?? ''
+    if (['jpg', 'jpeg'].includes(ext)) mime = 'image/jpeg'
+    else if (ext === 'png') mime = 'image/png'
+    else if (ext === 'webp') mime = 'image/webp'
+    else if (ext === 'gif') mime = 'image/gif'
+    else if (['heic', 'heif'].includes(ext)) mime = 'image/heic'
+  }
 
   const header = [
     `파일: ${filename}`,
     `경로: ${doc.folder_path}`,
     `설명: ${doc.description ?? '(없음)'}`,
     `AI 요약: ${doc.ai_reasoning ?? '(없음)'}`,
-    `추출 방식: tier ${extracted.tier} (${extracted.method})`,
+    `mime: ${mime || '(불명)'}`,
+    `크기: ${buf.length.toLocaleString()} 바이트`,
     '─'.repeat(40),
-    '',
   ].join('\n')
+
+  // 이미지 — base64 로 인코딩해 직접 보여줌 (Claude 가 비전으로 봄)
+  if (IMAGE_MIMES.has(mime)) {
+    if (buf.length > MAX_IMAGE_BYTES) {
+      return (
+        header +
+        `\n(⚠️ 이미지가 ${(buf.length / 1024 / 1024).toFixed(1)}MB 로 한도 4MB 초과. ` +
+        `Drive 에서 직접 열어주세요.)`
+      )
+    }
+    return {
+      kind: 'mixed',
+      text: header + '\n(이미지 본문 첨부됨 — 아래 이미지 참조)',
+      images: [{ mimeType: mime, base64: buf.toString('base64') }],
+    }
+  }
+
+  // 텍스트형 — 기존 추출 경로
+  const extracted = await extractContent(buf, filename, mime)
+  const textHeader = header + `\n추출 방식: tier ${extracted.tier} (${extracted.method})\n`
 
   if (extracted.tier === 1 && extracted.text) {
     return (
-      header +
+      textHeader +
       extracted.text.slice(0, 8000) +
       (extracted.text.length > 8000 ? '\n... [생략, 8000자 초과]' : '')
     )
   }
   if (extracted.tier === 2) {
-    return header + '(이미지·스캔 PDF — 본문 텍스트 추출 안 됨. Vision 분석은 v1)'
+    return textHeader + '(이미지·스캔 PDF — 본문 텍스트 추출 안 됨. Drive 에서 직접 열기 권장.)'
   }
-  return header + '(본문 추출 불가 — 파일 종류상 메타만 사용 가능)'
+  return textHeader + '(본문 추출 불가 — 파일 종류상 메타만 사용 가능)'
 }
 
 export type ListInput = { folder_path: string; limit?: number }
@@ -463,7 +511,10 @@ export async function handleGithubCommits(input: GithubCommitsInput): Promise<st
 // 통합 dispatch — 도구 이름으로 핸들러 호출
 // ─────────────────────────────────────────────────────────────
 
-export async function dispatchTool(name: string, args: Record<string, unknown>): Promise<string> {
+export async function dispatchTool(
+  name: string,
+  args: Record<string, unknown>
+): Promise<ToolResult> {
   switch (name) {
     case 'mailroom_search':
       return handleSearch(args as SearchInput)
