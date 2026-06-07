@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
 import type { ChatTurn } from '@/lib/assistant/answer'
 import type { AssistantSource } from '@/lib/assistant/context'
 
@@ -301,7 +304,7 @@ function MessageBubble({ message }: { message: Message }): React.JSX.Element {
     <div className="flex justify-start">
       <div className="max-w-[88%]">
         <div
-          className={`rounded-2xl rounded-tl-sm px-4 py-3 text-sm whitespace-pre-wrap ${
+          className={`rounded-2xl rounded-tl-sm px-4 py-3 text-sm ${
             message.error
               ? 'bg-rose-50 text-rose-700'
               : message.degraded
@@ -309,7 +312,7 @@ function MessageBubble({ message }: { message: Message }): React.JSX.Element {
                 : 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200'
           }`}
         >
-          {message.content}
+          <MarkdownContent text={message.content} />
           {message.streaming && (
             <span className="ml-0.5 inline-block h-3.5 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-slate-400 align-middle" />
           )}
@@ -322,6 +325,87 @@ function MessageBubble({ message }: { message: Message }): React.JSX.Element {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/** 마크다운 본문 — 헤더·리스트·강조·표·코드·인용 등. 외부 링크는 새 탭. */
+function MarkdownContent({ text }: { text: string }): React.JSX.Element {
+  return (
+    <div className="markdown-body text-sm leading-relaxed break-words">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          // 헤더
+          h1: (p) => <h1 className="mt-2 mb-2 text-lg font-bold text-slate-900" {...p} />,
+          h2: (p) => <h2 className="mt-3 mb-2 text-base font-bold text-slate-900" {...p} />,
+          h3: (p) => <h3 className="mt-3 mb-1.5 text-sm font-bold text-slate-900" {...p} />,
+          h4: (p) => <h4 className="mt-2 mb-1 text-sm font-semibold text-slate-900" {...p} />,
+          // 단락
+          p: (p) => <p className="mb-2 last:mb-0" {...p} />,
+          // 강조
+          strong: (p) => <strong className="font-semibold text-slate-900" {...p} />,
+          em: (p) => <em className="italic" {...p} />,
+          // 리스트
+          ul: (p) => <ul className="my-2 ml-5 list-disc space-y-1" {...p} />,
+          ol: (p) => <ol className="my-2 ml-5 list-decimal space-y-1" {...p} />,
+          li: (p) => <li className="leading-snug" {...p} />,
+          // 인용
+          blockquote: (p) => (
+            <blockquote
+              className="my-2 border-l-4 border-slate-300 bg-slate-50 px-3 py-1.5 text-slate-700"
+              {...p}
+            />
+          ),
+          // 코드
+          code: ({ children, ...rest }) => {
+            const isInline = !(rest as { className?: string }).className?.includes('language-')
+            if (isInline) {
+              return (
+                <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[12px] text-slate-900">
+                  {children}
+                </code>
+              )
+            }
+            return (
+              <code className="block font-mono text-[12px] text-slate-100" {...rest}>
+                {children}
+              </code>
+            )
+          },
+          pre: (p) => (
+            <pre
+              className="my-2 overflow-x-auto rounded-lg bg-slate-900 p-3 text-[12px] leading-relaxed"
+              {...p}
+            />
+          ),
+          // 링크
+          a: ({ children, href, ...rest }) => (
+            <a
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              className="text-indigo-600 underline underline-offset-2 hover:text-indigo-800"
+              {...rest}
+            >
+              {children}
+            </a>
+          ),
+          // 표 (GFM)
+          table: (p) => (
+            <div className="my-2 overflow-x-auto">
+              <table className="w-full border-collapse text-xs" {...p} />
+            </div>
+          ),
+          thead: (p) => <thead className="bg-slate-100 text-left" {...p} />,
+          th: (p) => <th className="border border-slate-200 px-2 py-1.5 font-semibold" {...p} />,
+          td: (p) => <td className="border border-slate-200 px-2 py-1.5 align-top" {...p} />,
+          // 수평선
+          hr: (p) => <hr className="my-3 border-slate-200" {...p} />,
+        }}
+      >
+        {text}
+      </ReactMarkdown>
     </div>
   )
 }

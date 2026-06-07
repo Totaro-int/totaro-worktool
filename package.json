@@ -16,6 +16,7 @@
     "check:drift": "tsx scripts/check-drift.ts",
     "sync:naver": "tsx scripts/sync-naver-commerce.ts",
     "embed:backfill": "tsx scripts/embed-backfill.ts",
+    "ingest:folder": "tsx scripts/ingest-folder.ts",
     "sync:chat": "node scripts/chat-raw-uploader.mjs",
     "summarize:chat": "node scripts/summarize-chat-raw.mjs",
     "status": "node scripts/status.mjs",
@@ -34,7 +35,9 @@
     "pdf-parse": "^2.4.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-dropzone": "^15.0.0"
+    "react-dropzone": "^15.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
