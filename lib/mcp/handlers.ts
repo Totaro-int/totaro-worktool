@@ -310,6 +310,89 @@ export async function handleUpload(input: UploadInput): Promise<string> {
 }
 
 // ─────────────────────────────────────────────────────────────
+// 핸들러: 폴더 브라우즈 (Drive 탐색기 스타일)
+// ─────────────────────────────────────────────────────────────
+
+export type FolderBrowseInput = { path?: string }
+
+/**
+ * 특정 경로의 직속 하위 폴더 + 직속 파일을 함께 반환.
+ * Drive 탐색기처럼 한 화면에 "여기 안에 뭐가 있냐" 한 번에 보여준다.
+ * path 비우면 루트('/') 부터 시작 → 7~8축이 보임.
+ */
+export async function handleFolderBrowse(input: FolderBrowseInput): Promise<string> {
+  const current = normalizePath(input.path ?? '/')
+  const rows = (await sbGet(
+    `inbox_documents?select=filename,folder_path,doc_type,size_bytes,created_at,drive_file_id&drive_file_id=not.is.null&status=not.in.(trashed,rejected,failed)&limit=2000`
+  )) as Array<{
+    filename: string
+    folder_path: string | null
+    doc_type: string | null
+    size_bytes: number | null
+    created_at: string
+    drive_file_id: string | null
+  }>
+
+  const subCounts = new Map<string, number>()
+  const filesHere: Array<{
+    filename: string
+    docType: string | null
+    size: number
+    driveFileId: string | null
+  }> = []
+
+  for (const r of rows) {
+    if (!r.folder_path) continue
+    const fp = normalizePath(r.folder_path)
+    if (!fp.startsWith(current)) continue
+    const rest = fp.slice(current.length).replace(/^\/+/, '')
+    if (rest === '') {
+      filesHere.push({
+        filename: r.filename,
+        docType: r.doc_type,
+        size: Number(r.size_bytes ?? 0),
+        driveFileId: r.drive_file_id,
+      })
+    } else {
+      const firstSeg = rest.split('/')[0]
+      subCounts.set(firstSeg, (subCounts.get(firstSeg) ?? 0) + 1)
+    }
+  }
+
+  const folders = Array.from(subCounts.entries())
+    .sort((a, b) => a[0].localeCompare(b[0], 'ko'))
+    .map(([name, count]) => `  📁 ${name}/  (${count} 파일)`)
+  filesHere.sort((a, b) => a.filename.localeCompare(b.filename, 'ko'))
+  const files = filesHere.slice(0, 50).map((f) => {
+    const sizeStr =
+      f.size < 1024
+        ? `${f.size}B`
+        : f.size < 1024 * 1024
+          ? `${(f.size / 1024).toFixed(1)}KB`
+          : `${(f.size / 1024 / 1024).toFixed(1)}MB`
+    const drive = f.driveFileId ? ` · https://drive.google.com/file/d/${f.driveFileId}/view` : ''
+    const dt = f.docType ? ` [${f.docType}]` : ''
+    return `  📄 ${f.filename}  ·  ${sizeStr}${dt}${drive}`
+  })
+
+  const header = `📂 현재 경로: ${current}\n`
+  const sub = folders.length > 0 ? `\n하위 폴더 (${folders.length}):\n${folders.join('\n')}` : ''
+  const file =
+    files.length > 0
+      ? `\n\n이 폴더 직속 파일 (${filesHere.length}${filesHere.length > 50 ? ', 상위 50개만' : ''}):\n${files.join('\n')}`
+      : ''
+  if (folders.length === 0 && files.length === 0) return header + '\n(이 경로에 아무것도 없음)'
+  return header + sub + file
+}
+
+function normalizePath(p: string): string {
+  if (!p || p === '/') return '/'
+  let out = p.startsWith('/') ? p : '/' + p
+  if (!out.endsWith('/')) out += '/'
+  return out
+}
+
+// ─────────────────────────────────────────────────────────────
 // 핸들러: GitHub — 코드/문서 read 전용 (정책: .md / .json / 코드 = GitHub 단일 소스)
 // ─────────────────────────────────────────────────────────────
 
@@ -396,6 +479,8 @@ export async function dispatchTool(name: string, args: Record<string, unknown>):
       return handleMembersList()
     case 'mailroom_upload':
       return handleUpload(args as UploadInput)
+    case 'folder_browse':
+      return handleFolderBrowse(args as FolderBrowseInput)
     case 'github_search_code':
       return handleGithubSearch(args as GithubSearchInput)
     case 'github_read_file':

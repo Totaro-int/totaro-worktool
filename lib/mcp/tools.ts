@@ -96,6 +96,21 @@ export const TOOLS: ToolDefinition[] = [
     inputSchema: { type: 'object', properties: {} },
   },
   {
+    name: 'folder_browse',
+    description:
+      'Drive 탐색기 스타일 폴더 브라우즈. 특정 경로 안의 **하위 폴더 + 직속 파일** 을 함께 반환. path 비우면 루트 — 7~8축(01 AI 소싱 플랫폼 / 05 마케팅 / 06 회사 운영 / 07 에이전트 외주 / 08 E커머스 / 99 분류미정) 이 보임. 폴더 안에 또 폴더 있으면 다시 호출해서 들어감. 파일에는 Drive 보기 URL 도 같이 옴.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description:
+            '폴더 경로 (예: "/", "/01 AI 소싱 플랫폼/", "/06 회사 운영/정부 지원사업/"). 비우면 루트.',
+        },
+      },
+    },
+  },
+  {
     name: 'github_search_code',
     description:
       '토타로 GitHub 코드/문서 검색. .md (README·CHANGELOG·spec), .json (config), .ts/.tsx (코드) 등 — 개발 문서는 Drive 가 아니라 여기 있음. 정책: "개발 문서 = GitHub, 비즈니스 문서 = Drive". repo 생략 시 GITHUB_REPO 기본값(totaro-worktool).',
