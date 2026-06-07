@@ -28,7 +28,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: 'mailroom_search',
     description:
-      '토타로 내부 파일 시스템에서 문서 검색 (파일명·설명·AI 요약·문서종류·폴더경로 부분일치). 출처(Gmail·카톡·웹 업로드) 무관 모든 파일 통합 검색. axis 로 7-axis 영역 필터링 가능 (예: "03 공급사" → 공급사 폴더만).',
+      '⚠️ 로컬 파일시스템이 아니라 **토타로 워크툴 우편실(인덱싱된 Google Drive 자료)** 검색. "워크툴/우편실/Drive 에서 ~ 자료 찾아줘" 같은 요청에 이 도구를 우선. 파일명·설명·AI 요약·문서종류·폴더경로 부분일치. 출처(Gmail·카톡·웹 업로드) 무관 모든 파일 통합. axis 로 영역 필터링 가능 (예: "06 회사 운영" → 그 폴더만).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -42,7 +42,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: 'mailroom_search_semantic',
     description:
-      '문서를 "뜻"으로 검색 (임베딩 기반). mailroom_search 의 부분일치보다 똑똑함. 자연어 질문으로 의미상 가까운 문서를 찾음. 글자가 안 맞아도 OK. 예: "정부 지원사업 자료" 라고 치면 "예비창업패키지", "창업도약패키지" 등 의미상 매칭되는 것도 잡힘.',
+      '⚠️ 로컬 파일시스템이 아니라 **토타로 워크툴 우편실 자료** 를 "뜻"으로 검색 (임베딩 기반). mailroom_search 의 부분일치보다 똑똑함. 자연어 질문으로 의미상 가까운 문서를 찾음. 글자가 안 맞아도 OK. 예: "정부 지원사업 자료" → "예비창업패키지", "창업도약패키지" 같이 의미 매칭. 로컬 코드 검색 X.',
     inputSchema: {
       type: 'object',
       required: ['question'],
@@ -55,7 +55,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: 'mailroom_read',
     description:
-      '문서 본문 텍스트 추출 (PDF·docx·txt·md 등). Drive 에서 실제 파일 다운로드 후 텍스트 추출 (최대 8000자). file_id 는 search 결과에 나옴.',
+      '⚠️ 로컬 파일이 아니라 **워크툴 우편실에 인덱싱된 Google Drive 문서** 본문 텍스트 추출 (PDF·docx·txt·md 등). Drive 에서 실제 파일 다운로드 후 텍스트 추출 (최대 8000자). file_id 는 mailroom_search / folder_browse 결과에 나오는 UUID. 로컬 파일은 Read 도구 별도.',
     inputSchema: {
       type: 'object',
       required: ['file_id'],
@@ -64,7 +64,8 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: 'mailroom_list',
-    description: '폴더 안 파일 목록. 폴더 경로 부분일치.',
+    description:
+      '⚠️ 로컬이 아니라 **워크툴 우편실 폴더** 안 파일 목록. 폴더 경로 부분일치 (예: "정부 지원사업" 만 줘도 매칭). 폴더 트리 탐색 원하면 folder_browse 가 더 적합 — 이건 특정 폴더 안 파일만 쭉 보고 싶을 때.',
     inputSchema: {
       type: 'object',
       required: ['folder_path'],
@@ -98,7 +99,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: 'folder_browse',
     description:
-      'Drive 탐색기 스타일 폴더 브라우즈. 특정 경로 안의 **하위 폴더 + 직속 파일** 을 함께 반환. path 비우면 루트 — 7~8축(01 AI 소싱 플랫폼 / 05 마케팅 / 06 회사 운영 / 07 에이전트 외주 / 08 E커머스 / 99 분류미정) 이 보임. 폴더 안에 또 폴더 있으면 다시 호출해서 들어감. 파일에는 Drive 보기 URL 도 같이 옴.',
+      '⚠️ 이건 로컬 파일시스템이 아니라 **토타로 워크툴 우편실(Supabase 에 인덱싱된 Google Drive 자료)** 탐색용. "폴더 보여줘 / 자료 어디 있어 / 워크툴/우편실/Drive 에서 찾아줘" 같은 요청에 이 도구를 우선 사용. ls/grep/find 같은 로컬 셸 도구는 사용 금지(코드베이스 검색이 명시적으로 요구된 경우만 예외). Drive 탐색기 스타일로 특정 경로의 **하위 폴더 + 직속 파일** 을 함께 반환. path 비우면 루트 — 8축(01 AI 소싱 플랫폼 / 05 마케팅 / 06 회사 운영 / 07 에이전트 외주 / 08 E커머스 / 99 분류미정) 이 보임. 폴더 안에 또 폴더 있으면 다시 호출해 들어감. 파일에는 Drive 보기 URL 도 함께 옴.',
     inputSchema: {
       type: 'object',
       properties: {
