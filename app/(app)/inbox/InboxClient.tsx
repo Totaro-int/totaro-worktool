@@ -60,6 +60,18 @@ function fileTypeIcon(mime: string, name: string): string {
   return '📦'
 }
 
+type BatchStatus = 'pending' | 'classifying' | 'uploading' | 'done' | 'error'
+type BatchItem = {
+  key: string
+  file: File
+  status: BatchStatus
+  error?: string
+  targetPath?: string
+  docType?: string
+  docId?: string
+  driveUrl?: string
+}
+
 /** 내부 AI 우편실 클라이언트 — 드래그 드롭, 분류 미리보기, 확인. */
 export function InboxClient({ members }: { members: Member[] }): React.JSX.Element {
   const [file, setFile] = useState<File | null>(null)
@@ -70,19 +82,147 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
   const [editedFolder, setEditedFolder] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  // 일괄 모드 (2개+ 드롭 시)
+  const [batchItems, setBatchItems] = useState<BatchItem[]>([])
+  const [batchRunning, setBatchRunning] = useState(false)
 
   const onDrop = useCallback((accepted: File[]) => {
     if (accepted.length === 0) return
-    setFile(accepted[0])
-    setStage('idle')
-    setError(null)
-    setClassification(null)
+    if (accepted.length === 1) {
+      // 단일 파일 — 기존 상세 리뷰 흐름
+      setFile(accepted[0])
+      setStage('idle')
+      setError(null)
+      setClassification(null)
+      setBatchItems([])
+    } else {
+      // 멀티 — 일괄 자동 처리 모드
+      setFile(null)
+      setStage('idle')
+      setError(null)
+      setClassification(null)
+      setBatchItems(
+        accepted.map((f, i) => ({
+          key: `${Date.now()}-${i}-${f.name}`,
+          file: f,
+          status: 'pending',
+        }))
+      )
+    }
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    multiple: false,
+    multiple: true,
   })
+
+  // 일괄 처리 — 동시 3개씩 (Drive 쿼터 보호) 순차 큐
+  async function runBatch(): Promise<void> {
+    if (batchRunning || batchItems.length === 0) return
+    setBatchRunning(true)
+    const sharedNotifyNames = notifyIds
+      .map((id) => members.find((m) => m.id === id)?.name ?? '')
+      .filter(Boolean)
+      .join(',')
+
+    const CONCURRENCY = 3
+    const queue = [...batchItems]
+    async function runOne(item: BatchItem): Promise<void> {
+      // 1) classify
+      setBatchItems((prev) =>
+        prev.map((x) => (x.key === item.key ? { ...x, status: 'classifying' } : x))
+      )
+      const fd1 = new FormData()
+      fd1.append('file', item.file)
+      fd1.append('description', '')
+      fd1.append('notify_users', sharedNotifyNames)
+      const c = await uploadAndClassify(fd1)
+      if (!c.ok || !c.documentId || !c.target_folder_path) {
+        setBatchItems((prev) =>
+          prev.map((x) =>
+            x.key === item.key ? { ...x, status: 'error', error: c.error ?? '분류 실패' } : x
+          )
+        )
+        return
+      }
+
+      // 2) confirm — AI 추천 폴더로 자동
+      setBatchItems((prev) =>
+        prev.map((x) =>
+          x.key === item.key
+            ? {
+                ...x,
+                status: 'uploading',
+                targetPath: c.target_folder_path,
+                docType: c.doc_type,
+                docId: c.documentId,
+              }
+            : x
+        )
+      )
+      const fd2 = new FormData()
+      fd2.append('file', item.file)
+      fd2.append('document_id', c.documentId)
+      fd2.append('folder_path', c.target_folder_path)
+      fd2.append('notify_user_ids', notifyIds.join(','))
+      const cf = await confirmClassification(fd2)
+      if (!cf.ok) {
+        setBatchItems((prev) =>
+          prev.map((x) =>
+            x.key === item.key ? { ...x, status: 'error', error: cf.error ?? '저장 실패' } : x
+          )
+        )
+        return
+      }
+      setBatchItems((prev) =>
+        prev.map((x) =>
+          x.key === item.key
+            ? {
+                ...x,
+                status: 'done',
+                targetPath: cf.target_folder_path ?? x.targetPath,
+              }
+            : x
+        )
+      )
+    }
+
+    // 워커 풀
+    const workers: Promise<void>[] = []
+    for (let i = 0; i < CONCURRENCY; i++) {
+      workers.push(
+        (async () => {
+          for (;;) {
+            const next = queue.shift()
+            if (!next) return
+            try {
+              await runOne(next)
+            } catch (e) {
+              setBatchItems((prev) =>
+                prev.map((x) =>
+                  x.key === next.key
+                    ? { ...x, status: 'error', error: e instanceof Error ? e.message : String(e) }
+                    : x
+                )
+              )
+            }
+          }
+        })()
+      )
+    }
+    await Promise.all(workers)
+    setBatchRunning(false)
+  }
+
+  function removeBatchItem(key: string): void {
+    if (batchRunning) return
+    setBatchItems((prev) => prev.filter((x) => x.key !== key))
+  }
+
+  function resetBatch(): void {
+    setBatchItems([])
+    setNotifyIds([])
+  }
 
   const submitClassify = (): void => {
     if (!file) return
@@ -219,12 +359,26 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
                   <span className="text-blue-600 underline">클릭해서 선택</span>
                 </p>
                 <p className="text-xs text-slate-400">
-                  PDF · docx · 이미지 · 한글 등 다 받음. 카톡 대신 여기로.
+                  PDF · docx · 이미지 · 한글 등. 카톡 대신 여기로. 여러 개 동시에 OK.
                 </p>
               </div>
             )}
           </div>
         </div>
+
+        {/* 일괄 모드 — 2개+ 드롭 시 */}
+        {batchItems.length > 0 && (
+          <BatchPanel
+            items={batchItems}
+            members={members}
+            notifyIds={notifyIds}
+            onToggleNotify={toggleNotify}
+            running={batchRunning}
+            onRun={() => void runBatch()}
+            onRemove={removeBatchItem}
+            onReset={resetBatch}
+          />
+        )}
 
         {/* 폼 — 파일 선택 후 (idle 상태에만) */}
         {file && stage === 'idle' && (
@@ -444,5 +598,186 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
         </p>
       </div>
     </div>
+  )
+}
+
+/** 일괄 업로드 패널 — 멀티 파일 드롭 시. */
+function BatchPanel({
+  items,
+  members,
+  notifyIds,
+  onToggleNotify,
+  running,
+  onRun,
+  onRemove,
+  onReset,
+}: {
+  items: BatchItem[]
+  members: Member[]
+  notifyIds: string[]
+  onToggleNotify: (id: string) => void
+  running: boolean
+  onRun: () => void
+  onRemove: (key: string) => void
+  onReset: () => void
+}): React.JSX.Element {
+  const done = items.filter((x) => x.status === 'done').length
+  const errors = items.filter((x) => x.status === 'error').length
+  const pending = items.filter((x) => x.status === 'pending').length
+  const allDone = done + errors === items.length && running === false && items.length > 0
+
+  return (
+    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-bold text-slate-900">📦 일괄 업로드 ({items.length}개)</h2>
+          <p className="mt-0.5 text-xs text-slate-500">
+            AI 추천 폴더로 자동 분류·저장 (개별 검토 X). 진행 중엔 제거 불가.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {!running && !allDone && (
+            <>
+              <button
+                type="button"
+                onClick={onReset}
+                className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={onRun}
+                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
+              >
+                전부 처리 ({pending})
+              </button>
+            </>
+          )}
+          {running && (
+            <span className="rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700">
+              처리 중... {done + errors}/{items.length}
+            </span>
+          )}
+          {allDone && (
+            <button
+              type="button"
+              onClick={onReset}
+              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
+            >
+              새 일괄
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 공통 알림 대상 (있으면 전부에 적용) */}
+      <div>
+        <label className="mb-1.5 block text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+          공통 알림 대상 (전부에 적용)
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {members.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              disabled={running}
+              onClick={() => onToggleNotify(m.id)}
+              className={`rounded-full px-2.5 py-1 text-xs ring-1 transition-colors ${
+                notifyIds.includes(m.id)
+                  ? 'bg-indigo-600 text-white ring-indigo-600'
+                  : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'
+              } ${running ? 'cursor-not-allowed opacity-60' : ''}`}
+            >
+              {m.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 파일 리스트 */}
+      <ul className="divide-y divide-slate-100 rounded-xl border border-slate-100">
+        {items.map((it) => (
+          <li key={it.key} className="flex items-center gap-3 px-3 py-2.5">
+            <span className="text-xl">{fileTypeIcon(it.file.type, it.file.name)}</span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-slate-800">{it.file.name}</div>
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-slate-500">
+                <span>{formatBytes(it.file.size)}</span>
+                {it.targetPath && (
+                  <>
+                    <span>·</span>
+                    <span className="text-slate-600">→ {it.targetPath}</span>
+                  </>
+                )}
+                {it.docType && (
+                  <>
+                    <span>·</span>
+                    <span className="text-slate-500">{it.docType}</span>
+                  </>
+                )}
+                {it.error && <span className="text-rose-600">❌ {it.error}</span>}
+              </div>
+            </div>
+            <StatusBadge status={it.status} />
+            {!running && it.status === 'pending' && (
+              <button
+                type="button"
+                onClick={() => onRemove(it.key)}
+                className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                aria-label="제거"
+              >
+                ✕
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {/* 완료 요약 */}
+      {allDone && (
+        <div
+          className={`rounded-lg p-3 text-xs ${
+            errors === 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+          }`}
+        >
+          {errors === 0
+            ? `✅ 모두 완료 — Drive 저장 + ${notifyIds.length > 0 ? '담당자 알림 발송' : '알림 X'}`
+            : `⚠️ ${done} 완료 · ${errors} 실패 — 실패한 건 다시 드롭해서 재시도`}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StatusBadge({ status }: { status: BatchStatus }): React.JSX.Element {
+  if (status === 'done')
+    return (
+      <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+        ✓ 완료
+      </span>
+    )
+  if (status === 'error')
+    return (
+      <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-medium text-rose-700">
+        실패
+      </span>
+    )
+  if (status === 'classifying')
+    return (
+      <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700">
+        분류 중
+      </span>
+    )
+  if (status === 'uploading')
+    return (
+      <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+        업로드
+      </span>
+    )
+  return (
+    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+      대기
+    </span>
   )
 }
