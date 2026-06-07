@@ -1,10 +1,13 @@
 import type { JSX } from 'react'
 
+import Link from 'next/link'
+
 import { PageHeader } from '@/components/ui'
 import { createClient } from '@/lib/supabase/server'
 
 import { loadAssistantHistory } from './actions'
 import { AssistantClient } from './AssistantClient'
+
 
 /** AI 직원 — 우편실(구글 드라이브) 자료를 근거로 자연어 대화. */
 export default async function AssistantPage(): Promise<JSX.Element> {
@@ -20,7 +23,19 @@ export default async function AssistantPage(): Promise<JSX.Element> {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
-      <PageHeader title="AI 직원" description="우편실 자료를 근거로 답하는 토타로 AI 동료" />
+      <PageHeader title="AI 직원" description="우편실 자료를 근거로 답하는 토타로 AI 동료">
+        <div className="mt-3 flex gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white">
+            💬 채팅
+          </span>
+          <Link
+            href="/assistant/files"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+          >
+            📁 파일 브라우저
+          </Link>
+        </div>
+      </PageHeader>
       <AssistantClient indexedCount={countRes.count ?? 0} initialMessages={history} />
     </div>
   )
