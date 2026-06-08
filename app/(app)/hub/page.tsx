@@ -8,7 +8,7 @@ import { getCommerceData } from '@/lib/naver/commerce'
 import { createClient } from '@/lib/supabase/server'
 import type { Task } from '@/lib/types'
 
-type IconName = 'tasks' | 'github' | 'naver' | 'agent' | 'mailroom' | 'assistant'
+type IconName = 'tasks' | 'github' | 'naver' | 'agent' | 'mailroom' | 'assistant' | 'contacts'
 
 type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose' | 'violet'
 
@@ -161,6 +161,17 @@ function NodeIcon({
         <circle cx="8.5" cy="12" r="1" fill={color} stroke="none" />
         <circle cx="12" cy="12" r="1" fill={color} stroke="none" />
         <circle cx="15.5" cy="12" r="1" fill={color} stroke="none" />
+      </svg>
+    )
+  }
+  if (name === 'contacts') {
+    return (
+      <svg {...props}>
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <circle cx="9" cy="11" r="2" />
+        <path d="M6 17c0-1.7 1.3-3 3-3s3 1.3 3 3" />
+        <line x1="14" y1="10" x2="18" y2="10" />
+        <line x1="14" y1="13" x2="18" y2="13" />
       </svg>
     )
   }
@@ -482,6 +493,15 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       position: 'left-[50%] top-[60%]',
       accent: 'indigo',
       hero: true,
+    },
+    {
+      href: '/contacts',
+      name: '회사 연락처',
+      icon: 'contacts',
+      subText: '명함 OCR · 연락처',
+      value: '—',
+      position: 'left-[30%] top-[78%]',
+      accent: 'emerald',
     },
   ]
 
