@@ -22,8 +22,8 @@ create table if not exists public.contacts (
   -- Google Contacts 연동 준비 (Phase 2)
   google_resource_name     text,
   google_synced_at         timestamptz,
-  -- 메타
-  created_by uuid references public.members(id) on delete set null,
+  -- 메타 — auth.users 참조 (members 테이블 의존 X)
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
