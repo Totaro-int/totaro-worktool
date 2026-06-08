@@ -71,6 +71,7 @@ type BatchItem = {
   docType?: string
   docId?: string
   driveUrl?: string
+  description?: string
 }
 
 /** 내부 AI 우편실 클라이언트 — 드래그 드롭, 분류 미리보기, 확인. */
@@ -135,7 +136,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
       )
       const fd1 = new FormData()
       fd1.append('file', item.file)
-      fd1.append('description', '')
+      fd1.append('description', item.description ?? '')
       fd1.append('notify_users', sharedNotifyNames)
       const c = await uploadAndClassify(fd1)
       if (!c.ok || !c.documentId || !c.target_folder_path) {
@@ -218,6 +219,10 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
   function removeBatchItem(key: string): void {
     if (batchRunning) return
     setBatchItems((prev) => prev.filter((x) => x.key !== key))
+  }
+
+  function updateBatchDescription(key: string, desc: string): void {
+    setBatchItems((prev) => prev.map((x) => (x.key === key ? { ...x, description: desc } : x)))
   }
 
   function resetBatch(): void {
@@ -388,6 +393,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
             onRun={() => void runBatch()}
             onRemove={removeBatchItem}
             onReset={resetBatch}
+            onDescription={updateBatchDescription}
           />
         )}
 
@@ -622,6 +628,7 @@ function BatchPanel({
   onRun,
   onRemove,
   onReset,
+  onDescription,
 }: {
   items: BatchItem[]
   members: Member[]
@@ -631,6 +638,7 @@ function BatchPanel({
   onRun: () => void
   onRemove: (key: string) => void
   onReset: () => void
+  onDescription: (key: string, desc: string) => void
 }): React.JSX.Element {
   const done = items.filter((x) => x.status === 'done').length
   const errors = items.filter((x) => x.status === 'error').length
@@ -709,37 +717,53 @@ function BatchPanel({
       {/* 파일 리스트 */}
       <ul className="divide-y divide-slate-100 rounded-xl border border-slate-100">
         {items.map((it) => (
-          <li key={it.key} className="flex items-center gap-3 px-3 py-2.5">
-            <span className="text-xl">{fileTypeIcon(it.file.type, it.file.name)}</span>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-slate-800">{it.file.name}</div>
-              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-slate-500">
-                <span>{formatBytes(it.file.size)}</span>
-                {it.targetPath && (
-                  <>
-                    <span>·</span>
-                    <span className="text-slate-600">→ {it.targetPath}</span>
-                  </>
-                )}
-                {it.docType && (
-                  <>
-                    <span>·</span>
-                    <span className="text-slate-500">{it.docType}</span>
-                  </>
-                )}
-                {it.error && <span className="text-rose-600">❌ {it.error}</span>}
+          <li key={it.key} className="px-3 py-2.5">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">{fileTypeIcon(it.file.type, it.file.name)}</span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-slate-800">{it.file.name}</div>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-slate-500">
+                  <span>{formatBytes(it.file.size)}</span>
+                  {it.targetPath && (
+                    <>
+                      <span>·</span>
+                      <span className="text-slate-600">→ {it.targetPath}</span>
+                    </>
+                  )}
+                  {it.docType && (
+                    <>
+                      <span>·</span>
+                      <span className="text-slate-500">{it.docType}</span>
+                    </>
+                  )}
+                  {it.error && <span className="text-rose-600">❌ {it.error}</span>}
+                </div>
               </div>
+              <StatusBadge status={it.status} />
+              {!running && it.status === 'pending' && (
+                <button
+                  type="button"
+                  onClick={() => onRemove(it.key)}
+                  className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  aria-label="제거"
+                >
+                  ✕
+                </button>
+              )}
             </div>
-            <StatusBadge status={it.status} />
-            {!running && it.status === 'pending' && (
-              <button
-                type="button"
-                onClick={() => onRemove(it.key)}
-                className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                aria-label="제거"
-              >
-                ✕
-              </button>
+            {/* 파일별 설명 — 처리 시작 전에만 노출 */}
+            {it.status === 'pending' && !running && (
+              <input
+                type="text"
+                value={it.description ?? ''}
+                onChange={(e) => onDescription(it.key, e.target.value)}
+                placeholder="이 파일 한 줄 설명 (선택, 분류 정확도 ↑)"
+                className="mt-1.5 ml-9 block w-[calc(100%-2.5rem)] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none"
+              />
+            )}
+            {/* 저장된 설명 표시 — 처리 중·완료 후 */}
+            {it.description && it.status !== 'pending' && (
+              <div className="mt-1 ml-9 text-[11px] text-slate-500">💬 {it.description}</div>
             )}
           </li>
         ))}
