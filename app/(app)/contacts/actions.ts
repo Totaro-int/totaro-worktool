@@ -63,7 +63,7 @@ export async function uploadAndExtractCard(formData: FormData): Promise<ExtractR
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: '로그인 필요' }
 
-  // 버킷 자동 보장 (첫 실행 시)
+  // 버킷 자동 보장 (첫 실행 시) — 서비스 키로
   await ensureBucket()
 
   const buffer = Buffer.from(await file.arrayBuffer())
@@ -74,10 +74,11 @@ export async function uploadAndExtractCard(formData: FormData): Promise<ExtractR
     return { ok: false, error: '명함 인식 실패 — 더 선명한 사진으로 다시.' }
   }
 
-  // 2) Storage 에 명함 이미지 업로드
+  // 2) Storage 에 명함 이미지 업로드 (서비스 키 — RLS 우회, 사용자 인증은 위에서 이미 확인)
+  const admin = getServiceSupabase()
   const ext = file.name.split('.').pop() ?? 'jpg'
   const storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`
-  const { error: upErr } = await supabase.storage.from(BUCKET).upload(storagePath, buffer, {
+  const { error: upErr } = await admin.storage.from(BUCKET).upload(storagePath, buffer, {
     contentType: file.type,
     upsert: false,
   })
@@ -105,11 +106,11 @@ export async function uploadAndExtractCard(formData: FormData): Promise<ExtractR
     .select('*')
     .single()
   if (insErr || !inserted) {
-    await supabase.storage.from(BUCKET).remove([storagePath])
+    await admin.storage.from(BUCKET).remove([storagePath])
     return { ok: false, error: `저장 실패: ${insErr?.message ?? 'unknown'}` }
   }
 
-  const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrl(storagePath, 3600)
+  const { data: signed } = await admin.storage.from(BUCKET).createSignedUrl(storagePath, 3600)
 
   revalidatePath('/contacts')
   return {
@@ -131,12 +132,13 @@ export async function loadContacts(): Promise<ContactRow[]> {
     .order('created_at', { ascending: false })
     .limit(500)
   const rows = (data ?? []) as Omit<ContactRow, 'cardSignedUrl'>[]
-  // 명함 이미지 signed URL 준비
+  // 명함 이미지 signed URL — 서비스 키로 (스토리지 RLS 우회)
+  const admin = getServiceSupabase()
   const withUrls = await Promise.all(
     rows.map(async (r) => {
       let cardSignedUrl: string | null = null
       if (r.card_storage_path) {
-        const { data: signed } = await supabase.storage
+        const { data: signed } = await admin.storage
           .from(BUCKET)
           .createSignedUrl(r.card_storage_path, 3600)
         cardSignedUrl = signed?.signedUrl ?? null
@@ -155,7 +157,8 @@ export async function deleteContact(id: string): Promise<{ ok: boolean }> {
     .eq('id', id)
     .maybeSingle<{ card_storage_path: string | null }>()
   if (existing?.card_storage_path) {
-    await supabase.storage.from(BUCKET).remove([existing.card_storage_path])
+    const admin = getServiceSupabase()
+    await admin.storage.from(BUCKET).remove([existing.card_storage_path])
   }
   await supabase.from('contacts').delete().eq('id', id)
   revalidatePath('/contacts')
