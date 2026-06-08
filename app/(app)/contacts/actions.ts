@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 
 import { extractContactFromCard } from '@/lib/contacts/extract'
+import { createGoogleContact, deleteGoogleContact } from '@/lib/google/contacts'
+import { disconnect, getConnection } from '@/lib/google/oauth'
 import { getServiceSupabase } from '@/lib/oauth/utils'
 import { createClient } from '@/lib/supabase/server'
 
@@ -112,14 +114,74 @@ export async function uploadAndExtractCard(formData: FormData): Promise<ExtractR
 
   const { data: signed } = await admin.storage.from(BUCKET).createSignedUrl(storagePath, 3600)
 
+  // 4) Google 연락처에도 push (연결돼있으면) — fire-and-update
+  const insertedRow = inserted as Omit<ContactRow, 'cardSignedUrl'>
+  void pushToGoogle(user.id, insertedRow).catch(() => {})
+
   revalidatePath('/contacts')
   return {
     ok: true,
     contact: {
-      ...(inserted as Omit<ContactRow, 'cardSignedUrl'>),
+      ...insertedRow,
       cardSignedUrl: signed?.signedUrl ?? null,
     },
   }
+}
+
+/** Google 연락처로 push — 성공 시 resource_name, 실패 시 sync_error 저장. */
+async function pushToGoogle(userId: string, c: Omit<ContactRow, 'cardSignedUrl'>): Promise<void> {
+  const admin = getServiceSupabase()
+  const result = await createGoogleContact(userId, {
+    name: c.name,
+    company: c.company,
+    title: c.title,
+    phone: c.phone,
+    mobile: c.mobile,
+    email: c.email,
+    website: c.website,
+    address: c.address,
+    memo: c.memo,
+  })
+  if ('error' in result) {
+    await admin
+      .from('contacts')
+      .update({ google_sync_error: result.error.slice(0, 200) })
+      .eq('id', c.id)
+    return
+  }
+  await admin
+    .from('contacts')
+    .update({
+      google_resource_name: result.resourceName,
+      google_synced_at: new Date().toISOString(),
+      google_sync_error: null,
+    })
+    .eq('id', c.id)
+}
+
+/** Google 연결 상태 — UI 가 호출. */
+export async function getGoogleConnection(): Promise<{
+  connected: boolean
+  email: string | null
+}> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { connected: false, email: null }
+  return getConnection(user.id)
+}
+
+/** Google 연결 해제 — 토큰 행 삭제. (Google 측 revoke 는 별도 — 사용자가 google.com 에서) */
+export async function disconnectGoogle(): Promise<{ ok: boolean }> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false }
+  await disconnect(user.id)
+  revalidatePath('/contacts')
+  return { ok: true }
 }
 
 export async function loadContacts(): Promise<ContactRow[]> {
@@ -151,14 +213,21 @@ export async function loadContacts(): Promise<ContactRow[]> {
 
 export async function deleteContact(id: string): Promise<{ ok: boolean }> {
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   const { data: existing } = await supabase
     .from('contacts')
-    .select('card_storage_path')
+    .select('card_storage_path, google_resource_name')
     .eq('id', id)
-    .maybeSingle<{ card_storage_path: string | null }>()
+    .maybeSingle<{ card_storage_path: string | null; google_resource_name: string | null }>()
   if (existing?.card_storage_path) {
     const admin = getServiceSupabase()
     await admin.storage.from(BUCKET).remove([existing.card_storage_path])
+  }
+  // Google 연락처도 같이 삭제 (있으면)
+  if (existing?.google_resource_name && user) {
+    void deleteGoogleContact(user.id, existing.google_resource_name).catch(() => {})
   }
   await supabase.from('contacts').delete().eq('id', id)
   revalidatePath('/contacts')

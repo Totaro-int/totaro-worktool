@@ -5,9 +5,54 @@ import { useCallback, useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useDropzone } from 'react-dropzone'
 
-import { type ContactRow, deleteContact, loadContacts, uploadAndExtractCard } from './actions'
+import {
+  type ContactRow,
+  deleteContact,
+  disconnectGoogle,
+  loadContacts,
+  uploadAndExtractCard,
+} from './actions'
 
-export function ContactsClient({ initial }: { initial: ContactRow[] }): React.JSX.Element {
+function GoogleBadge({ google }: { google: GoogleStatus }): React.JSX.Element {
+  if (google.connected) {
+    return (
+      <div className="flex flex-col items-end gap-1">
+        <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">
+          ✓ Google 연결됨
+        </div>
+        {google.email && <div className="text-[10px] text-slate-400">{google.email}</div>}
+        <button
+          type="button"
+          onClick={() => void disconnectGoogle().then(() => location.reload())}
+          className="text-[10px] text-slate-400 hover:text-rose-600"
+        >
+          연결 해제
+        </button>
+      </div>
+    )
+  }
+  return (
+    <a
+      href="/api/google/contacts/connect"
+      className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
+    >
+      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z" />
+      </svg>
+      Google 연락처 연결
+    </a>
+  )
+}
+
+type GoogleStatus = { connected: boolean; email: string | null }
+
+export function ContactsClient({
+  initial,
+  google,
+}: {
+  initial: ContactRow[]
+  google: GoogleStatus
+}): React.JSX.Element {
   const [contacts, setContacts] = useState<ContactRow[]>(initial)
   const [query, setQuery] = useState('')
   const [uploading, setUploading] = useState<File[] | null>(null)
@@ -91,12 +136,13 @@ export function ContactsClient({ initial }: { initial: ContactRow[] }): React.JS
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-2xl shadow-lg shadow-emerald-200/50">
             📇
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold text-slate-900">회사 연락처</h1>
             <p className="text-xs text-slate-500">
               명함 사진 끌어다 놓으면 AI 가 글자 읽어서 연락처로 정리합니다.
             </p>
           </div>
+          <GoogleBadge google={google} />
         </header>
 
         {/* 드롭존 */}
