@@ -3,7 +3,22 @@
 import { revalidatePath } from 'next/cache'
 
 import { extractContactFromCard } from '@/lib/contacts/extract'
+import { getServiceSupabase } from '@/lib/oauth/utils'
 import { createClient } from '@/lib/supabase/server'
+
+const BUCKET = 'business-cards'
+
+/** business-cards 버킷 보장 — 없으면 service_role 로 생성. 멱등. */
+async function ensureBucket(): Promise<void> {
+  try {
+    const admin = getServiceSupabase()
+    const { data: list } = await admin.storage.listBuckets()
+    if (list?.some((b) => b.name === BUCKET)) return
+    await admin.storage.createBucket(BUCKET, { public: false, fileSizeLimit: 10 * 1024 * 1024 })
+  } catch {
+    // 이미 있거나 권한 X — 사용자가 Dashboard 에서 직접 만든 경우
+  }
+}
 
 export type ContactRow = {
   id: string
@@ -48,6 +63,9 @@ export async function uploadAndExtractCard(formData: FormData): Promise<ExtractR
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: '로그인 필요' }
 
+  // 버킷 자동 보장 (첫 실행 시)
+  await ensureBucket()
+
   const buffer = Buffer.from(await file.arrayBuffer())
 
   // 1) Gemini Vision OCR
@@ -59,12 +77,10 @@ export async function uploadAndExtractCard(formData: FormData): Promise<ExtractR
   // 2) Storage 에 명함 이미지 업로드
   const ext = file.name.split('.').pop() ?? 'jpg'
   const storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`
-  const { error: upErr } = await supabase.storage
-    .from('business-cards')
-    .upload(storagePath, buffer, {
-      contentType: file.type,
-      upsert: false,
-    })
+  const { error: upErr } = await supabase.storage.from(BUCKET).upload(storagePath, buffer, {
+    contentType: file.type,
+    upsert: false,
+  })
   if (upErr) return { ok: false, error: `이미지 저장 실패: ${upErr.message}` }
 
   // 3) DB insert
@@ -89,13 +105,11 @@ export async function uploadAndExtractCard(formData: FormData): Promise<ExtractR
     .select('*')
     .single()
   if (insErr || !inserted) {
-    await supabase.storage.from('business-cards').remove([storagePath])
+    await supabase.storage.from(BUCKET).remove([storagePath])
     return { ok: false, error: `저장 실패: ${insErr?.message ?? 'unknown'}` }
   }
 
-  const { data: signed } = await supabase.storage
-    .from('business-cards')
-    .createSignedUrl(storagePath, 3600)
+  const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrl(storagePath, 3600)
 
   revalidatePath('/contacts')
   return {
@@ -123,7 +137,7 @@ export async function loadContacts(): Promise<ContactRow[]> {
       let cardSignedUrl: string | null = null
       if (r.card_storage_path) {
         const { data: signed } = await supabase.storage
-          .from('business-cards')
+          .from(BUCKET)
           .createSignedUrl(r.card_storage_path, 3600)
         cardSignedUrl = signed?.signedUrl ?? null
       }
@@ -141,7 +155,7 @@ export async function deleteContact(id: string): Promise<{ ok: boolean }> {
     .eq('id', id)
     .maybeSingle<{ card_storage_path: string | null }>()
   if (existing?.card_storage_path) {
-    await supabase.storage.from('business-cards').remove([existing.card_storage_path])
+    await supabase.storage.from(BUCKET).remove([existing.card_storage_path])
   }
   await supabase.from('contacts').delete().eq('id', id)
   revalidatePath('/contacts')
