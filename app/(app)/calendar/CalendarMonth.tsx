@@ -1,7 +1,7 @@
 /**
- * 월 그리드 — 7x6 셀. 각 셀에 일정 칩 최대 3개 + 나머지 'N+ 건' 표시.
- * 토타로 자동 등록 ([토타로] prefix) 은 indigo, 일반 일정은 emerald.
- * 칩/'N+' 클릭 → Google Calendar 웹 (htmlLink) 새 탭.
+ * 월 그리드 — 7×6 셀. 절제된 모노톤 + 단일 indigo 액센트.
+ * 토타로 자동 등록 ([토타로] prefix) 은 짙은 indigo bar, 일반 일정은 옅은 slate bar.
+ * 칩 클릭 → Google Calendar 웹 (htmlLink) 새 탭.
  */
 import type { JSX } from 'react'
 
@@ -44,7 +44,7 @@ function startKey(e: UpcomingEvent): string {
 }
 
 function timeLabel(e: UpcomingEvent): string {
-  if (e.allDay) return '종일'
+  if (e.allDay) return ''
   try {
     const d = new Date(e.start)
     return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
@@ -55,6 +55,10 @@ function timeLabel(e: UpcomingEvent): string {
 
 function isTotaroEvent(e: UpcomingEvent): boolean {
   return e.summary.startsWith('[토타로]')
+}
+
+function cleanSummary(e: UpcomingEvent): string {
+  return isTotaroEvent(e) ? e.summary.replace(/^\[토타로\]\s*/, '') : e.summary
 }
 
 export function CalendarMonth({
@@ -68,11 +72,9 @@ export function CalendarMonth({
   const monthDate = ymToDate(month)
   const monthLabel = `${monthDate.getFullYear()}년 ${monthDate.getMonth() + 1}월`
 
-  // 그리드 시작 = 그 달 1일이 속한 주의 일요일
   const gridStart = new Date(monthDate)
   gridStart.setDate(1 - monthDate.getDay())
 
-  // 42 셀
   const cells: Date[] = []
   for (let i = 0; i < 42; i++) {
     const d = new Date(gridStart)
@@ -80,7 +82,6 @@ export function CalendarMonth({
     cells.push(d)
   }
 
-  // 이벤트 → 날짜별 그룹
   const byDay = new Map<string, UpcomingEvent[]>()
   for (const e of events) {
     const k = startKey(e)
@@ -95,50 +96,56 @@ export function CalendarMonth({
   const totaroCount = events.filter(isTotaroEvent).length
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-8">
-      <header className="mb-6 flex items-end justify-between">
+    <main className="mx-auto max-w-6xl px-8 py-12">
+      <header className="mb-10 flex items-end justify-between border-b border-slate-200 pb-6">
         <div>
-          <p className="text-[10px] font-bold tracking-[0.2em] text-blue-600">CALENDAR</p>
-          <h1 className="mt-1 text-3xl font-bold text-slate-900">{monthLabel}</h1>
-          <p className="mt-1 text-xs text-slate-400">
-            일정 {events.length}건 · 토타로 자동 등록 {totaroCount}건
+          <p className="text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+            Calendar
+          </p>
+          <h1 className="mt-2 text-[32px] leading-none font-semibold tracking-tight text-slate-900">
+            {monthLabel}
+          </h1>
+          <p className="mt-3 text-xs text-slate-500">
+            전체 {events.length}건<span className="mx-2 text-slate-300">·</span>
+            토타로 자동 등록 {totaroCount}건
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <nav className="flex items-center gap-1">
           <Link
             href={`/calendar?month=${prev}`}
-            className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
           >
-            ‹ 이전 달
+            이전
           </Link>
           <Link
             href="/calendar"
-            className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
             오늘
           </Link>
           <Link
             href={`/calendar?month=${next}`}
-            className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
           >
-            다음 달 ›
+            다음
           </Link>
+          <span className="mx-2 h-4 w-px bg-slate-200" aria-hidden="true" />
           <Link
             href="/hub"
-            className="ml-2 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
           >
             허브
           </Link>
-        </div>
+        </nav>
       </header>
 
-      <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
-        <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/60">
           {DAYS.map((d, i) => (
             <div
               key={d}
-              className={`px-3 py-2 text-center text-[10px] font-bold tracking-[0.18em] ${
-                i === 0 ? 'text-rose-500' : i === 6 ? 'text-blue-500' : 'text-slate-400'
+              className={`px-3 py-3 text-center text-[10px] font-semibold tracking-[0.2em] uppercase ${
+                i === 0 ? 'text-rose-400' : i === 6 ? 'text-slate-400' : 'text-slate-400'
               }`}
             >
               {d}
@@ -154,59 +161,73 @@ export function CalendarMonth({
             const visible = dayEvents.slice(0, 3)
             const overflow = dayEvents.length - visible.length
 
+            const dayNumClass = isToday
+              ? 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white'
+              : inMonth
+                ? d.getDay() === 0
+                  ? 'text-[12px] font-medium text-rose-500'
+                  : 'text-[12px] font-medium text-slate-700'
+                : 'text-[12px] font-medium text-slate-300'
+
             return (
               <div
                 key={i}
-                className={`min-h-[110px] border-r border-b border-slate-100 px-2 py-2 ${
-                  inMonth ? 'bg-white' : 'bg-slate-50/60'
-                }`}
+                className={`group relative min-h-[120px] border-r border-b border-slate-100 px-2.5 pt-2.5 pb-2 transition-colors ${
+                  inMonth ? 'bg-white hover:bg-slate-50/60' : 'bg-slate-50/40'
+                } ${(i + 1) % 7 === 0 ? 'border-r-0' : ''}`}
               >
-                <div
-                  className={`mb-1 flex h-6 w-6 items-center justify-center text-xs font-bold ${
-                    isToday
-                      ? 'rounded-full bg-blue-600 text-white'
-                      : inMonth
-                        ? d.getDay() === 0
-                          ? 'text-rose-500'
-                          : d.getDay() === 6
-                            ? 'text-blue-500'
-                            : 'text-slate-700'
-                        : 'text-slate-300'
-                  }`}
-                >
-                  {d.getDate()}
+                <div className="mb-1.5">
+                  <span className={dayNumClass}>{d.getDate()}</span>
                 </div>
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   {visible.map((e) => {
                     const totaro = isTotaroEvent(e)
-                    const chipClass = totaro
-                      ? 'bg-indigo-50 text-indigo-700 ring-indigo-200'
-                      : 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                    const t = timeLabel(e)
                     return e.htmlLink ? (
                       <a
                         key={e.id}
                         href={e.htmlLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`block truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset ${chipClass}`}
-                        title={`${e.summary} · ${timeLabel(e)}`}
+                        className={`flex items-center gap-1.5 truncate rounded-[5px] px-1.5 py-0.5 text-[10.5px] leading-snug font-medium transition-colors ${
+                          totaro
+                            ? 'bg-indigo-50/70 text-indigo-900 hover:bg-indigo-100'
+                            : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200/80'
+                        }`}
+                        title={`${e.summary}${t ? ` · ${t}` : ''}`}
                       >
-                        <span className="opacity-70">
-                          {timeLabel(e) !== '종일' ? `${timeLabel(e)} ` : ''}
-                        </span>
-                        {e.summary}
+                        <span
+                          aria-hidden="true"
+                          className={`h-2.5 w-0.5 flex-none rounded-full ${
+                            totaro ? 'bg-indigo-500' : 'bg-slate-400'
+                          }`}
+                        />
+                        {t ? (
+                          <span className="text-[10px] tabular-nums opacity-60">{t}</span>
+                        ) : null}
+                        <span className="truncate">{cleanSummary(e)}</span>
                       </a>
                     ) : (
                       <span
                         key={e.id}
-                        className={`block truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset ${chipClass}`}
+                        className={`flex items-center gap-1.5 truncate rounded-[5px] px-1.5 py-0.5 text-[10.5px] leading-snug font-medium ${
+                          totaro
+                            ? 'bg-indigo-50/70 text-indigo-900'
+                            : 'bg-slate-100/80 text-slate-700'
+                        }`}
                       >
-                        {e.summary}
+                        <span
+                          aria-hidden="true"
+                          className={`h-2.5 w-0.5 flex-none rounded-full ${
+                            totaro ? 'bg-indigo-500' : 'bg-slate-400'
+                          }`}
+                        />
+                        <span className="truncate">{cleanSummary(e)}</span>
                       </span>
                     )
                   })}
                   {overflow > 0 ? (
-                    <p className="px-1.5 text-[10px] font-medium text-slate-400">+ {overflow}건</p>
+                    <p className="px-1.5 text-[10px] font-medium text-slate-400">외 {overflow}건</p>
                   ) : null}
                 </div>
               </div>
@@ -215,10 +236,17 @@ export function CalendarMonth({
         </div>
       </div>
 
-      <p className="mt-4 text-[11px] text-slate-400">
-        토타로(워크툴 자동 등록) 일정은 인디고, 일반 캘린더 일정은 에메랄드. 칩을 누르면 Google
-        캘린더에서 자세히 볼 수 있어요.
-      </p>
+      <div className="mt-6 flex items-center gap-5 text-[11px] text-slate-400">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-0.5 rounded-full bg-indigo-500" aria-hidden="true" />
+          토타로 자동 등록
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-0.5 rounded-full bg-slate-400" aria-hidden="true" />
+          본인 캘린더 일정
+        </span>
+        <span className="ml-auto">칩 누르면 Google 캘린더에서 자세히 보기</span>
+      </div>
     </main>
   )
 }

@@ -1,6 +1,6 @@
 /**
  * Hub 우측 하단 — 오늘/내일 Google 캘린더 일정 위젯.
- * Google 미연결 사용자에겐 안 보이게 (null 반환).
+ * Google 미연결 사용자에겐 안 보이게 (null 반환). 모노톤 + 단일 액센트.
  */
 import Link from 'next/link'
 
@@ -29,10 +29,18 @@ function formatEventDay(start: string): string {
       a.getDate() === b.getDate()
     if (sameDay(d, today)) return '오늘'
     if (sameDay(d, tomorrow)) return '내일'
-    return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+    return `${d.getMonth() + 1}/${d.getDate()}`
   } catch {
     return ''
   }
+}
+
+function isTotaroEvent(summary: string): boolean {
+  return summary.startsWith('[토타로]')
+}
+
+function cleanSummary(summary: string): string {
+  return isTotaroEvent(summary) ? summary.replace(/^\[토타로\]\s*/, '') : summary
 }
 
 export async function CalendarToday({
@@ -44,53 +52,71 @@ export async function CalendarToday({
   if (!connected) return null
 
   const events = await listUpcomingEvents(userId, 7, 8)
-  if (events.length === 0) {
-    return (
-      <div className="pointer-events-auto absolute right-6 bottom-6 w-64 rounded-2xl bg-white/95 px-5 py-4 shadow-lg ring-1 ring-slate-200 backdrop-blur">
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400">다가오는 일정</p>
-          <Link href="/calendar" className="text-[10px] font-medium text-blue-600 hover:underline">
-            전체 보기 →
-          </Link>
-        </div>
-        <p className="mt-2 text-xs text-slate-500">이번 주 일정 없음 · 여유 있음</p>
-      </div>
-    )
-  }
 
   return (
-    <div className="pointer-events-auto absolute right-6 bottom-6 w-72 rounded-2xl bg-white/95 px-5 py-4 shadow-lg ring-1 ring-slate-200 backdrop-blur">
-      <div className="flex items-center justify-between">
-        <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400">다가오는 일정</p>
-        <Link href="/calendar" className="text-[10px] font-medium text-blue-600 hover:underline">
-          전체 보기 →
+    <div className="pointer-events-auto absolute right-6 bottom-6 w-[290px] overflow-hidden rounded-xl border border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
+        <p className="text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+          Upcoming
+        </p>
+        <Link
+          href="/calendar"
+          className="text-[10px] font-medium text-slate-500 transition-colors hover:text-slate-900"
+        >
+          전체 →
         </Link>
       </div>
-      <ul className="mt-2 space-y-1.5">
-        {events.slice(0, 5).map((e) => (
-          <li key={e.id} className="flex items-baseline justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              {e.htmlLink ? (
-                <a
-                  href={e.htmlLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="truncate text-xs font-medium text-slate-800 hover:text-blue-600"
-                  title={e.summary}
-                >
-                  {e.summary}
-                </a>
-              ) : (
-                <span className="truncate text-xs font-medium text-slate-800">{e.summary}</span>
-              )}
-            </div>
-            <div className="text-right text-[10px] whitespace-nowrap text-slate-400">
-              <span className="font-semibold text-slate-500">{formatEventDay(e.start)}</span>
-              <span className="ml-1.5">{formatEventTime(e.start, e.allDay)}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {events.length === 0 ? (
+        <p className="px-4 py-5 text-center text-[11px] text-slate-400">이번 주 일정 없음</p>
+      ) : (
+        <ul className="divide-y divide-slate-100">
+          {events.slice(0, 5).map((e) => {
+            const totaro = isTotaroEvent(e.summary)
+            return (
+              <li key={e.id} className="px-4 py-2.5">
+                <div className="flex items-start gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className={`mt-1 h-2 w-0.5 flex-none rounded-full ${
+                      totaro ? 'bg-indigo-500' : 'bg-slate-300'
+                    }`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    {e.htmlLink ? (
+                      <a
+                        href={e.htmlLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block truncate text-[12px] font-medium text-slate-800 transition-colors hover:text-slate-900"
+                        title={e.summary}
+                      >
+                        {cleanSummary(e.summary)}
+                      </a>
+                    ) : (
+                      <span className="block truncate text-[12px] font-medium text-slate-800">
+                        {cleanSummary(e.summary)}
+                      </span>
+                    )}
+                    <p className="mt-0.5 text-[10px] text-slate-400 tabular-nums">
+                      {formatEventDay(e.start)}
+                      {!e.allDay ? (
+                        <>
+                          <span className="mx-1.5 text-slate-300">·</span>
+                          {formatEventTime(e.start, e.allDay)}
+                        </>
+                      ) : (
+                        <>
+                          <span className="mx-1.5 text-slate-300">·</span>종일
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </div>
   )
 }
