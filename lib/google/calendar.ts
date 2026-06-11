@@ -113,19 +113,15 @@ export type UpcomingEvent = {
   htmlLink: string | null
 }
 
-/**
- * 지금부터 N일 후까지의 일정. /hub 위젯용. 토타로가 만든 이벤트 외 본인 다른 일정도 함께.
- * 그래서 calendar.events 스코프로 본인 캘린더 'primary' 만 본다 (다른 사람 캘린더 X).
- */
-export async function listUpcomingEvents(
+/** 내부 — 두 ISO 시각 사이 본인 캘린더 일정 모두 가져온다. /hub 위젯 + /calendar 페이지 공용. */
+async function listEventsBetween(
   userId: string,
-  days: number = 7,
-  maxResults: number = 20
+  timeMin: string,
+  timeMax: string,
+  maxResults: number = 250
 ): Promise<UpcomingEvent[]> {
   const token = await getAccessToken(userId)
   if (!token) return []
-  const timeMin = new Date().toISOString()
-  const timeMax = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
   const p = new URLSearchParams({
     timeMin,
     timeMax,
@@ -152,4 +148,30 @@ export async function listUpcomingEvents(
         htmlLink: e.htmlLink ?? null,
       }
     })
+}
+
+/**
+ * 지금부터 N일 후까지의 일정. /hub 위젯용.
+ */
+export async function listUpcomingEvents(
+  userId: string,
+  days: number = 7,
+  maxResults: number = 20
+): Promise<UpcomingEvent[]> {
+  const timeMin = new Date().toISOString()
+  const timeMax = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+  return listEventsBetween(userId, timeMin, timeMax, maxResults)
+}
+
+/** 특정 월(`YYYY-MM`) 전체 일정. /calendar 월 그리드용. */
+export async function listEventsInMonth(
+  userId: string,
+  yearMonth: string
+): Promise<UpcomingEvent[]> {
+  const [y, m] = yearMonth.split('-').map(Number)
+  if (!y || !m) return []
+  // 월 시작 자정 → 다음 달 시작 자정 (로컬 KST 기준이 자연스럽지만 Google 은 UTC 변환)
+  const start = new Date(Date.UTC(y, m - 1, 1, -9, 0, 0)) // KST 자정 = UTC 전날 15시
+  const end = new Date(Date.UTC(y, m, 1, -9, 0, 0))
+  return listEventsBetween(userId, start.toISOString(), end.toISOString(), 500)
 }

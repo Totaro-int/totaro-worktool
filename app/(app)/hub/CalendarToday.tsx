@@ -2,6 +2,8 @@
  * Hub 우측 하단 — 오늘/내일 Google 캘린더 일정 위젯.
  * Google 미연결 사용자에겐 안 보이게 (null 반환).
  */
+import Link from 'next/link'
+
 import { listUpcomingEvents } from '@/lib/google/calendar'
 import { getConnection } from '@/lib/google/oauth'
 
@@ -45,7 +47,12 @@ export async function CalendarToday({
   if (events.length === 0) {
     return (
       <div className="pointer-events-auto absolute right-6 bottom-6 w-64 rounded-2xl bg-white/95 px-5 py-4 shadow-lg ring-1 ring-slate-200 backdrop-blur">
-        <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400">다가오는 일정</p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400">다가오는 일정</p>
+          <Link href="/calendar" className="text-[10px] font-medium text-blue-600 hover:underline">
+            전체 보기 →
+          </Link>
+        </div>
         <p className="mt-2 text-xs text-slate-500">이번 주 일정 없음 · 여유 있음</p>
       </div>
     )
@@ -53,7 +60,12 @@ export async function CalendarToday({
 
   return (
     <div className="pointer-events-auto absolute right-6 bottom-6 w-72 rounded-2xl bg-white/95 px-5 py-4 shadow-lg ring-1 ring-slate-200 backdrop-blur">
-      <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400">다가오는 일정</p>
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400">다가오는 일정</p>
+        <Link href="/calendar" className="text-[10px] font-medium text-blue-600 hover:underline">
+          전체 보기 →
+        </Link>
+      </div>
       <ul className="mt-2 space-y-1.5">
         {events.slice(0, 5).map((e) => (
           <li key={e.id} className="flex items-baseline justify-between gap-3">
