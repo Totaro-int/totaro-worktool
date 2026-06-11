@@ -36,8 +36,8 @@ export async function POST(req: Request): Promise<Response> {
   if (!question) return new Response('empty question', { status: 400 })
   const history = Array.isArray(body.history) ? body.history : []
 
-  // 관련 자료(발췌 포함) + 멤버 맥락
-  const { docs, members } = await retrieveContext(question)
+  // 관련 자료(발췌 포함) + 팀 작업 기록 + 멤버 맥락
+  const { docs, members, workLogs } = await retrieveContext(question)
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream<Uint8Array>({
@@ -48,7 +48,7 @@ export async function POST(req: Request): Promise<Response> {
 
       let full = ''
       try {
-        for await (const ev of streamAnswer({ question, history, docs, members })) {
+        for await (const ev of streamAnswer({ question, history, docs, members, workLogs })) {
           if (ev.type === 'delta') {
             full += ev.text
             send({ type: 'delta', text: ev.text })

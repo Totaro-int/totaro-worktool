@@ -23,6 +23,7 @@ import type { RetrievedDoc } from './retrieve'
 const MODEL = 'opus'
 const TIMEOUT_MS = 120_000
 const EXCERPT_MAX = 1500
+const WORKLOG_SUMMARY_MAX = 300
 
 // Anthropic Messages API (프로덕션 경로) — ANTHROPIC_API_KEY 가 있을 때만 사용.
 // 모델은 ANTHROPIC_MODEL 로 덮어쓸 수 있음(기본: 비용/품질 균형 좋은 Sonnet 4.6).
@@ -31,6 +32,14 @@ const API_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6'
 const API_MAX_TOKENS = 2048
 
 export type DocWithExcerpt = RetrievedDoc & { excerpt?: string }
+
+/** 팀 작업 기록(claude_logs) 한 건 — 누가 언제 무슨 작업을 했는지. */
+export type WorkLog = {
+  member: string
+  summary: string
+  project: string | null
+  occurredAt: string
+}
 
 export type ChatTurn = { role: 'user' | 'assistant'; content: string }
 
@@ -51,6 +60,7 @@ export async function generateAnswer(opts: {
   history: ChatTurn[]
   docs: DocWithExcerpt[]
   members?: string[]
+  workLogs?: WorkLog[]
 }): Promise<AnswerResult> {
   const prompt = buildChatPrompt(opts)
 
@@ -80,6 +90,7 @@ export async function* streamAnswer(opts: {
   history: ChatTurn[]
   docs: DocWithExcerpt[]
   members?: string[]
+  workLogs?: WorkLog[]
 }): AsyncGenerator<StreamEvent, boolean> {
   const prompt = buildChatPrompt(opts)
 
@@ -104,8 +115,9 @@ function buildChatPrompt(opts: {
   history: ChatTurn[]
   docs: DocWithExcerpt[]
   members?: string[]
+  workLogs?: WorkLog[]
 }): string {
-  const { question, history, docs, members } = opts
+  const { question, history, docs, members, workLogs } = opts
 
   const memberLine = members && members.length ? `\n- 멤버: ${members.join(', ')}` : ''
 
@@ -113,6 +125,11 @@ function buildChatPrompt(opts: {
     docs.length > 0
       ? docs.map((d, i) => renderDoc(d, i + 1)).join('\n\n')
       : '(관련 자료를 못 찾음 — 우편실에 아직 해당 자료가 없을 수 있음)'
+
+  const logBlock =
+    workLogs && workLogs.length > 0
+      ? workLogs.map(renderWorkLog).join('\n')
+      : '(관련 작업 기록 없음)'
 
   const historyBlock =
     history.length > 0
@@ -131,6 +148,9 @@ function buildChatPrompt(opts: {
 [네가 접근 가능한 회사 자료 — 구글 드라이브 우편실에서 이 질문으로 검색한 결과]
 ${docBlock}
 
+[팀 작업 기록 — 팀원들의 Claude Code 작업 로그에서 이 질문으로 검색한 결과]
+${logBlock}
+
 [지금까지 대화]
 ${historyBlock}
 
@@ -140,7 +160,8 @@ ${question}
 [답변 방법]
 - 한국어로, 진짜 옆자리 동료처럼 자연스럽게 말해.
 - 위 자료에서 근거를 찾으면 해당 문장 끝에 [번호] 로 출처를 표시해 (예: "...계약은 마무리됐어 [2].").
-- 자료에 없는 내용은 지어내지 마. "그건 우편실 자료에는 안 보이네" 처럼 솔직하게.
+- 팀 작업 기록을 근거로 쓸 때는 누가 언제 한 작업인지 자연스럽게 풀어서 말해 (예: "승주가 6월 10일에 연락처 동기화 작업을 했어"). [번호] 인용은 회사 자료에만 써.
+- 자료에도 작업 기록에도 없는 내용은 지어내지 마. "그건 우편실 자료에는 안 보이네" 처럼 솔직하게.
 - 추측이면 추측이라고 밝혀.
 - 너무 길게 늘어놓지 말고 핵심부터. 마크다운 헤더(#)는 쓰지 말고 자연스러운 문장으로.`
 }
@@ -156,6 +177,13 @@ function renderDoc(d: DocWithExcerpt, n: number): string {
   }
   if (d.excerpt) lines.push(`본문 발췌: ${d.excerpt.slice(0, EXCERPT_MAX)}`)
   return lines.join('\n')
+}
+
+/** 작업 기록 한 줄 렌더 — "- 2026-06-10 송승주 (totaro-worktool): 요약". */
+function renderWorkLog(l: WorkLog): string {
+  const date = l.occurredAt.slice(0, 10)
+  const project = l.project ? ` (${l.project})` : ''
+  return `- ${date} ${l.member}${project}: ${l.summary.slice(0, WORKLOG_SUMMARY_MAX)}`
 }
 
 // ============================================================

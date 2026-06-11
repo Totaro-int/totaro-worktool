@@ -36,11 +36,11 @@ export async function askAssistant(question: string, history: ChatTurn[]): Promi
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, answer: '', sources: [], degraded: false, error: '인증 필요' }
 
-  // 관련 자료(발췌 포함) + 멤버 맥락
-  const { docs, members } = await retrieveContext(q)
+  // 관련 자료(발췌 포함) + 팀 작업 기록 + 멤버 맥락
+  const { docs, members, workLogs } = await retrieveContext(q)
 
   // Claude(API 또는 CLI)로 자연어 답변
-  const ans = await generateAnswer({ question: q, history: history ?? [], docs, members })
+  const ans = await generateAnswer({ question: q, history: history ?? [], docs, members, workLogs })
 
   // 답변 생성 불가 → 자료 카드로 폴백 (상위 6건)
   if (!ans.available) {
