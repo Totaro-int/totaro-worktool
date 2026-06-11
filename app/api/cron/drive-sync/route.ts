@@ -20,7 +20,7 @@
  */
 import { NextResponse } from 'next/server'
 
-import { getDriveClient, getRootFolderId } from '@/lib/drive/client'
+import { getDriveClient, getRootFolderId, withDriveRetry } from '@/lib/drive/client'
 import { getServiceSupabase } from '@/lib/oauth/utils'
 
 import type { drive_v3 } from 'googleapis'
@@ -49,14 +49,16 @@ async function listChildren(
   const all: drive_v3.Schema$File[] = []
   let pageToken: string | undefined = undefined
   do {
-    const res: { data: drive_v3.Schema$FileList } = await drive.files.list({
-      q: `'${parentId}' in parents and trashed = false`,
-      fields: 'nextPageToken, files(id, name, mimeType, size, parents)',
-      pageSize: 1000,
-      supportsAllDrives: true,
-      includeItemsFromAllDrives: true,
-      pageToken,
-    })
+    const res: { data: drive_v3.Schema$FileList } = await withDriveRetry('cron.listChildren', () =>
+      drive.files.list({
+        q: `'${parentId}' in parents and trashed = false`,
+        fields: 'nextPageToken, files(id, name, mimeType, size, parents)',
+        pageSize: 1000,
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+        pageToken,
+      })
+    )
     all.push(...(res.data.files ?? []))
     pageToken = res.data.nextPageToken ?? undefined
   } while (pageToken)

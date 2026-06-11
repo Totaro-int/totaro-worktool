@@ -20,6 +20,41 @@ import type { drive_v3 } from 'googleapis'
 
 const FOLDER_MIME = 'application/vnd.google-apps.folder'
 
+/**
+ * Drive API 호출을 지수 백오프로 재시도. 5xx / 0 (네트워크) / 'fetch failed' /
+ * ECONNRESET 같은 transient 만 재시도, 4xx 는 즉시 throw (영구 에러).
+ * 1초 → 2초 → 4초. 사용자에게 "Drive 503" 안 뜨게 하는 핵심.
+ */
+export async function withDriveRetry<T>(
+  label: string,
+  fn: () => Promise<T>,
+  attempts = 3
+): Promise<T> {
+  let lastErr: unknown
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn()
+    } catch (e) {
+      lastErr = e
+      const status =
+        ((e as { response?: { status?: number } })?.response?.status ?? 0) ||
+        ((e as { status?: number })?.status ?? 0) ||
+        ((e as { code?: number })?.code ?? 0)
+      const msg = String((e as { message?: string })?.message ?? '')
+      const transient =
+        status >= 500 ||
+        status === 429 ||
+        status === 0 ||
+        /fetch failed|ECONNRESET|ETIMEDOUT|socket hang up|network/i.test(msg)
+      if (!transient || i === attempts - 1) {
+        throw new Error(`Drive ${label} 실패 (status=${status}): ${msg || 'unknown'}`)
+      }
+      await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, i)))
+    }
+  }
+  throw lastErr
+}
+
 /** service account 자격증명으로 Drive 클라이언트 발급. 모듈 lifecycle 동안 캐시. */
 let cachedDrive: drive_v3.Drive | null = null
 export function getDriveClient(): drive_v3.Drive {
@@ -51,13 +86,15 @@ export async function listSubfolders(
   drive: drive_v3.Drive,
   parentId: string
 ): Promise<{ id: string; name: string }[]> {
-  const res = await drive.files.list({
-    q: `'${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false`,
-    fields: 'files(id, name)',
-    pageSize: 100,
-    supportsAllDrives: true,
-    includeItemsFromAllDrives: true,
-  })
+  const res = await withDriveRetry('listSubfolders', () =>
+    drive.files.list({
+      q: `'${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false`,
+      fields: 'files(id, name)',
+      pageSize: 100,
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
+    })
+  )
   return (res.data.files ?? []).map((f) => ({ id: f.id ?? '', name: f.name ?? '' }))
 }
 
@@ -78,15 +115,17 @@ export async function ensureFolderPath(
     if (existing) {
       parent = existing.id
     } else {
-      const created = await drive.files.create({
-        requestBody: {
-          name: segment,
-          mimeType: FOLDER_MIME,
-          parents: [parent],
-        },
-        fields: 'id',
-        supportsAllDrives: true,
-      })
+      const created = await withDriveRetry('createFolder', () =>
+        drive.files.create({
+          requestBody: {
+            name: segment,
+            mimeType: FOLDER_MIME,
+            parents: [parent],
+          },
+          fields: 'id',
+          supportsAllDrives: true,
+        })
+      )
       parent = created.data.id ?? ''
       if (!parent) throw new Error(`폴더 생성 실패: ${segment}`)
     }
@@ -124,20 +163,22 @@ export async function uploadFile(
   mimeType: string
 ): Promise<{ id: string; webViewLink: string | null }> {
   const buffer = Buffer.isBuffer(content) ? content : Buffer.from(content, 'utf-8')
-  const stream = Readable.from(buffer)
-  const res = await drive.files.create({
-    requestBody: {
-      name: filename,
-      parents: [folderId],
-      mimeType,
-    },
-    media: {
-      mimeType,
-      body: stream,
-    },
-    fields: 'id, webViewLink',
-    supportsAllDrives: true,
-  })
+  // 매 재시도마다 stream 새로 생성 — Readable 은 1회만 소비 가능.
+  const res = await withDriveRetry('uploadFile', () =>
+    drive.files.create({
+      requestBody: {
+        name: filename,
+        parents: [folderId],
+        mimeType,
+      },
+      media: {
+        mimeType,
+        body: Readable.from(buffer),
+      },
+      fields: 'id, webViewLink',
+      supportsAllDrives: true,
+    })
+  )
   return {
     id: res.data.id ?? '',
     webViewLink: res.data.webViewLink ?? null,
@@ -150,28 +191,34 @@ export async function moveFile(
   fileId: string,
   newParentId: string
 ): Promise<void> {
-  const current = await drive.files.get({
-    fileId,
-    fields: 'parents',
-    supportsAllDrives: true,
-  })
+  const current = await withDriveRetry('getFileParents', () =>
+    drive.files.get({
+      fileId,
+      fields: 'parents',
+      supportsAllDrives: true,
+    })
+  )
   const previousParents = (current.data.parents ?? []).join(',')
-  await drive.files.update({
-    fileId,
-    addParents: newParentId,
-    removeParents: previousParents,
-    fields: 'id, parents',
-    supportsAllDrives: true,
-  })
+  await withDriveRetry('moveFile', () =>
+    drive.files.update({
+      fileId,
+      addParents: newParentId,
+      removeParents: previousParents,
+      fields: 'id, parents',
+      supportsAllDrives: true,
+    })
+  )
 }
 
 /** 파일을 휴지통으로 (soft delete). 30일 후 자동 영구 삭제 — Drive 기본 정책. */
 export async function trashFile(drive: drive_v3.Drive, fileId: string): Promise<void> {
-  await drive.files.update({
-    fileId,
-    requestBody: { trashed: true },
-    supportsAllDrives: true,
-  })
+  await withDriveRetry('trashFile', () =>
+    drive.files.update({
+      fileId,
+      requestBody: { trashed: true },
+      supportsAllDrives: true,
+    })
+  )
 }
 
 /** 폴더 ID로부터 사람 읽을 수 있는 경로 문자열 재구성. 디버그·로그용. */
@@ -180,11 +227,13 @@ export async function pathOfFolder(drive: drive_v3.Drive, folderId: string): Pro
   let current = folderId
   const rootId = getRootFolderId()
   while (current && current !== rootId) {
-    const f = await drive.files.get({
-      fileId: current,
-      fields: 'name, parents',
-      supportsAllDrives: true,
-    })
+    const f = await withDriveRetry('getFolderInfo', () =>
+      drive.files.get({
+        fileId: current,
+        fields: 'name, parents',
+        supportsAllDrives: true,
+      })
+    )
     parts.unshift(f.data.name ?? '?')
     current = (f.data.parents ?? [])[0] ?? ''
   }
