@@ -16,8 +16,11 @@ create table if not exists public.cash_snapshots (
 );
 
 -- 같은 날짜 + 같은 계좌 별칭 조합은 한 번만 (수동 입력 실수 방지).
-create unique index if not exists cash_snapshots_day_alias_uniq
-  on public.cash_snapshots (as_of_date, coalesce(account_alias, ''));
+-- nulls not distinct: PG 15+. NULL × NULL 도 같은 키로 본다 → ON CONFLICT 작동.
+-- expression index (coalesce) 는 ON CONFLICT 와 매칭 안 됨 → 단순 컬럼만.
+drop index if exists public.cash_snapshots_day_alias_uniq;
+create unique index cash_snapshots_day_alias_uniq
+  on public.cash_snapshots (as_of_date, account_alias) nulls not distinct;
 
 create index if not exists cash_snapshots_recent_idx
   on public.cash_snapshots (as_of_date desc);
