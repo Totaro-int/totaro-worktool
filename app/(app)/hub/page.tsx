@@ -519,6 +519,12 @@ export default async function HubPage(): Promise<React.JSX.Element> {
         </div>
         <div className="flex items-center gap-3">
           <Link
+            href="/metrics"
+            className="text-xs font-medium text-slate-500 transition-colors hover:text-blue-600"
+          >
+            우리의 지표
+          </Link>
+          <Link
             href="/claude-log"
             className="text-xs font-medium text-slate-500 transition-colors hover:text-blue-600"
           >
