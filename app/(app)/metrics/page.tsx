@@ -143,6 +143,23 @@ export default async function MetricsPage(): Promise<React.JSX.Element> {
               />
             </div>
           </section>
+
+          {/* 각오 */}
+          <section
+            aria-labelledby="resolve-heading"
+            className="border-t border-[#e3e8ee] py-16 pb-24"
+          >
+            <p className="text-xs font-semibold tracking-[0.18em] text-[#533afd]">각오</p>
+            <p
+              id="resolve-heading"
+              className="mt-5 text-3xl leading-[1.2] font-light tracking-[-0.03em] text-[#0d253d] sm:text-4xl"
+            >
+              이루지 못하면,
+              <br />
+              바다에 빠져 죽는다.
+            </p>
+            <p className="mt-5 text-sm text-[#64748d]">— {q.label}, 토타로 세 사람</p>
+          </section>
         </div>
       </div>
     </>
