@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>시안 B — Metrics (Stripe · 에디토리얼 신뢰)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #ffffff;
+      --canvas-soft: #f6f9fc;
+      --ink: #0d253d;
+      --ink-mute: #64748d;
+      --accent: #533afd;
+      --hairline: #e3e8ee;
+      --font: 'Inter', sans-serif;
+    }
+    * { margin: 0; box-sizing: border-box; }
+    body { background: var(--canvas); font-family: var(--font); color: var(--ink); }
+    .page { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
+    .sec { position: relative; }
+    .sec-label {
+      position: absolute; left: -120px; top: 8px; width: 100px; text-align: right;
+      font: 500 11px/1 monospace; color: #a8c3de; letter-spacing: 0.08em;
+    }
+    .box { border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div style="position:fixed;top:12px;right:12px;background:#533afd;color:#fff;padding:4px 10px;font-size:12px;border-radius:4px;z-index:9999;font-family:monospace">시안 B — Stripe · 에디토리얼 신뢰</div>
+
+  <div class="page">
+
+    <!-- // NAV -->
+    <div class="sec" style="padding:20px 0;display:flex;align-items:center;border-bottom:1px solid var(--hairline)">
+      <span class="sec-label">// NAV</span>
+      <div class="box" style="background:#e9edf2;width:110px;height:18px"></div><!-- [← 워크 허브] -->
+      <div style="margin-left:auto;display:flex;gap:20px">
+        <div class="box" style="background:#e9edf2;width:64px;height:14px"></div>
+        <div class="box" style="background:#e9edf2;width:64px;height:14px"></div>
+      </div>
+    </div>
+
+    <!-- // MISSION : 비대칭 2단 — 좌 미션 선언(가는 대형 타이포) / 우 그라데이션 메시 -->
+    <div class="sec" style="padding:80px 0 64px;display:grid;grid-template-columns:1.4fr 1fr;gap:56px;align-items:center">
+      <span class="sec-label">// MISSION</span>
+      <div>
+        <div class="box" style="background:#ece9ff;width:120px;height:13px;margin-bottom:24px"></div><!-- [eyebrow: MISSION] -->
+        <div class="box" style="background:#e9edf2;width:100%;height:52px;margin-bottom:12px"></div><!-- [미션 1행 — thin 48px] -->
+        <div class="box" style="background:#e9edf2;width:78%;height:52px;margin-bottom:24px"></div><!-- [미션 2행] -->
+        <div class="box" style="background:#f1f4f8;width:60%;height:15px;margin-bottom:6px"></div><!-- [서브 설명 2줄] -->
+        <div class="box" style="background:#f1f4f8;width:48%;height:15px"></div>
+      </div>
+      <div class="box" style="background:linear-gradient(135deg,#ece9ff 0%,#fdeef5 60%,#fff6e9 100%);height:260px;position:relative">
+        <!-- [그라데이션 메시 + 분기 목표 오버레이 카드] -->
+        <div class="box" style="position:absolute;left:24px;bottom:24px;background:#ffffff;width:60%;height:88px;box-shadow:0 6px 24px rgba(0,55,112,.12);padding:14px">
+          <div class="box" style="background:#ece9ff;width:50%;height:10px;margin-bottom:10px"></div><!-- [이번 분기 목표] -->
+          <div class="box" style="background:#e9edf2;width:70%;height:30px"></div><!-- [목표 숫자] -->
+        </div>
+      </div>
+    </div>
+
+    <!-- // LEDGER : KPI를 카드가 아닌 "장부 행"으로 — 풀폭 테이블 행, tabular 숫자 -->
+    <div class="sec" style="padding:0 0 80px">
+      <span class="sec-label">// LEDGER</span>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px">
+        <div class="box" style="background:#e9edf2;width:160px;height:20px"></div><!-- [영역별 KPI] -->
+        <div class="box" style="background:#f1f4f8;width:220px;height:12px"></div><!-- [분기마다 1번 숫자 하나를 정한다] -->
+      </div>
+
+      <!-- 행 1 — 북극성 행 (배경 강조) -->
+      <div style="display:grid;grid-template-columns:130px 1fr 220px 130px;gap:24px;align-items:center;padding:26px 20px;background:var(--canvas-soft);border-radius:10px;border:1px solid var(--hairline)">
+        <div class="box" style="background:#ece9ff;width:100%;height:22px"></div><!-- [영역 배지 — 1번 숫자 표시] -->
+        <div>
+          <div class="box" style="background:#dde3ea;width:48%;height:16px;margin-bottom:8px"></div><!-- [지표명] -->
+          <div class="box" style="background:#e9edf2;width:70%;height:11px"></div><!-- [설명] -->
+        </div>
+        <div class="box" style="background:#dde3ea;width:100%;height:54px;margin-left:auto"></div><!-- [큰 tabular 숫자 — 우측 정렬] -->
+        <div class="box" style="background:#e3f4e8;width:100%;height:20px"></div><!-- [추세/상태] -->
+      </div>
+
+      <!-- 행 2~5 — 일반 행 (hairline 구분) -->
+      <div style="display:grid;grid-template-columns:130px 1fr 220px 130px;gap:24px;align-items:center;padding:24px 20px;border-bottom:1px solid var(--hairline)">
+        <div class="box" style="background:#f1f4f8;width:100%;height:20px"></div>
+        <div>
+          <div class="box" style="background:#e9edf2;width:42%;height:14px;margin-bottom:7px"></div>
+          <div class="box" style="background:#f1f4f8;width:64%;height:10px"></div>
+        </div>
+        <div class="box" style="background:#e9edf2;width:80%;height:38px;margin-left:auto"></div>
+        <div class="box" style="background:#f1f4f8;width:100%;height:18px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:130px 1fr 220px 130px;gap:24px;align-items:center;padding:24px 20px;border-bottom:1px solid var(--hairline)">
+        <div class="box" style="background:#f1f4f8;width:100%;height:20px"></div>
+        <div>
+          <div class="box" style="background:#e9edf2;width:50%;height:14px;margin-bottom:7px"></div>
+          <div class="box" style="background:#f1f4f8;width:58%;height:10px"></div>
+        </div>
+        <div class="box" style="background:#e9edf2;width:80%;height:38px;margin-left:auto"></div>
+        <div class="box" style="background:#f1f4f8;width:100%;height:18px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:130px 1fr 220px 130px;gap:24px;align-items:center;padding:24px 20px;border-bottom:1px solid var(--hairline)">
+        <div class="box" style="background:#f1f4f8;width:100%;height:20px"></div>
+        <div>
+          <div class="box" style="background:#e9edf2;width:46%;height:14px;margin-bottom:7px"></div>
+          <div class="box" style="background:#f1f4f8;width:66%;height:10px"></div>
+        </div>
+        <div class="box" style="background:#e9edf2;width:80%;height:38px;margin-left:auto"></div>
+        <div class="box" style="background:#f1f4f8;width:100%;height:18px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:130px 1fr 220px 130px;gap:24px;align-items:center;padding:24px 20px">
+        <div class="box" style="background:#f1f4f8;width:100%;height:20px"></div>
+        <div>
+          <div class="box" style="background:#e9edf2;width:44%;height:14px;margin-bottom:7px"></div>
+          <div class="box" style="background:#f1f4f8;width:60%;height:10px"></div>
+        </div>
+        <div class="box" style="background:#e9edf2;width:80%;height:38px;margin-left:auto"></div>
+        <div class="box" style="background:#f1f4f8;width:100%;height:18px"></div>
+      </div>
+    </div>
+
+    <!-- // PRINCIPLES : 5개조 — 좌측 고정 제목 + 우측 비대칭 2단 흐름 -->
+    <div class="sec" style="padding:0 0 120px;display:grid;grid-template-columns:1fr 2fr;gap:56px">
+      <span class="sec-label">// PRINCIPLES</span>
+      <div>
+        <div class="box" style="background:#e9edf2;width:80%;height:24px;margin-bottom:14px"></div><!-- [토타로 5개조] -->
+        <div class="box" style="background:#f1f4f8;width:90%;height:12px;margin-bottom:6px"></div><!-- [설명] -->
+        <div class="box" style="background:#f1f4f8;width:70%;height:12px"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0">
+        <div style="padding:20px 0;border-bottom:1px solid var(--hairline);display:flex;gap:20px;align-items:flex-start">
+          <div class="box" style="background:#ece9ff;width:28px;height:28px;border-radius:50%"></div><!-- [번호] -->
+          <div style="flex:1">
+            <div class="box" style="background:#e9edf2;width:60%;height:15px;margin-bottom:7px"></div>
+            <div class="box" style="background:#f1f4f8;width:84%;height:11px"></div>
+          </div>
+        </div>
+        <div style="padding:20px 0;border-bottom:1px solid var(--hairline);display:flex;gap:20px">
+          <div class="box" style="background:#ece9ff;width:28px;height:28px;border-radius:50%"></div>
+          <div style="flex:1">
+            <div class="box" style="background:#e9edf2;width:52%;height:15px;margin-bottom:7px"></div>
+            <div class="box" style="background:#f1f4f8;width:76%;height:11px"></div>
+          </div>
+        </div>
+        <div style="padding:20px 0;border-bottom:1px solid var(--hairline);display:flex;gap:20px">
+          <div class="box" style="background:#ece9ff;width:28px;height:28px;border-radius:50%"></div>
+          <div style="flex:1">
+            <div class="box" style="background:#e9edf2;width:64%;height:15px;margin-bottom:7px"></div>
+            <div class="box" style="background:#f1f4f8;width:80%;height:11px"></div>
+          </div>
+        </div>
+        <div style="padding:16px 0 0;display:flex;justify-content:center">
+          <div class="box" style="background:#f1f4f8;width:120px;height:12px"></div><!-- [× 5개 행 반복] -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

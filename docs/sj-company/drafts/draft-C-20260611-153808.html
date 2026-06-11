@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>시안 C — Metrics (PostHog · 크림 벤토)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #eeefe9;
+      --card: #ffffff;
+      --ink: #23251d;
+      --body: #4d4f46;
+      --accent: #f7a501;
+      --hairline: #bfc1b7;
+      --font: 'IBM Plex Sans', sans-serif;
+    }
+    * { margin: 0; box-sizing: border-box; }
+    body { background: var(--canvas); font-family: var(--font); color: var(--ink); }
+    .page { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
+    .sec { position: relative; }
+    .sec-label {
+      position: absolute; left: -120px; top: 8px; width: 100px; text-align: right;
+      font: 500 11px/1 monospace; color: #9b9c92; letter-spacing: 0.08em;
+    }
+    .box { border-radius: 5px; }
+    .card { background: var(--card); border: 1px solid var(--hairline); border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div style="position:fixed;top:12px;right:12px;background:#f7a501;color:#23251d;padding:4px 10px;font-size:12px;border-radius:4px;z-index:9999;font-family:monospace;font-weight:700">시안 C — PostHog · 크림 벤토</div>
+
+  <div class="page">
+
+    <!-- // NAV -->
+    <div class="sec" style="padding:20px 0;display:flex;align-items:center;border-bottom:1px solid var(--hairline)">
+      <span class="sec-label">// NAV</span>
+      <div class="box" style="background:#dcdfd2;width:110px;height:18px"></div><!-- [← 워크 허브] -->
+      <div style="margin-left:auto;display:flex;gap:20px">
+        <div class="box" style="background:#dcdfd2;width:64px;height:14px"></div>
+        <div class="box" style="background:#f7a501;width:80px;height:26px;border-radius:14px"></div><!-- [CTA pill] -->
+      </div>
+    </div>
+
+    <!-- // MISSION : 다크 올리브 칠판 카드 — 크림 캔버스 위 반전 블록 -->
+    <div class="sec" style="padding:56px 0 40px">
+      <span class="sec-label">// MISSION</span>
+      <div style="background:#23251d;border-radius:8px;padding:48px;position:relative">
+        <div class="box" style="background:#f7a501;width:110px;height:13px;margin-bottom:24px"></div><!-- [eyebrow: 미션] -->
+        <div class="box" style="background:#3a3c32;width:84%;height:42px;margin-bottom:12px"></div><!-- [미션 1행 — 36px bold] -->
+        <div class="box" style="background:#3a3c32;width:58%;height:42px;margin-bottom:24px"></div><!-- [미션 2행] -->
+        <div class="box" style="background:#33342d;width:42%;height:14px"></div><!-- [서브 한 줄] -->
+        <div class="box" style="position:absolute;right:48px;bottom:40px;background:#33342d;width:120px;height:120px;border-radius:50%"></div><!-- [마스코트/일러스트 자리] -->
+      </div>
+    </div>
+
+    <!-- // BENTO : 북극성 대형 카드(2×2) + 보조 4개 — 크기 위계 있는 벤토 -->
+    <div class="sec" style="padding:0 0 56px">
+      <span class="sec-label">// BENTO</span>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px">
+        <div class="box" style="background:#dcdfd2;width:160px;height:20px"></div><!-- [영역별 KPI] -->
+        <div class="box" style="background:#e5e7e0;width:200px;height:12px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:auto auto;gap:14px">
+        <!-- 북극성 카드: 2칸 × 2줄 -->
+        <div class="card" style="grid-column:span 2;grid-row:span 2;padding:32px;border-width:2px;border-color:#23251d">
+          <div style="display:flex;justify-content:space-between;margin-bottom:24px">
+            <div class="box" style="background:#fdeecb;width:130px;height:22px;border-radius:12px"></div><!-- [⭐ 이번 분기 1번 숫자] -->
+            <div class="box" style="background:#d9eddf;width:70px;height:22px;border-radius:12px"></div><!-- [추세] -->
+          </div>
+          <div class="box" style="background:#e5e7e0;width:58%;height:96px;margin-bottom:18px"></div><!-- [초대형 숫자 — 80px] -->
+          <div class="box" style="background:#dcdfd2;width:44%;height:15px;margin-bottom:8px"></div><!-- [지표명] -->
+          <div class="box" style="background:#e5e7e0;width:64%;height:11px;margin-bottom:24px"></div><!-- [설명] -->
+          <div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid #dcdfd2;padding-top:18px">
+            <div class="box" style="background:#fdeecb;width:90%;height:16px"></div><!-- [멤버 바 1] -->
+            <div class="box" style="background:#fdeecb;width:62%;height:16px"></div>
+            <div class="box" style="background:#fdeecb;width:38%;height:16px"></div>
+          </div>
+        </div>
+        <!-- 보조 카드 4개 (1칸씩, 우측 열에 2개 + 아래줄 2개) -->
+        <div class="card" style="padding:22px">
+          <div class="box" style="background:#e5e7e0;width:64%;height:11px;margin-bottom:14px"></div>
+          <div class="box" style="background:#dcdfd2;width:50%;height:34px;margin-bottom:8px"></div>
+          <div class="box" style="background:#e5e7e0;width:80%;height:10px"></div>
+        </div>
+        <div class="card" style="padding:22px">
+          <div class="box" style="background:#e5e7e0;width:58%;height:11px;margin-bottom:14px"></div>
+          <div class="box" style="background:#dcdfd2;width:46%;height:34px;margin-bottom:8px"></div>
+          <div class="box" style="background:#e5e7e0;width:74%;height:10px"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px">
+        <div class="card" style="padding:22px">
+          <div class="box" style="background:#e5e7e0;width:60%;height:11px;margin-bottom:14px"></div>
+          <div class="box" style="background:#dcdfd2;width:48%;height:34px;margin-bottom:8px"></div>
+          <div class="box" style="background:#e5e7e0;width:78%;height:10px"></div>
+        </div>
+        <div class="card" style="padding:22px">
+          <div class="box" style="background:#e5e7e0;width:66%;height:11px;margin-bottom:14px"></div>
+          <div class="box" style="background:#dcdfd2;width:44%;height:34px;margin-bottom:8px"></div>
+          <div class="box" style="background:#e5e7e0;width:70%;height:10px"></div>
+        </div>
+        <div style="border:2px dashed var(--hairline);border-radius:6px;padding:22px;display:flex;align-items:center;justify-content:center">
+          <div class="box" style="background:#e5e7e0;width:60%;height:12px"></div><!-- [수동 지표 — 기록 대기] -->
+        </div>
+      </div>
+    </div>
+
+    <!-- // PRINCIPLES : 5개조 — 노트 느낌 가로 스텝 카드 -->
+    <div class="sec" style="padding:0 0 120px">
+      <span class="sec-label">// PRINCIPLES</span>
+      <div class="box" style="background:#dcdfd2;width:180px;height:20px;margin-bottom:24px"></div><!-- [토타로 5개조] -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
+        <div class="card" style="padding:18px;border-top:3px solid #f7a501">
+          <div class="box" style="background:#fdeecb;width:26px;height:26px;border-radius:50%;margin-bottom:14px"></div><!-- [1] -->
+          <div class="box" style="background:#dcdfd2;width:90%;height:13px;margin-bottom:6px"></div>
+          <div class="box" style="background:#e5e7e0;width:75%;height:13px;margin-bottom:12px"></div>
+          <div class="box" style="background:#e5e7e0;width:60%;height:9px"></div><!-- [출처] -->
+        </div>
+        <div class="card" style="padding:18px;border-top:3px solid #2c84e0">
+          <div class="box" style="background:#dceaf6;width:26px;height:26px;border-radius:50%;margin-bottom:14px"></div>
+          <div class="box" style="background:#dcdfd2;width:84%;height:13px;margin-bottom:6px"></div>
+          <div class="box" style="background:#e5e7e0;width:70%;height:13px;margin-bottom:12px"></div>
+          <div class="box" style="background:#e5e7e0;width:55%;height:9px"></div>
+        </div>
+        <div class="card" style="padding:18px;border-top:3px solid #2c8c66">
+          <div class="box" style="background:#d9eddf;width:26px;height:26px;border-radius:50%;margin-bottom:14px"></div>
+          <div class="box" style="background:#dcdfd2;width:88%;height:13px;margin-bottom:6px"></div>
+          <div class="box" style="background:#e5e7e0;width:72%;height:13px;margin-bottom:12px"></div>
+          <div class="box" style="background:#e5e7e0;width:58%;height:9px"></div>
+        </div>
+        <div class="card" style="padding:18px;border-top:3px solid #cd4239">
+          <div class="box" style="background:#f7d6d3;width:26px;height:26px;border-radius:50%;margin-bottom:14px"></div>
+          <div class="box" style="background:#dcdfd2;width:86%;height:13px;margin-bottom:6px"></div>
+          <div class="box" style="background:#e5e7e0;width:68%;height:13px;margin-bottom:12px"></div>
+          <div class="box" style="background:#e5e7e0;width:52%;height:9px"></div>
+        </div>
+        <div class="card" style="padding:18px;border-top:3px solid #7c44a6">
+          <div class="box" style="background:#e7d8ee;width:26px;height:26px;border-radius:50%;margin-bottom:14px"></div>
+          <div class="box" style="background:#dcdfd2;width:90%;height:13px;margin-bottom:6px"></div>
+          <div class="box" style="background:#e5e7e0;width:74%;height:13px;margin-bottom:12px"></div>
+          <div class="box" style="background:#e5e7e0;width:56%;height:9px"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

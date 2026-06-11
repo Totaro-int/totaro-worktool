@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>시안 A — Metrics (Linear · 다크 임팩트)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #010102;
+      --surface-1: #0f1011;
+      --surface-2: #141516;
+      --hairline: #23252a;
+      --ink: #f7f8f8;
+      --ink-subtle: #8a8f98;
+      --accent: #5e6ad2;
+      --font: 'Inter', sans-serif;
+    }
+    * { margin: 0; box-sizing: border-box; }
+    body { background: var(--canvas); font-family: var(--font); color: var(--ink); }
+    .page { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
+    .sec { position: relative; }
+    .sec-label {
+      position: absolute; left: -120px; top: 8px; width: 100px; text-align: right;
+      font: 500 11px/1 monospace; color: #3e3e44; letter-spacing: 0.08em;
+    }
+    .box { border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div style="position:fixed;top:12px;right:12px;background:#5e6ad2;color:#fff;padding:4px 10px;font-size:12px;border-radius:4px;z-index:9999;font-family:monospace">시안 A — Linear · 다크 임팩트</div>
+
+  <div class="page">
+
+    <!-- // NAV -->
+    <div class="sec" style="padding:20px 0;display:flex;align-items:center;border-bottom:1px solid var(--hairline)">
+      <span class="sec-label">// NAV</span>
+      <div class="box" style="background:var(--surface-2);width:110px;height:18px"></div><!-- [← 워크 허브] -->
+      <div style="margin-left:auto;display:flex;gap:20px">
+        <div class="box" style="background:var(--surface-2);width:64px;height:14px"></div>
+        <div class="box" style="background:var(--surface-2);width:64px;height:14px"></div>
+      </div>
+    </div>
+
+    <!-- // MISSION : 풀폭 디스플레이 타이포 선언 -->
+    <div class="sec" style="padding:96px 0 72px">
+      <span class="sec-label">// MISSION</span>
+      <div class="box" style="background:#1a1b2e;width:140px;height:14px;margin-bottom:28px"></div><!-- [eyebrow: OUR MISSION] -->
+      <div class="box" style="background:var(--surface-2);width:92%;height:64px;margin-bottom:14px"></div><!-- [미션 문장 1행 — display 56px] -->
+      <div class="box" style="background:var(--surface-2);width:64%;height:64px;margin-bottom:32px"></div><!-- [미션 문장 2행] -->
+      <div class="box" style="background:var(--surface-1);width:46%;height:16px"></div><!-- [서브: 우리가 먼저 쓰고, 그 도구를 판다] -->
+    </div>
+
+    <!-- // NORTH STAR : 이번 분기 1번 숫자 — 초대형 숫자 패널 -->
+    <div class="sec" style="padding:0 0 56px;display:grid;grid-template-columns:1.7fr 1fr;gap:16px">
+      <span class="sec-label">// NORTH STAR</span>
+      <div class="box" style="background:var(--surface-1);border:1px solid var(--hairline);padding:36px;height:280px;position:relative">
+        <div class="box" style="background:#1a1b2e;width:120px;height:13px;margin-bottom:24px"></div><!-- [배지: 이번 분기 1번 숫자] -->
+        <div class="box" style="background:var(--surface-2);width:70%;height:110px;margin-bottom:18px"></div><!-- [초대형 KPI 숫자 — 96px tabular] -->
+        <div class="box" style="background:var(--surface-2);width:50%;height:14px;margin-bottom:8px"></div><!-- [지표 이름 + 설명] -->
+        <div class="box" style="background:var(--surface-2);width:36%;height:12px"></div>
+        <div class="box" style="position:absolute;right:36px;top:36px;background:#152a1a;width:72px;height:24px"></div><!-- [추세 ▲] -->
+      </div>
+      <div class="box" style="background:var(--surface-1);border:1px solid var(--hairline);padding:28px;height:280px">
+        <div class="box" style="background:var(--surface-2);width:60%;height:13px;margin-bottom:20px"></div><!-- [멤버별 이번 주 기록] -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="box" style="background:#1a1b2e;width:100%;height:22px"></div><!-- [멤버 바 1] -->
+          <div class="box" style="background:#16172a;width:72%;height:22px"></div>
+          <div class="box" style="background:#121324;width:45%;height:22px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- // KPI RAIL : 보조 지표 4개 — 한 줄 하이라인 분할 (카드 아님) -->
+    <div class="sec" style="padding:0 0 72px">
+      <span class="sec-label">// KPI RAIL</span>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)">
+        <div style="padding:28px 24px 28px 0;border-right:1px solid var(--hairline)">
+          <div class="box" style="background:var(--surface-2);width:60%;height:11px;margin-bottom:18px"></div><!-- [영역 라벨] -->
+          <div class="box" style="background:var(--surface-2);width:55%;height:40px;margin-bottom:10px"></div><!-- [숫자 36px] -->
+          <div class="box" style="background:var(--surface-1);width:80%;height:11px"></div><!-- [한줄 설명] -->
+        </div>
+        <div style="padding:28px 24px;border-right:1px solid var(--hairline)">
+          <div class="box" style="background:var(--surface-2);width:60%;height:11px;margin-bottom:18px"></div>
+          <div class="box" style="background:var(--surface-2);width:55%;height:40px;margin-bottom:10px"></div>
+          <div class="box" style="background:var(--surface-1);width:80%;height:11px"></div>
+        </div>
+        <div style="padding:28px 24px;border-right:1px solid var(--hairline)">
+          <div class="box" style="background:var(--surface-2);width:60%;height:11px;margin-bottom:18px"></div>
+          <div class="box" style="background:var(--surface-2);width:55%;height:40px;margin-bottom:10px"></div>
+          <div class="box" style="background:var(--surface-1);width:80%;height:11px"></div>
+        </div>
+        <div style="padding:28px 0 28px 24px">
+          <div class="box" style="background:var(--surface-2);width:60%;height:11px;margin-bottom:18px"></div>
+          <div class="box" style="background:var(--surface-2);width:55%;height:40px;margin-bottom:10px"></div>
+          <div class="box" style="background:var(--surface-1);width:80%;height:11px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- // PRINCIPLES : 5개조 — 거대 번호 + 하이라인 행 -->
+    <div class="sec" style="padding:0 0 120px">
+      <span class="sec-label">// PRINCIPLES</span>
+      <div class="box" style="background:var(--surface-2);width:180px;height:20px;margin-bottom:32px"></div><!-- [섹션 제목: 토타로 5개조] -->
+      <div style="display:flex;flex-direction:column">
+        <div style="display:grid;grid-template-columns:90px 1fr 160px;gap:24px;padding:26px 0;border-top:1px solid var(--hairline);align-items:center">
+          <div class="box" style="background:#1a1b2e;width:56px;height:44px"></div><!-- [01 — 거대 번호] -->
+          <div>
+            <div class="box" style="background:var(--surface-2);width:55%;height:16px;margin-bottom:8px"></div><!-- [원칙 제목] -->
+            <div class="box" style="background:var(--surface-1);width:75%;height:11px"></div><!-- [디테일] -->
+          </div>
+          <div class="box" style="background:var(--surface-1);width:100%;height:11px"></div><!-- [출처] -->
+        </div>
+        <div style="display:grid;grid-template-columns:90px 1fr 160px;gap:24px;padding:26px 0;border-top:1px solid var(--hairline);align-items:center">
+          <div class="box" style="background:#1a1b2e;width:56px;height:44px"></div>
+          <div>
+            <div class="box" style="background:var(--surface-2);width:48%;height:16px;margin-bottom:8px"></div>
+            <div class="box" style="background:var(--surface-1);width:68%;height:11px"></div>
+          </div>
+          <div class="box" style="background:var(--surface-1);width:100%;height:11px"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:90px 1fr 160px;gap:24px;padding:26px 0;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);align-items:center">
+          <div class="box" style="background:#1a1b2e;width:56px;height:44px"></div>
+          <div>
+            <div class="box" style="background:var(--surface-2);width:60%;height:16px;margin-bottom:8px"></div>
+            <div class="box" style="background:var(--surface-1);width:72%;height:11px"></div>
+          </div>
+          <div class="box" style="background:var(--surface-1);width:100%;height:11px"></div>
+        </div>
+        <div style="padding:18px 0 0;display:flex;justify-content:center">
+          <div class="box" style="background:var(--surface-1);width:120px;height:12px"></div><!-- [× 5개 행 반복] -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
