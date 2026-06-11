@@ -11,9 +11,17 @@ import type { Task } from '@/lib/types'
 import { CalendarToday } from './CalendarToday'
 import { MissionBanner } from './MissionBanner'
 
-type IconName = 'tasks' | 'github' | 'naver' | 'agent' | 'mailroom' | 'assistant' | 'contacts'
+type IconName =
+  | 'tasks'
+  | 'github'
+  | 'naver'
+  | 'agent'
+  | 'mailroom'
+  | 'assistant'
+  | 'contacts'
+  | 'cash'
 
-type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose' | 'violet'
+type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose' | 'violet' | 'teal'
 
 /** 노드 큐브의 재질(면별 그라데이션)·조명·라벨 색을 한 묶음으로 정의한다. */
 type CubePalette = {
@@ -88,6 +96,16 @@ const PALETTE: Record<Accent, CubePalette> = {
     header: '#8b5cf6',
     pool: '#8b5cf6',
     poolOpacity: 0.26,
+  },
+  teal: {
+    top: ['#f0fbf9', '#dcf2ed'],
+    left: ['#bedfd6', '#a5d0c4'],
+    right: ['#a5d1c6', '#8cc1b1'],
+    emblem: 'rgba(13, 148, 136, 0.1)',
+    iconColor: '#0d9488',
+    header: '#14b8a6',
+    pool: '#14b8a6',
+    poolOpacity: 0.22,
   },
 }
 
@@ -175,6 +193,16 @@ function NodeIcon({
         <path d="M6 17c0-1.7 1.3-3 3-3s3 1.3 3 3" />
         <line x1="14" y1="10" x2="18" y2="10" />
         <line x1="14" y1="13" x2="18" y2="13" />
+      </svg>
+    )
+  }
+  if (name === 'cash') {
+    return (
+      <svg {...props}>
+        <rect x="3" y="6" width="18" height="12" rx="2" />
+        <circle cx="12" cy="12" r="2.5" />
+        <line x1="6.5" y1="9" x2="6.5" y2="9.1" />
+        <line x1="17.5" y1="15" x2="17.5" y2="15.1" />
       </svg>
     )
   }
@@ -414,6 +442,14 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       .not('drive_file_id', 'is', null)
       .not('status', 'in', '(trashed,rejected,failed)'),
   ])
+
+  // 가용 현금 — 최신 스냅샷 한 줄 (있으면 표시, 없으면 '—')
+  const { data: cashRow } = await supabase
+    .from('cash_snapshots')
+    .select('balance_krw, as_of_date')
+    .order('as_of_date', { ascending: false })
+    .limit(1)
+    .maybeSingle<{ balance_krw: number; as_of_date: string }>()
   const user = userRes.user
 
   const tasks = (taskData ?? []) as Pick<Task, 'status'>[]
@@ -505,6 +541,15 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       value: '—',
       position: 'left-[30%] top-[78%]',
       accent: 'emerald',
+    },
+    {
+      href: '/cash',
+      name: '가용 현금',
+      icon: 'cash',
+      subText: cashRow ? `기준 ${cashRow.as_of_date}` : '잔고 일지',
+      value: cashRow ? wonCompact(cashRow.balance_krw) : '—',
+      position: 'left-[70%] top-[78%]',
+      accent: 'teal',
     },
   ]
 
