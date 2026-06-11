@@ -14,14 +14,34 @@ function wonCompact(n: number): string {
   return `₩${Math.round(n).toLocaleString('ko-KR')}`
 }
 
-/** 장부 행 하나 — 영역 / 지표명·이유 / 큰 숫자 / 기간. */
+/** 이번 분기(KST) 마감 정보 — 분기가 바뀌면 자동으로 따라간다. */
+function quarterDeadline(): { label: string; due: string; dday: string } {
+  const KST_OFFSET_MS = 9 * 3600_000
+  const kstNow = new Date(Date.now() + KST_OFFSET_MS)
+  const quarter = Math.floor(kstNow.getUTCMonth() / 3) + 1
+  // 분기 마지막 날 = 다음 분기 첫 달의 0일
+  const endUtc = Date.UTC(kstNow.getUTCFullYear(), quarter * 3, 0)
+  const end = new Date(endUtc)
+  const daysLeft = Math.max(
+    0,
+    Math.ceil((endUtc - (kstNow.getTime() - KST_OFFSET_MS)) / 86_400_000)
+  )
+  return {
+    label: `${kstNow.getUTCFullYear()} Q${quarter}`,
+    due: `${end.getUTCMonth() + 1}월 ${end.getUTCDate()}일`,
+    dday: `D-${daysLeft}`,
+  }
+}
+
+/** 장부 행 하나 — 영역 / 지표명·이유 / 큰 숫자 / 기한. */
 function LedgerRow({
   area,
   name,
   why,
   value,
   unit,
-  period,
+  deadline,
+  dday,
 }: {
   area: string
   name: string
@@ -29,10 +49,12 @@ function LedgerRow({
   why: string
   value: string
   unit?: string
-  period: string
+  /** 언제까지 달성할 것인가. */
+  deadline: string
+  dday?: string
 }): React.JSX.Element {
   return (
-    <div className="grid grid-cols-1 items-center gap-2 border-b border-[#e3e8ee] px-5 py-6 last:border-b-0 sm:grid-cols-[140px_1fr_200px_88px] sm:gap-6">
+    <div className="grid grid-cols-1 items-center gap-2 border-b border-[#e3e8ee] px-5 py-6 last:border-b-0 sm:grid-cols-[140px_1fr_200px_110px] sm:gap-6">
       <span className="text-xs font-medium tracking-wide text-[#64748d]">{area}</span>
       <div className="min-w-0">
         <p className="text-[15px] font-medium text-[#0d253d]">{name}</p>
@@ -42,13 +64,17 @@ function LedgerRow({
         {value}
         {unit && <span className="ml-1 text-base font-normal text-[#64748d]">{unit}</span>}
       </p>
-      <span className="text-xs text-[#64748d] sm:text-right">{period}</span>
+      <div className="sm:text-right">
+        <p className="text-xs font-medium text-[#0d253d]">{deadline}</p>
+        {dday && <p className="mt-0.5 text-[11px] font-semibold text-[#533afd]">{dday}</p>}
+      </div>
     </div>
   )
 }
 
 export default async function MetricsPage(): Promise<React.JSX.Element> {
   const data = await getMetricsData()
+  const q = quarterDeadline()
 
   return (
     <>
@@ -78,7 +104,10 @@ export default async function MetricsPage(): Promise<React.JSX.Element> {
               <h2 id="ledger-heading" className="text-lg font-medium text-[#0d253d]">
                 영역별 KPI
               </h2>
-              <p className="text-xs text-[#64748d]">세 영역, 숫자 하나씩</p>
+              <p className="text-xs text-[#64748d]">
+                이번 분기 {q.label} — {q.due}까지{' '}
+                <span className="font-semibold text-[#533afd]">{q.dday}</span>
+              </p>
             </div>
 
             <div className="border-t border-[#e3e8ee]">
@@ -92,22 +121,25 @@ export default async function MetricsPage(): Promise<React.JSX.Element> {
                 }
                 value={data.targetRoas != null ? String(data.targetRoas) : '—'}
                 unit={data.targetRoas != null ? '%' : undefined}
-                period="목표"
+                deadline={`${q.due}까지`}
+                dday={q.dday}
               />
               <LedgerRow
                 area="Web totaro"
                 name="견적 매칭"
-                why="OEM 공급사와 해외 바이어의 견적 매칭 건수 — 본업 매출의 선행지표"
+                why="OEM 공급사와 해외 바이어의 견적 매칭 건수 — 본업 매출의 선행지표 (최근 30일 기준)"
                 value={String(data.quoteDocs)}
                 unit="건"
-                period="최근 30일"
+                deadline={`${q.due}까지`}
+                dday={q.dday}
               />
               <LedgerRow
                 area="에이전트 판매"
                 name="목표 매출"
                 why="AI 에이전트 구축·판매로 만들 매출 — 목표 금액 설정 대기"
                 value="—"
-                period="이번 분기"
+                deadline={`${q.due}까지`}
+                dday={q.dday}
               />
             </div>
           </section>
