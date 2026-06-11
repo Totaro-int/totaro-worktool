@@ -114,9 +114,14 @@ export async function uploadAndExtractCard(formData: FormData): Promise<ExtractR
 
   const { data: signed } = await admin.storage.from(BUCKET).createSignedUrl(storagePath, 3600)
 
-  // 4) Google 연락처에도 push (연결돼있으면) — fire-and-update
+  // 4) Google 연락처에도 push (연결돼있으면). await — Vercel serverless 가 응답 후
+  // 즉시 종료해서 fire-and-forget promise 가 완료 안 됨. 동기 처리해야 push 실제 실행됨.
   const insertedRow = inserted as Omit<ContactRow, 'cardSignedUrl'>
-  void pushToGoogle(user.id, insertedRow).catch(() => {})
+  try {
+    await pushToGoogle(user.id, insertedRow)
+  } catch {
+    // 실패해도 contact 자체는 살림.
+  }
 
   revalidatePath('/contacts')
   return {
@@ -225,9 +230,13 @@ export async function deleteContact(id: string): Promise<{ ok: boolean }> {
     const admin = getServiceSupabase()
     await admin.storage.from(BUCKET).remove([existing.card_storage_path])
   }
-  // Google 연락처도 같이 삭제 (있으면)
+  // Google 연락처도 같이 삭제 (있으면). await — Vercel serverless fire-and-forget 안 작동.
   if (existing?.google_resource_name && user) {
-    void deleteGoogleContact(user.id, existing.google_resource_name).catch(() => {})
+    try {
+      await deleteGoogleContact(user.id, existing.google_resource_name)
+    } catch {
+      // 캘린더 삭제 실패해도 contact 자체는 이미 지움.
+    }
   }
   await supabase.from('contacts').delete().eq('id', id)
   revalidatePath('/contacts')

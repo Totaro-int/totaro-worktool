@@ -55,13 +55,18 @@ export async function createTask(formData: FormData): Promise<void> {
     .single()
   if (error) throw new Error(`할 일 추가 실패: ${error.message}`)
 
-  // 마감일 있으면 캘린더 push (fire-and-update, 실패해도 task 자체는 살림)
+  // 마감일 있으면 캘린더 push. await 으로 (Vercel serverless 가 응답 후 종료 →
+  // fire-and-forget 은 lambda 가 promise 끝까지 안 기다림 → push 실행 X). 살짝 느려지지만 정확.
   if (inserted?.id && dueDate) {
-    void pushTaskToCalendar(user.id, inserted.id, {
-      title,
-      description,
-      due_date: dueDate,
-    }).catch(() => {})
+    try {
+      await pushTaskToCalendar(user.id, inserted.id, {
+        title,
+        description,
+        due_date: dueDate,
+      })
+    } catch {
+      // 캘린더 실패해도 task 는 살림. sync_error 는 pushTaskToCalendar 내부에서 저장.
+    }
   }
 
   revalidateBoards()
@@ -138,7 +143,11 @@ export async function deleteTask(formData: FormData): Promise<void> {
   if (error) throw new Error(`할 일 삭제 실패: ${error.message}`)
 
   if (existing?.google_event_id) {
-    void deleteCalendarEvent(user.id, existing.google_event_id).catch(() => {})
+    try {
+      await deleteCalendarEvent(user.id, existing.google_event_id)
+    } catch {
+      // 캘린더 삭제 실패해도 task 자체는 이미 지워짐.
+    }
   }
 
   revalidateBoards()
