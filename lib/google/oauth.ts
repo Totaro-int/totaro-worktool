@@ -9,7 +9,14 @@
  */
 import { getServiceSupabase } from '@/lib/oauth/utils'
 
-const SCOPES = ['https://www.googleapis.com/auth/contacts', 'openid', 'email']
+// 한 번 동의로 contacts + calendar 둘 다. 기존 contacts 사용자는 prompt=consent 로
+// 다음 OAuth 시 calendar 권한 자동 추가됨 (include_granted_scopes).
+const SCOPES = [
+  'https://www.googleapis.com/auth/contacts',
+  'https://www.googleapis.com/auth/calendar.events',
+  'openid',
+  'email',
+]
 const TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 

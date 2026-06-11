@@ -8,6 +8,7 @@ import { getCommerceData } from '@/lib/naver/commerce'
 import { createClient } from '@/lib/supabase/server'
 import type { Task } from '@/lib/types'
 
+import { CalendarToday } from './CalendarToday'
 import { MissionBanner } from './MissionBanner'
 
 type IconName = 'tasks' | 'github' | 'naver' | 'agent' | 'mailroom' | 'assistant' | 'contacts'
@@ -619,6 +620,8 @@ export default async function HubPage(): Promise<React.JSX.Element> {
         {nodes.map((node) => (
           <IsoNode key={node.href} node={node} />
         ))}
+
+        {user ? <CalendarToday userId={user.id} /> : null}
 
         <p className="pointer-events-none absolute bottom-5 left-6 text-[11px] text-slate-400">
           노드를 눌러 각 업무 영역으로 이동하세요
