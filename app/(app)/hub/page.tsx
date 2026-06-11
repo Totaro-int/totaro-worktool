@@ -8,6 +8,8 @@ import { getCommerceData } from '@/lib/naver/commerce'
 import { createClient } from '@/lib/supabase/server'
 import type { Task } from '@/lib/types'
 
+import { MissionBanner } from './MissionBanner'
+
 type IconName = 'tasks' | 'github' | 'naver' | 'agent' | 'mailroom' | 'assistant' | 'contacts'
 
 type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose' | 'violet'
@@ -507,6 +509,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      <MissionBanner />
       <header className="flex items-center justify-between border-b border-slate-200 px-8 py-4">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
