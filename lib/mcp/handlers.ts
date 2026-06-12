@@ -8,7 +8,23 @@
 import { embedText } from '../assistant/embedding'
 import { ensureFolderPath, getDriveClient, uploadFile } from '../drive/client'
 import { ghListDir, ghReadFile, ghRecentCommits, ghSearchCode } from '../github'
+import {
+  handleAgentActionsRecent,
+  handleEntityLink,
+  handleEntitySearch,
+  handleLabelAttach,
+  handleLabelList,
+  handleMemorySearch,
+  handleMemoryWrite,
+  handleTasksCreate,
+  type EntityLinkInput,
+  type LabelAttachInput,
+  type MemorySearchInput,
+  type MemoryWriteInput,
+  type TasksCreateInput,
+} from './agent-handlers'
 import { extractContent } from '../mailroom/extract'
+
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
@@ -20,13 +36,13 @@ function svcHeaders(): Record<string, string> {
   }
 }
 
-async function sbGet(pathQuery: string): Promise<unknown> {
+export async function sbGet(pathQuery: string): Promise<unknown> {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${pathQuery}`, { headers: svcHeaders() })
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${(await res.text()).slice(0, 200)}`)
   return res.json()
 }
 
-async function sbPost(pathQuery: string, body: unknown): Promise<unknown> {
+export async function sbPost(pathQuery: string, body: unknown): Promise<unknown> {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${pathQuery}`, {
     method: 'POST',
     headers: {
@@ -540,6 +556,22 @@ export async function dispatchTool(
       return handleGithubList(args as GithubListInput)
     case 'github_recent_commits':
       return handleGithubCommits(args as GithubCommitsInput)
+    case 'memory_write':
+      return handleMemoryWrite(args as unknown as MemoryWriteInput)
+    case 'memory_search':
+      return handleMemorySearch(args as unknown as MemorySearchInput)
+    case 'label_list':
+      return handleLabelList(args as { kind?: string })
+    case 'label_attach':
+      return handleLabelAttach(args as unknown as LabelAttachInput)
+    case 'entity_link':
+      return handleEntityLink(args as unknown as EntityLinkInput)
+    case 'entity_search':
+      return handleEntitySearch(args as { query: string; kind?: string; limit?: number })
+    case 'tasks_create':
+      return handleTasksCreate(args as unknown as TasksCreateInput)
+    case 'agent_actions_recent':
+      return handleAgentActionsRecent(args as { agent?: string; limit?: number })
     default:
       throw new Error(`알 수 없는 도구: ${name}`)
   }

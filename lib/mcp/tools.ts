@@ -165,6 +165,146 @@ export const TOOLS: ToolDefinition[] = [
     },
   },
   {
+    name: 'memory_write',
+    description:
+      '회사 공유 두뇌(agent_memories)에 기억 저장. 에이전트가 조사·작업 중 알게 된 사실/관찰/절차를 다음 세션과 다른 에이전트도 쓸 수 있게 중앙화. content 는 한 문장~한 단락으로 요약. 출처(source_table/source_id) 있으면 꼭 넣을 것 — 검증 가능성이 기억의 가치.',
+    inputSchema: {
+      type: 'object',
+      required: ['agent', 'content'],
+      properties: {
+        agent: { type: 'string', description: '에이전트 slug (예: kim-sahyun)' },
+        content: { type: 'string', description: '기억할 내용 (2000자 이내, 요약)' },
+        scope: {
+          type: 'string',
+          enum: ['agent', 'team', 'company'],
+          description: '공유 범위 — agent(개인)/team(부서)/company(전사). 기본 agent',
+        },
+        kind: {
+          type: 'string',
+          enum: ['fact', 'preference', 'observation', 'procedure', 'insight'],
+          description: '기억 종류. 기본 fact',
+        },
+        source_table: { type: 'string', description: '출처 테이블 (예: inbox_documents)' },
+        source_id: { type: 'string', description: '출처 행 id' },
+        confidence: { type: 'number', description: '신뢰도 0~1 (기본 0.8)' },
+        expires_days: { type: 'number', description: 'N일 후 만료 (이벤트성 정보용)' },
+      },
+    },
+  },
+  {
+    name: 'memory_search',
+    description:
+      '회사 공유 두뇌(agent_memories)에서 기억 검색. agent 지정 시 그 에이전트 개인 기억 + 전사 공유(company) 기억을 함께 봄. 만료된 기억은 제외.',
+    inputSchema: {
+      type: 'object',
+      required: ['query'],
+      properties: {
+        query: { type: 'string', description: '검색어 (부분일치)' },
+        agent: { type: 'string', description: '에이전트 slug — 본인+공유 기억 조회' },
+        scope: { type: 'string', enum: ['agent', 'team', 'company'], description: '범위 필터' },
+        limit: { type: 'number', description: '결과 개수 (기본 10, 최대 30)' },
+      },
+    },
+  },
+  {
+    name: 'label_list',
+    description:
+      '통제 어휘 라벨 목록 + 정의문. 라벨 부착(label_attach) 전에 반드시 이걸로 사용 가능한 라벨과 정의를 확인. kind: axis(8축 사업영역)/doc_type(문서유형)/department(부서)/topic/status.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        kind: {
+          type: 'string',
+          enum: ['axis', 'doc_type', 'topic', 'department', 'status'],
+          description: '라벨 종류 필터 (비우면 전체)',
+        },
+      },
+    },
+  },
+  {
+    name: 'label_attach',
+    description:
+      '항목에 통제 어휘 라벨 부착 (자유 텍스트 금지 — label_list 의 slug 만 사용). 대상: inbox_documents/tasks/contacts/activities/agent_memories/entities. 멱등 (중복 부착 무해).',
+    inputSchema: {
+      type: 'object',
+      required: ['agent', 'label_slug', 'item_table', 'item_id'],
+      properties: {
+        agent: { type: 'string', description: '에이전트 slug' },
+        label_slug: { type: 'string', description: '라벨 slug (예: axis-05-marketing)' },
+        item_table: { type: 'string', description: '대상 테이블 (예: inbox_documents)' },
+        item_id: { type: 'string', description: '대상 행 UUID' },
+        confidence: { type: 'number', description: '분류 확신도 0~1' },
+      },
+    },
+  },
+  {
+    name: 'entity_link',
+    description:
+      '맥락 그래프에 엔티티(회사·사람·제품·정부지원사업·플랫폼) 등록/확인하고, 선택적으로 문서·태스크와 연결. 같은 (kind, name) 은 재사용 — 중복 생성 안 됨. 예: 트렌드 조사에서 "아인스미디어" 발견 → entity_link 로 등록 + 다이제스트 문서와 연결.',
+    inputSchema: {
+      type: 'object',
+      required: ['agent', 'name', 'kind'],
+      properties: {
+        agent: { type: 'string', description: '에이전트 slug' },
+        name: { type: 'string', description: '엔티티 이름 (예: 아인스미디어)' },
+        kind: {
+          type: 'string',
+          enum: ['company', 'person', 'product', 'gov_program', 'platform', 'other'],
+          description: '엔티티 종류',
+        },
+        summary: { type: 'string', description: '한 줄 정의 (신규 생성 시)' },
+        item_table: { type: 'string', description: '연결할 항목 테이블 (선택)' },
+        item_id: { type: 'string', description: '연결할 항목 UUID (선택)' },
+        snippet: { type: 'string', description: '왜 연결됐는지 맥락 발췌 (선택)' },
+      },
+    },
+  },
+  {
+    name: 'entity_search',
+    description:
+      '맥락 그래프에서 엔티티 검색 (이름·요약 부분일치). 회사가 아는 거래처·제품·지원사업 확인.',
+    inputSchema: {
+      type: 'object',
+      required: ['query'],
+      properties: {
+        query: { type: 'string', description: '검색어' },
+        kind: {
+          type: 'string',
+          enum: ['company', 'person', 'product', 'gov_program', 'platform', 'other'],
+          description: '종류 필터',
+        },
+        limit: { type: 'number', description: '결과 개수 (기본 10)' },
+      },
+    },
+  },
+  {
+    name: 'tasks_create',
+    description:
+      '워크툴에 할 일 생성. 제목 앞에 [에이전트이름] 자동 부착 — 누가 만들었는지 보드에서 바로 보임. 담당자는 이름 부분일치로 지정 (모호하면 에러).',
+    inputSchema: {
+      type: 'object',
+      required: ['agent', 'title'],
+      properties: {
+        agent: { type: 'string', description: '에이전트 slug' },
+        title: { type: 'string', description: '할 일 제목' },
+        description: { type: 'string', description: '상세 설명 (선택)' },
+        due_date: { type: 'string', description: '마감일 YYYY-MM-DD (선택)' },
+        assignee_name: { type: 'string', description: '담당자 이름 부분일치 (선택)' },
+      },
+    },
+  },
+  {
+    name: 'agent_actions_recent',
+    description: '에이전트 행동 감사 로그 조회 — 누가 언제 뭘 했는지. agent slug 로 필터 가능.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent: { type: 'string', description: '에이전트 slug 필터 (비우면 전체)' },
+        limit: { type: 'number', description: '결과 개수 (기본 20, 최대 100)' },
+      },
+    },
+  },
+  {
     name: 'mailroom_upload',
     description:
       'Claude 가 생성한 텍스트/마크다운을 우편실에 새 파일로 저장. Drive 업로드 + Supabase 인덱싱 + 폴더 자동 생성. **개발 문서(.md/.json/코드) 는 여기가 아니라 GitHub PR 로** — github_* 도구로 안내.',
