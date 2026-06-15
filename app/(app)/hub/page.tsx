@@ -20,6 +20,7 @@ type IconName =
   | 'assistant'
   | 'contacts'
   | 'cash'
+  | 'team'
 
 type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose' | 'violet' | 'teal'
 
@@ -203,6 +204,18 @@ function NodeIcon({
         <circle cx="12" cy="12" r="2.5" />
         <line x1="6.5" y1="9" x2="6.5" y2="9.1" />
         <line x1="17.5" y1="15" x2="17.5" y2="15.1" />
+      </svg>
+    )
+  }
+  if (name === 'team') {
+    return (
+      <svg {...props}>
+        <circle cx="12" cy="8" r="2.6" />
+        <path d="M7.5 18.5c0-2.5 2-4.3 4.5-4.3s4.5 1.8 4.5 4.3" />
+        <circle cx="5.5" cy="10" r="1.8" />
+        <path d="M2.5 18c0-1.8 1.2-3.2 3-3.5" />
+        <circle cx="18.5" cy="10" r="1.8" />
+        <path d="M21.5 18c0-1.8-1.2-3.2-3-3.5" />
       </svg>
     )
   }
@@ -429,6 +442,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
     agentResult,
     mailroomResult,
     { count: assistantCount },
+    { count: aiTeamCount },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from('tasks').select('status'),
@@ -441,6 +455,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       .select('id', { count: 'exact', head: true })
       .not('drive_file_id', 'is', null)
       .not('status', 'in', '(trashed,rejected,failed)'),
+    supabase.from('agents').select('id', { count: 'exact', head: true }).neq('status', 'retired'),
   ])
 
   // 가용 현금 — 최신 스냅샷 한 줄 (있으면 표시, 없으면 '—')
@@ -504,6 +519,15 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       value: com ? wonCompact(com.paidRevenue) : '—',
       position: 'left-[78%] top-[28%]',
       accent: 'amber',
+    },
+    {
+      href: '/hub/ai-team',
+      name: 'AI부서',
+      icon: 'team',
+      subText: 'AI 직원',
+      value: typeof aiTeamCount === 'number' ? String(aiTeamCount) : '3',
+      position: 'left-[36%] top-[44%]',
+      accent: 'violet',
     },
     {
       href: '/hub/github',
