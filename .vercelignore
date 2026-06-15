@@ -1,0 +1,17 @@
+# Vercel CLI 배포 시 업로드 제외 목록.
+# (Vercel CLI 는 .gitignore 를 따르지 않으므로 로컬 빌드 산출물이 통째로 올라간다.)
+
+# 로컬 빌드 산출물 — 특히 dist/ = totaro-chat 데스크톱 앱 바이너리 ~224MB.
+# 이게 서버리스 함수에 딸려가면 250MB 한도를 넘겨 배포가 실패한다.
+dist
+.next
+out
+
+# 로컬 전용 / 민감 파일 (배포용 env 는 Vercel 대시보드에서 주입됨)
+.env
+.env.*
+
+# 로그 / 임시
+*.log
+supabase/.branches
+supabase/.temp
