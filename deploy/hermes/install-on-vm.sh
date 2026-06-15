@@ -24,6 +24,10 @@ die() { printf '\n\033[1;31m[hermes-install ERROR]\033[0m %s\n' "$*" >&2; exit 1
 : "${MCP_BEARER_TOKEN:?MCP_BEARER_TOKEN 환경변수 필요 — export MCP_BEARER_TOKEN=...}"
 TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
 MCP_URL="${MCP_URL:-https://totaro-worktool.vercel.app/api/mcp}"
+# 모델: gemini-2.5-flash. 주의 — 키마다 무료 티어 모델/한도가 다르다. totaro 키는
+# gemini-2.0-flash 가 한도 0(미지원)이고 gemini-2.5-flash 만 된다. 단 무료 버스트
+# 한도가 낮아 연구 많은 에이전트 루프는 429(rate limit)로 막힐 수 있다 → 안정 운영은
+# Google AI Studio 에서 빌링(유료) 활성화 권장 (2.5-flash 는 매우 저렴, 일 다이제스트=월 몇 센트).
 GEMINI_MODEL="${GEMINI_MODEL:-gemini-2.5-flash}"
 
 TOTAL_MB=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
@@ -70,11 +74,13 @@ log "[4/6] ~/.hermes/config.yaml 작성..."
 mkdir -p "$HOME/.hermes"
 cat > "$HOME/.hermes/config.yaml" <<EOF
 # 토타로 Hermes 에이전트 — install-on-vm.sh 가 생성. 수동 편집 가능.
+# 모델: 네이티브 gemini 프로바이더. cron 스케줄러는 model.default 를 모델명으로 읽고,
+# API 키는 GEMINI_API_KEY/GOOGLE_API_KEY ENV 에서 resolve 한다 (config.model.api_key 가 아님).
+# 그래서 api_key 는 리터럴 \${GEMINI_API_KEY} 자리표시자로 두고, 키는 게이트웨이 systemd ENV 로 주입한다(아래 [6/7]).
 model:
-  provider: "custom"
-  base_url: "https://generativelanguage.googleapis.com/v1beta/openai"
-  model: "${GEMINI_MODEL}"
-  api_key: "${GEMINI_API_KEY}"
+  provider: "gemini"
+  default: "${GEMINI_MODEL}"
+  api_key: "\${GEMINI_API_KEY}"
 
 mcp_servers:
   totaro:
@@ -89,16 +95,41 @@ chmod 600 "$HOME/.hermes/config.yaml"
 log "[5/7] 타임존 Asia/Seoul..."
 sudo timedatectl set-timezone Asia/Seoul 2>/dev/null || true
 
-# ── 6) 시스템 crontab: 매분 'hermes cron tick' (= Hermes 스케줄러 데몬 역할) ─
-# Hermes 의 cron tick 은 단발성(due 된 잡만 실행)이라 매분 호출이 정석.
-log "[6/7] 스케줄러 — crontab 에 'hermes cron tick' 매분 등록..."
+# ── 6) 스케줄러 — Hermes 게이트웨이를 systemd 시스템 서비스로 설치 ──────────
+# 게이트웨이 서비스(hermes-gateway.service)가 cron 스케줄러를 상주 구동한다.
+# (raw crontab 'hermes cron tick' 대신: 부팅 후 자동 기동 + 'hermes cron status' 가 인식)
 HERMES_BIN="$(command -v hermes)"
-TICK_LINE="* * * * * PATH=$HOME/.local/bin:/usr/bin:/bin $HERMES_BIN cron tick >> $HOME/.hermes/cron/tick.log 2>&1"
 mkdir -p "$HOME/.hermes/cron"
-( crontab -l 2>/dev/null | grep -v 'hermes cron tick' ; echo "$TICK_LINE" ) | crontab -
-log "    crontab 등록 완료 (매분 tick)"
+DROPIN_DIR="/etc/systemd/system/hermes-gateway.service.d"
+DROPIN="$DROPIN_DIR/model-key.conf"
+if systemctl list-unit-files hermes-gateway.service >/dev/null 2>&1 \
+     && systemctl cat hermes-gateway.service >/dev/null 2>&1; then
+  log "[6/7] 게이트웨이 서비스 이미 설치됨 — skip"
+else
+  log "[6/7] 게이트웨이 설치 (systemd 시스템 서비스, User=ubuntu, 부팅 자동 기동)..."
+  # 'gateway install' 은 대화형("지금 시작?/부팅 시 시작?") → yes 로 자동 응답.
+  # sudo 환경에 PATH 보존(env)해야 하위 명령이 hermes/uv 를 찾는다.
+  yes | sudo env "PATH=$PATH" "$HERMES_BIN" gateway install --system --run-as-user ubuntu
+fi
+
+# 모델 키를 게이트웨이 systemd ENV 로 주입 — dotenv(~/.hermes/.env)는 systemd 서비스
+# 환경에 로드되지 않으므로 drop-in 으로 직접 넣어야 한다. 세 변수 모두 = Gemini 키.
+# (gateway install 로 유닛이 생긴 뒤에 작성해야 daemon-reload 가 인식한다.)
+log "    모델 키 drop-in 작성: $DROPIN"
+sudo mkdir -p "$DROPIN_DIR"
+sudo tee "$DROPIN" >/dev/null <<EOF
+[Service]
+Environment="GEMINI_API_KEY=${GEMINI_API_KEY}"
+Environment="GOOGLE_API_KEY=${GEMINI_API_KEY}"
+Environment="OPENAI_API_KEY=${GEMINI_API_KEY}"
+EOF
+sudo chmod 600 "$DROPIN"
+sudo systemctl daemon-reload
+sudo systemctl restart hermes-gateway.service 2>/dev/null || true
+log "    게이트웨이 설치 완료 ('hermes cron status' 에 Gateway is running 표시)"
 
 # ── 7) 김사현 일일 트렌드 다이제스트 잡 자동 등록 (KST 08:00) ──────────────
+# cron 경로는 config 의 model.default 를 모델로 쓰므로 잡별 모델 오버라이드 불필요.
 log "[7/7] 김사현 일일 잡 등록 (08:00 KST)..."
 read -r -d '' KIM_PROMPT <<'PROMPT' || true
 너는 토타로 마케팅부 에이전트 김사현이다. MCP 도구의 agent 파라미터는 항상 "kim-sahyun".
@@ -142,13 +173,14 @@ cat <<'NEXT'
 ────────────────────────────────────────────────────────────
 검증 (사람이 한 번):
   source ~/.bashrc
+  hermes cron status          # "Gateway is running" 이면 스케줄러 OK
   hermes cron list            # 김사현 잡이 보이면 OK
   hermes cron run <job_id>    # 지금 즉시 한 번 돌려 다이제스트 확인
 
-  회사 두뇌 연결 확인:
-    hermes                    # TUI 진입 후
-    > totaro 의 label_list 도구로 axis 라벨 보여줘
-    → 8축(01 AI 소싱 … 99 분류미정)이 나오면 MCP 연결 OK
+  회사 두뇌(MCP) 연결 확인:
+    hermes mcp test totaro    # axis 라벨 등 도구 목록 → 200 이면 OK (401 이면 트러블슈팅 참고)
+    # 주의: 'hermes -z'/TUI 는 MCP 도구를 로드하지 않는다(게이트웨이/cron 컨텍스트만 로드).
+    #       MCP 동작은 'hermes cron run <id>' 로 검증할 것.
 
   잡이 자동 등록 안 됐으면 직접:
     hermes cron create --schedule "0 8 * * *" \
