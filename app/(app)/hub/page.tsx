@@ -21,6 +21,7 @@ type IconName =
   | 'contacts'
   | 'cash'
   | 'team'
+  | 'target'
 
 type Accent = 'blue' | 'amber' | 'emerald' | 'indigo' | 'rose' | 'violet' | 'teal'
 
@@ -204,6 +205,15 @@ function NodeIcon({
         <circle cx="12" cy="12" r="2.5" />
         <line x1="6.5" y1="9" x2="6.5" y2="9.1" />
         <line x1="17.5" y1="15" x2="17.5" y2="15.1" />
+      </svg>
+    )
+  }
+  if (name === 'target') {
+    return (
+      <svg {...props}>
+        <circle cx="12" cy="12" r="8" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="12" cy="12" r="1" fill={color} stroke="none" />
       </svg>
     )
   }
@@ -467,6 +477,12 @@ export default async function HubPage(): Promise<React.JSX.Element> {
     .maybeSingle<{ balance_krw: number; as_of_date: string }>()
   const user = userRes.user
 
+  // WEB-taro 목표 보드의 미완료 할 일 수 — 테이블 미생성 시 count=null → '—' 폴백.
+  const { count: webTaroOpen } = await supabase
+    .from('web_taro_tasks')
+    .select('id', { count: 'exact', head: true })
+    .neq('status', 'done')
+
   const tasks = (taskData ?? []) as Pick<Task, 'status'>[]
   const openCount = tasks.filter((t) => t.status !== 'done').length
 
@@ -519,6 +535,15 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       value: com ? wonCompact(com.paidRevenue) : '—',
       position: 'left-[78%] top-[28%]',
       accent: 'amber',
+    },
+    {
+      href: '/web-taro',
+      name: 'WEB-taro',
+      icon: 'target',
+      subText: '식품 제조 DX·AX 목표',
+      value: typeof webTaroOpen === 'number' ? String(webTaroOpen) : '—',
+      position: 'left-[50%] top-[40%]',
+      accent: 'rose',
     },
     {
       href: '/hub/ai-team',
@@ -591,6 +616,12 @@ export default async function HubPage(): Promise<React.JSX.Element> {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href="/web-taro"
+            className="text-xs font-medium text-slate-500 transition-colors hover:text-blue-600"
+          >
+            WEB-taro 목표
+          </Link>
           <Link
             href="/metrics"
             className="text-xs font-medium text-slate-500 transition-colors hover:text-blue-600"

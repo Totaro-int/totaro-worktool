@@ -30,6 +30,17 @@ export type Task = {
   updated_at: string
 }
 
+export type WebTaroTask = {
+  id: string
+  title: string
+  description: string | null
+  status: TaskStatus
+  due_date: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type Activity = {
   id: string
   member_id: string | null
