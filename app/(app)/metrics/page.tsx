@@ -14,23 +14,17 @@ function wonCompact(n: number): string {
   return `₩${Math.round(n).toLocaleString('ko-KR')}`
 }
 
-/** 이번 분기(KST) 마감 정보 — 분기가 바뀌면 자동으로 따라간다. */
-function quarterDeadline(): { label: string; due: string; dday: string } {
+/** 7/31 여름 스프린트 마감 정보 (KST). */
+function sprintDeadline(): { label: string; due: string; dday: string } {
   const KST_OFFSET_MS = 9 * 3600_000
   const kstNow = new Date(Date.now() + KST_OFFSET_MS)
-  const quarter = Math.floor(kstNow.getUTCMonth() / 3) + 1
-  // 분기 마지막 날 = 다음 분기 첫 달의 0일
-  const endUtc = Date.UTC(kstNow.getUTCFullYear(), quarter * 3, 0)
-  const end = new Date(endUtc)
+  // 2026-07-31 (8월 0일 = 7월 말일)
+  const endUtc = Date.UTC(2026, 7, 0)
   const daysLeft = Math.max(
     0,
     Math.ceil((endUtc - (kstNow.getTime() - KST_OFFSET_MS)) / 86_400_000)
   )
-  return {
-    label: `${kstNow.getUTCFullYear()} Q${quarter}`,
-    due: `${end.getUTCMonth() + 1}월 ${end.getUTCDate()}일`,
-    dday: `D-${daysLeft}`,
-  }
+  return { label: '여름 스프린트', due: '7월 31일', dday: `D-${daysLeft}` }
 }
 
 /** 장부 행 하나 — 영역 / 지표명·이유 / 큰 숫자 / 기한. */
@@ -54,7 +48,7 @@ function LedgerRow({
   dday?: string
 }): React.JSX.Element {
   return (
-    <div className="grid grid-cols-1 items-center gap-2 border-b border-[#e3e8ee] px-5 py-6 last:border-b-0 sm:grid-cols-[140px_1fr_200px_110px] sm:gap-6">
+    <div className="grid grid-cols-1 items-center gap-2 border-b border-[#e3e8ee] px-5 py-6 last:border-b-0 sm:grid-cols-[160px_1fr_200px_110px] sm:gap-6">
       <span className="text-xs font-medium tracking-wide text-[#64748d]">{area}</span>
       <div className="min-w-0">
         <p className="text-[15px] font-medium text-[#0d253d]">{name}</p>
@@ -74,7 +68,7 @@ function LedgerRow({
 
 export default async function MetricsPage(): Promise<React.JSX.Element> {
   const data = await getMetricsData()
-  const q = quarterDeadline()
+  const q = sprintDeadline()
 
   return (
     <>
@@ -93,55 +87,76 @@ export default async function MetricsPage(): Promise<React.JSX.Element> {
               서른 명처럼 움직인다.
             </h2>
             <p className="mt-6 max-w-md text-[15px] leading-relaxed text-[#64748d]">
-              방법은 하나 — AI가 팀의 모든 데이터 위에서 일하게 만드는 것. 우리가 먼저 그렇게
-              일하고, 증명된 도구를 판다. 워크툴·소싱 AI·마케팅 에이전트가 그 증거다.
+              방법은 하나 — AI 에이전트로 우리 브랜드를 키우고, 거기서 증명된 도구만 판다.
+              모네하우스(브랜딩)·워크툴·마케팅 에이전트가 그 증거다.
             </p>
           </section>
 
-          {/* 장부 — 영역별 KPI 3개를 행으로 정렬 */}
+          {/* 장부 — 7/31 스프린트 KPI */}
           <section aria-labelledby="ledger-heading" className="pb-24">
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
               <h2 id="ledger-heading" className="text-lg font-medium text-[#0d253d]">
-                영역별 KPI
+                7/31 KPI
               </h2>
               <p className="text-xs text-[#64748d]">
-                이번 분기 {q.label} — {q.due}까지{' '}
+                {q.label} — {q.due}까지{' '}
                 <span className="font-semibold text-[#533afd]">{q.dday}</span>
               </p>
             </div>
 
             <div className="border-t border-[#e3e8ee]">
               <LedgerRow
-                area="이커머스"
-                name="ROAS"
-                why={
-                  data.paidRevenue != null
-                    ? `광고비 대비 매출 목표 — 오늘 결제 매출 ${wonCompact(data.paidRevenue)} · 주문 ${data.orderCount ?? 0}건`
-                    : '광고비 대비 매출 목표 — 네이버 워커 동기화 대기 중'
-                }
-                value={data.targetRoas != null ? String(data.targetRoas) : '—'}
-                unit={data.targetRoas != null ? '%' : undefined}
+                area="브랜딩 · 모네하우스"
+                name="장바구니 → 결제 전환율"
+                why="현재 ~26% · 핵심 증명 — 장바구니가 결제로 넘어가는 비율 = 'AI 브랜딩이 사게 만든다'"
+                value="45%+"
                 deadline={`${q.due}까지`}
                 dday={q.dday}
               />
               <LedgerRow
-                area="Web totaro"
-                name="견적 매칭"
-                why="OEM 공급사와 해외 바이어의 견적 매칭 건수 — 본업 매출의 선행지표 (최근 30일 기준)"
-                value={String(data.quoteDocs)}
+                area="이커머스"
+                name="모네하우스 누적 매출"
+                why={
+                  data.paidRevenue != null
+                    ? `현재 누적 ₩30만 · 장바구니 ₩85만 대기 — 오늘 결제 ${wonCompact(data.paidRevenue)} · 주문 ${data.orderCount ?? 0}건`
+                    : '현재 누적 ₩30만 · 장바구니 ₩85만 대기 중'
+                }
+                value="₩500만"
+                deadline={`${q.due}까지`}
+                dday={q.dday}
+              />
+              <LedgerRow
+                area="고객 이해"
+                name="고객 대화"
+                why="산 사람·장바구니 이탈자 인터뷰 — 전환 개선의 연료 (현재 0건)"
+                value="20"
                 unit="건"
                 deadline={`${q.due}까지`}
                 dday={q.dday}
               />
               <LedgerRow
+                area="실행"
+                name="전환 실험"
+                why="주 1개 배포 · 전후 전환율 기록 — 신뢰배지·배송정책·리뷰·결제 단순화 (현재 0개)"
+                value="6"
+                unit="개"
+                deadline={`${q.due}까지`}
+                dday={q.dday}
+              />
+              <LedgerRow
                 area="에이전트 판매"
-                name="목표 매출"
-                why="AI 에이전트 구축·판매로 만들 매출 — 목표 금액 설정 대기"
-                value="—"
+                name="검증 에이전트 게시"
+                why="워크툴서 매일 쓰는 · 1곳 납품 완료(₩300만)한 마케팅 에이전트 판매 페이지 게시"
+                value="₩300만"
                 deadline={`${q.due}까지`}
                 dday={q.dday}
               />
             </div>
+
+            <p className="mt-4 px-5 text-xs text-[#64748d]">
+              🛡️ 규율 — 맞춤 외주 <span className="font-semibold text-[#0d253d]">0건</span>. 검증된
+              것만 판다.
+            </p>
           </section>
 
           {/* 각오 */}

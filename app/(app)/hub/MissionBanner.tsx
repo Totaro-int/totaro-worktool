@@ -2,7 +2,7 @@
 
 /**
  * /hub 진입 시 자동 표시 → 5초 후 fade-out. 절제된 모노톤 카드.
- * 회사 지표 + 7월 30일까지 영역별 KPI.
+ * 회사 지표 + 7월 31일까지 영역별 KPI.
  */
 import { useEffect, useState } from 'react'
 
@@ -43,8 +43,8 @@ export function MissionBanner(): React.JSX.Element | null {
           </p>
           <ul className="mt-3 space-y-1.5 text-[13px] leading-relaxed text-slate-700">
             <li>세 명이 60명처럼 움직인다</li>
-            <li>각 사업영역에서 AI를 가장 잘 활용하는 사람이 된다</li>
-            <li>기업의 강점을 AI 전문가로서 최대치로 끌어내는 회사</li>
+            <li>AI로 우리 브랜드를 키우고, 증명된 도구만 판다</li>
+            <li>기업의 강점을 AI로 가장 잘 알리는 회사</li>
           </ul>
         </div>
         <div className="px-6 pt-4 pb-5">
@@ -53,13 +53,13 @@ export function MissionBanner(): React.JSX.Element | null {
               영역별 KPI
             </p>
             <p className="text-[10px] font-medium tracking-[0.18em] text-slate-400 uppercase">
-              ~ 07.30
+              ~ 07.31
             </p>
           </div>
           <ul className="mt-3 space-y-2 text-[13px] leading-snug">
-            <KpiRow label="e-커머스" target="매출 800" />
-            <KpiRow label="WEB-taro POC" target="건강식품 바이어 연결 3건" />
-            <KpiRow label="에이전트 판매" target="매출 900" />
+            <KpiRow label="모네하우스" target="장바구니→결제 45%" />
+            <KpiRow label="이커머스" target="매출 500" />
+            <KpiRow label="에이전트 판매" target="검증 에이전트 게시" />
           </ul>
         </div>
       </div>
