@@ -25,9 +25,9 @@ export async function POST(req: Request): Promise<Response> {
   } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
-  let body: { question?: string; history?: ChatTurn[] }
+  let body: { question?: string; history?: ChatTurn[]; persona?: string }
   try {
-    body = (await req.json()) as { question?: string; history?: ChatTurn[] }
+    body = (await req.json()) as { question?: string; history?: ChatTurn[]; persona?: string }
   } catch {
     return new Response('Bad Request', { status: 400 })
   }
@@ -35,6 +35,7 @@ export async function POST(req: Request): Promise<Response> {
   const question = (body.question ?? '').trim()
   if (!question) return new Response('empty question', { status: 400 })
   const history = Array.isArray(body.history) ? body.history : []
+  const persona = typeof body.persona === 'string' ? body.persona : undefined
 
   // 관련 자료(발췌 포함) + 팀 작업 기록 + 멤버 맥락
   const { docs, members, workLogs } = await retrieveContext(question)
@@ -48,7 +49,14 @@ export async function POST(req: Request): Promise<Response> {
 
       let full = ''
       try {
-        for await (const ev of streamAnswer({ question, history, docs, members, workLogs })) {
+        for await (const ev of streamAnswer({
+          question,
+          history,
+          docs,
+          members,
+          workLogs,
+          persona,
+        })) {
           if (ev.type === 'delta') {
             full += ev.text
             send({ type: 'delta', text: ev.text })

@@ -212,6 +212,22 @@ export default async function AgentDashboardPage({
           </span>
           <span>근무 시작 {fmtDate(agent.created_at)}</span>
         </div>
+        {slug === 'kim-sahyun' && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              href={`/hub/ai-team/${slug}/chat`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
+            >
+              💬 김사현과 대화하기
+            </Link>
+            <Link
+              href="/inbox"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-50"
+            >
+              📋 보고서 보기 (우편실)
+            </Link>
+          </div>
+        )}
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-8">

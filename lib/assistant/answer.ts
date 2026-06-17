@@ -61,6 +61,8 @@ export async function generateAnswer(opts: {
   docs: DocWithExcerpt[]
   members?: string[]
   workLogs?: WorkLog[]
+  /** 'kim-sahyun' 이면 김사현(마케팅 애널리스트) 페르소나로 답한다. 없으면 일반 AI 동료. */
+  persona?: string
 }): Promise<AnswerResult> {
   const prompt = buildChatPrompt(opts)
 
@@ -91,6 +93,8 @@ export async function* streamAnswer(opts: {
   docs: DocWithExcerpt[]
   members?: string[]
   workLogs?: WorkLog[]
+  /** 'kim-sahyun' 이면 김사현(마케팅 애널리스트) 페르소나로 답한다. 없으면 일반 AI 동료. */
+  persona?: string
 }): AsyncGenerator<StreamEvent, boolean> {
   const prompt = buildChatPrompt(opts)
 
@@ -116,8 +120,9 @@ function buildChatPrompt(opts: {
   docs: DocWithExcerpt[]
   members?: string[]
   workLogs?: WorkLog[]
+  persona?: string
 }): string {
-  const { question, history, docs, members, workLogs } = opts
+  const { question, history, docs, members, workLogs, persona } = opts
 
   const memberLine = members && members.length ? `\n- 멤버: ${members.join(', ')}` : ''
 
@@ -139,11 +144,22 @@ function buildChatPrompt(opts: {
           .join('\n')
       : '(첫 질문)'
 
-  return `너는 토타로(Totaro) 팀의 AI 동료 직원이야. 사람 동료처럼 자연스럽고 친근하게, 하지만 정확하게 대답해.
+  const company = `[회사]
+- 토타로 = AI 브랜드 스튜디오. AI 에이전트로 우리 브랜드를 키우고, 검증된 도구만 판다.
+- 지금 본진: 모네하우스(리빙·가구 큐레이션 브랜드). 7/31 북극성 = 장바구니→결제 전환.
+- 팀: 윤태준(대표/제품), 최준빈(리서치·BI), 송승주(개발)${memberLine}`
 
-[회사]
-- 본업: 한국 식품 OEM 공급사 ↔ 해외 바이어 매칭 + AI 자동 견적·추천 플랫폼
-- 팀: 윤태준(공동창업/제품), 최준빈(리서치·BI), 송승주(개발)${memberLine}
+  const isKim = persona === 'kim-sahyun'
+  const identity = isKim
+    ? `너는 토타로 마케팅부 AI 직원 '김사현'이야. 데이터 기반 마케팅 애널리스트.
+사장(윤태준)에게 진짜 동료 직원처럼 보고하고 대화해. 모네하우스 전환·매출을 늘릴
+마케팅·콘텐츠·경쟁사·트렌드를 데이터로 분석해 답한다. 매일 마케팅 분석 보고서를 쓰는 게 네 일이고,
+그 근거는 아래 우편실 자료(특히 '마케팅 분석' 폴더)에서 찾을 수 있어.`
+    : `너는 토타로(Totaro) 팀의 AI 동료 직원이야. 사람 동료처럼 자연스럽고 친근하게, 하지만 정확하게 대답해.`
+
+  return `${identity}
+
+${company}
 
 [네가 접근 가능한 회사 자료 — 구글 드라이브 우편실에서 이 질문으로 검색한 결과]
 ${docBlock}
@@ -154,16 +170,16 @@ ${logBlock}
 [지금까지 대화]
 ${historyBlock}
 
-[동료의 질문]
+[${isKim ? '사장님' : '동료'}의 질문]
 ${question}
 
 [답변 방법]
-- 한국어로, 진짜 옆자리 동료처럼 자연스럽게 말해.
-- 위 자료에서 근거를 찾으면 해당 문장 끝에 [번호] 로 출처를 표시해 (예: "...계약은 마무리됐어 [2].").
-- 팀 작업 기록을 근거로 쓸 때는 누가 언제 한 작업인지 자연스럽게 풀어서 말해 (예: "승주가 6월 10일에 연락처 동기화 작업을 했어"). [번호] 인용은 회사 자료에만 써.
-- 자료에도 작업 기록에도 없는 내용은 지어내지 마. "그건 우편실 자료에는 안 보이네" 처럼 솔직하게.
+- 한국어로, ${isKim ? '직원이 사장에게 보고하듯 또렷하게' : '진짜 옆자리 동료처럼 자연스럽게'} 말해.
+- 위 자료에서 근거를 찾으면 해당 문장 끝에 [번호] 로 출처를 표시해.
+- 팀 작업 기록을 근거로 쓸 땐 누가 언제 한 작업인지 자연스럽게 풀어서 말해. [번호] 인용은 회사 자료에만.
+- 자료에도 작업 기록에도 없는 내용은 지어내지 마. "그건 아직 자료에 안 보여요"처럼 솔직하게.
 - 추측이면 추측이라고 밝혀.
-- 너무 길게 늘어놓지 말고 핵심부터. 마크다운 헤더(#)는 쓰지 말고 자연스러운 문장으로.`
+- 너무 길게 늘어놓지 말고 핵심부터.${isKim ? ' 숫자·데이터로 말하고, 끝에 "👉 오늘 추천 액션 1개"를 붙여.' : ' 마크다운 헤더(#)는 쓰지 말고 자연스러운 문장으로.'}`
 }
 
 function renderDoc(d: DocWithExcerpt, n: number): string {
