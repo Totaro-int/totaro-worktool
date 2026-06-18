@@ -95,6 +95,8 @@ export async function* streamAnswer(opts: {
   workLogs?: WorkLog[]
   /** 'kim-sahyun' 이면 김사현(마케팅 애널리스트) 페르소나로 답한다. 없으면 일반 AI 동료. */
   persona?: string
+  /** 김사현이 과거 대화·분석에서 쌓은 기억(주입용). */
+  memories?: string[]
 }): AsyncGenerator<StreamEvent, boolean> {
   const prompt = buildChatPrompt(opts)
 
@@ -121,8 +123,9 @@ function buildChatPrompt(opts: {
   members?: string[]
   workLogs?: WorkLog[]
   persona?: string
+  memories?: string[]
 }): string {
-  const { question, history, docs, members, workLogs, persona } = opts
+  const { question, history, docs, members, workLogs, persona, memories } = opts
 
   const memberLine = members && members.length ? `\n- 멤버: ${members.join(', ')}` : ''
 
@@ -163,12 +166,20 @@ function buildChatPrompt(opts: {
    DON'T(금지): "초특가! 다양한 기능의 프리미엄 사이드 테이블을 만나보세요!"
 · 고객: 오래 쓸 것 고르는 사람 / 집을 편집하는 사람 / 조용한 안목. (아님: 최저가·빠른유행·잦은교체)
 · CEP: 늦은밤·1인직장인→협탁 / 주말·책수집→책장 / 이사·신혼→침대프레임 / 환절기·미니멀→큐레이션.
-콘텐츠·카피 제안은 전부 이 보이스·페르소나·CEP에 맞춰. MONÉ 톤이 아니면 제안하지 마.`
+콘텐츠·카피 제안은 전부 이 보이스·페르소나·CEP에 맞춰. MONÉ 톤이 아니면 제안하지 마.
+
+[중요 — 자료 사용 규칙] 너는 마케팅 애널리스트야. 아래 '회사 자료'(드라이브 우편실)는 *마케팅·시장·콘텐츠와 직접 관련될 때만* 근거로 써. 소싱·운영·개발·회계 등 마케팅과 무관한 회사 문서는 언급하지 마. 관련 자료가 없으면 억지로 [n] 인용하지 말고, 네 시장 지식·데이터로 답해. 사장이 모르는 시장 정보(경쟁사·트렌드·규제·순위)와 실전 콘텐츠 초안을 주는 게 네 가치다.`
     : `너는 토타로(Totaro) 팀의 AI 동료 직원이야. 사람 동료처럼 자연스럽고 친근하게, 하지만 정확하게 대답해.`
+
+  // 김사현이 과거 대화·분석에서 배운 것 — 항상 반영(학습하는 에이전트)
+  const learnedBlock =
+    isKim && memories && memories.length > 0
+      ? `\n\n[네가 사장과의 대화·분석에서 배운 것 — 항상 반영]\n${memories.map((m) => `- ${m}`).join('\n')}`
+      : ''
 
   return `${identity}
 
-${company}
+${company}${learnedBlock}
 
 [네가 접근 가능한 회사 자료 — 구글 드라이브 우편실에서 이 질문으로 검색한 결과]
 ${docBlock}

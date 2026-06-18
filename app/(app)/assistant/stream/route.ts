@@ -1,6 +1,7 @@
 import { streamAnswer } from '@/lib/assistant/answer'
 import type { ChatTurn } from '@/lib/assistant/answer'
 import { citedSources, retrieveContext, toSource } from '@/lib/assistant/context'
+import { learnFromChat, recallKimMemories } from '@/lib/assistant/learn'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -39,6 +40,8 @@ export async function POST(req: Request): Promise<Response> {
 
   // 관련 자료(발췌 포함) + 팀 작업 기록 + 멤버 맥락
   const { docs, members, workLogs } = await retrieveContext(question)
+  // 김사현이면 두뇌에서 과거 학습/분석 기억을 불러와 답변에 반영(학습하는 에이전트)
+  const memories = persona === 'kim-sahyun' ? await recallKimMemories() : undefined
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream<Uint8Array>({
@@ -56,6 +59,7 @@ export async function POST(req: Request): Promise<Response> {
           members,
           workLogs,
           persona,
+          memories,
         })) {
           if (ev.type === 'delta') {
             full += ev.text
@@ -66,6 +70,8 @@ export async function POST(req: Request): Promise<Response> {
         if (full.trim()) {
           send({ type: 'sources', sources: citedSources(full, docs) })
           send({ type: 'done' })
+          // 학습 — 이 대화에서 배운 것을 김사현 두뇌에 저장 (답변은 이미 전달됨)
+          if (persona === 'kim-sahyun') await learnFromChat(question, full)
         } else {
           // 답변 생성 불가 → 자료 카드 폴백 (상위 6건)
           send({ type: 'degraded', sources: docs.slice(0, 6).map((d, i) => toSource(d, i + 1)) })
