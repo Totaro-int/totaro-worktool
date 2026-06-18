@@ -4,7 +4,10 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { EmptyState } from '@/components/ui'
+import { latestReport } from '@/lib/agents/report'
 import { createClient } from '@/lib/supabase/server'
+
+import { ReportView } from './ReportView'
 
 export const dynamic = 'force-dynamic'
 
@@ -168,6 +171,9 @@ export default async function AgentDashboardPage({
   // eslint-disable-next-line react-hooks/purity
   const workingNow = lastAt ? Date.now() - new Date(lastAt).getTime() < 24 * 60 * 60 * 1000 : false
 
+  // 김사현 = 우편실 '마케팅 분석' 폴더의 최신 보고서를 대시보드에 바로 띄운다.
+  const report = slug === 'kim-sahyun' ? await latestReport('마케팅 분석') : null
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* 헤더 — AI부서로 되돌아가기 */}
@@ -231,6 +237,50 @@ export default async function AgentDashboardPage({
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-8">
+        {/* 오늘의 보고서 (김사현) — 채팅 + 보고서를 한 화면에 */}
+        {slug === 'kim-sahyun' && (
+          <section className="mb-8">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-700">📊 오늘의 보고서</h2>
+              {report && <span className="text-xs text-slate-400">{fmtKST(report.createdAt)}</span>}
+            </div>
+            {report ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                {report.content ? (
+                  <div className="max-h-[28rem] overflow-y-auto pr-1">
+                    <ReportView content={report.content} />
+                  </div>
+                ) : (
+                  <p className="text-sm leading-relaxed text-slate-500">
+                    {report.summary ?? '보고서 본문을 불러오지 못했습니다.'}
+                  </p>
+                )}
+                <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-3">
+                  <span className="min-w-0 truncate text-xs text-slate-400">{report.filename}</span>
+                  <Link
+                    href={`/hub/ai-team/${slug}/chat`}
+                    className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
+                  >
+                    💬 이 보고서로 대화
+                  </Link>
+                  {report.driveLink && (
+                    <a
+                      href={report.driveLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="shrink-0 text-xs font-medium text-slate-500 hover:text-slate-800"
+                    >
+                      전문 ↗
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <EmptyState message="아직 오늘 보고서가 없어요. 매일 아침 8시에 올라옵니다." />
+            )}
+          </section>
+        )}
+
         {/* 통계 */}
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="총 활동" value={total.toLocaleString('ko-KR')} />

@@ -72,6 +72,15 @@ export function getDriveClient(): drive_v3.Drive {
   return cachedDrive
 }
 
+/** Drive 파일 본문을 텍스트로 다운로드 (마크다운·텍스트 문서용). */
+export async function downloadFile(drive: drive_v3.Drive, fileId: string): Promise<string> {
+  const res = await withDriveRetry('downloadFile', () =>
+    drive.files.get({ fileId, alt: 'media' }, { responseType: 'text' })
+  )
+  const data = (res as { data?: unknown }).data
+  return typeof data === 'string' ? data : String(data ?? '')
+}
+
 /** 루트 폴더 ID(토타로 폴더). 환경변수에서 받음. */
 export function getRootFolderId(): string {
   const id = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID
