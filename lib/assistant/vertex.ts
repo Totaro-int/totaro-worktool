@@ -50,9 +50,17 @@ export async function getVertexAccess(): Promise<{ token: string; project: strin
  * Vertex publisher 모델 엔드포인트 URL.
  * method 예: 'predict'(임베딩), 'generateContent', 'streamGenerateContent'(Gemini).
  */
-export function vertexUrl(project: string, model: string, method: string): string {
+export function vertexUrl(
+  project: string,
+  model: string,
+  method: string,
+  location: string = VERTEX_LOCATION
+): string {
+  // 'global' 엔드포인트는 리전 프리픽스가 없다 (Gemini 3.x preview 등은 global 에만 있음).
+  const host =
+    location === 'global' ? 'aiplatform.googleapis.com' : `${location}-aiplatform.googleapis.com`
   return (
-    `https://${VERTEX_LOCATION}-aiplatform.googleapis.com/v1/projects/${project}` +
-    `/locations/${VERTEX_LOCATION}/publishers/google/models/${model}:${method}`
+    `https://${host}/v1/projects/${project}` +
+    `/locations/${location}/publishers/google/models/${model}:${method}`
   )
 }
