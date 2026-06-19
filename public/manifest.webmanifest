@@ -1,0 +1,17 @@
+{
+  "name": "Totaro 업무관리",
+  "short_name": "Totaro",
+  "description": "토타로 팀의 모든 업무를 한 곳에서 관리하는 대시보드",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#222222",
+  "theme_color": "#222222",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
