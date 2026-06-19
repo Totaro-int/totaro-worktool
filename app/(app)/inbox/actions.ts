@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { ensureFolderPath, getDriveClient, getFolderTree, uploadFile } from '@/lib/drive/client'
 import { classifyDocument } from '@/lib/mailroom/classify'
 import { extractContent } from '@/lib/mailroom/extract'
+import { createNotification } from '@/lib/notifications/create'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -210,17 +211,15 @@ export async function confirmClassification(formData: FormData): Promise<Classif
         .single()
       const title = doc?.filename ?? '새 문서'
       const body = `${doc?.doc_type ?? '문서'} 가 ${folderPath} 에 저장됨`
-      await supabase.from('notifications').insert(
-        notifyIds.map((rid) => ({
-          recipient_id: rid,
-          type: 'document_uploaded',
-          related_table: 'inbox_documents',
-          related_id: documentId,
-          title,
-          body,
-          link: `/inbox?doc=${documentId}`,
-        }))
-      )
+      await createNotification({
+        recipientIds: notifyIds,
+        type: 'document_uploaded',
+        title,
+        body,
+        link: `/inbox?doc=${documentId}`,
+        relatedTable: 'inbox_documents',
+        relatedId: documentId,
+      })
     }
 
     revalidatePath('/inbox')
