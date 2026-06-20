@@ -1,8 +1,6 @@
 import Link from 'next/link'
 
-import { KimChatClient } from '@/app/(app)/hub/ai-team/kim-sahyun/KimChatClient'
-import { StudioEditor } from '@/components/StudioEditor'
-import { StudioReportPanel } from '@/components/StudioReportPanel'
+import { StudioWorkspace } from '@/components/StudioWorkspace'
 
 export default function StudioPage(): React.JSX.Element {
   return (
@@ -20,15 +18,7 @@ export default function StudioPage(): React.JSX.Element {
           <p className="text-[11px] text-slate-400">사현이랑 같이 인스타 카드뉴스 만들기</p>
         </div>
       </header>
-      <div className="flex flex-1 flex-col gap-5 p-4 lg:flex-row lg:items-start lg:gap-6 lg:p-6">
-        <div className="w-full lg:flex-1">
-          <StudioEditor />
-        </div>
-        <div className="w-full lg:w-[400px]">
-          <StudioReportPanel />
-          <KimChatClient />
-        </div>
-      </div>
+      <StudioWorkspace />
     </div>
   )
 }
