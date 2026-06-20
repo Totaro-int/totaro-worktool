@@ -54,7 +54,7 @@ cards 는 정확히 8개.`
         body: JSON.stringify({
           contents: [{ role: 'user', parts: [{ text: `${BRAND_GUIDE}\n\n${task}` }] }],
           generationConfig: {
-            maxOutputTokens: 2048,
+            maxOutputTokens: 8192,
             temperature: 0.85,
             responseMimeType: 'application/json',
           },

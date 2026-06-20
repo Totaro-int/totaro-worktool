@@ -64,7 +64,7 @@ async function draftCaptionAndPrompt(
         body: JSON.stringify({
           contents: [{ role: 'user', parts: [{ text: `${BRAND_GUIDE}\n\n${task}` }] }],
           generationConfig: {
-            maxOutputTokens: 2048,
+            maxOutputTokens: 8192,
             temperature: 0.9,
             responseMimeType: 'application/json',
           },
