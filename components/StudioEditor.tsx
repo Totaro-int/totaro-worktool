@@ -2,8 +2,6 @@
 
 import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 
-import { toPng } from 'html-to-image'
-
 import type { Card } from '@/lib/studio/cards'
 
 const FONT = "'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif"
@@ -54,19 +52,24 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
     e.target.value = ''
   }
 
+  /** 서버에서 1080² PNG 합성(sharp) — 브라우저 캡처(html-to-image) 대체. 안 깨짐. */
   async function exportOne(i: number): Promise<void> {
-    const node = cardRef.current
-    if (!node) return
-    if (document.fonts?.ready) await document.fonts.ready // 폰트 로드 보장
-    const scale = node.offsetWidth > 0 ? 1080 / node.offsetWidth : 2.5
-    const opts = { pixelRatio: scale, backgroundColor: hasPhoto ? TAUPE : LINEN }
-    // html-to-image 는 첫 캡처가 비는 버그가 있어 한 번 워밍업 후 캡처
-    await toPng(node, opts)
-    const url = await toPng(node, opts)
+    const c = cards[i]
+    const res = await fetch('/api/content/render-card', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        card: { kicker: c.kicker, headline: c.headline, sub: c.sub, photo: c.photo },
+      }),
+    })
+    if (!res.ok) throw new Error('render failed')
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = `card-${String(i + 1).padStart(2, '0')}.png`
     a.click()
+    URL.revokeObjectURL(url)
   }
 
   async function exportCurrent(): Promise<void> {
@@ -86,11 +89,7 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
     setBusy(true)
     setNote('8장 PNG 만드는 중…')
     try {
-      for (let i = 0; i < cards.length; i += 1) {
-        setCur(i)
-        await new Promise((r) => setTimeout(r, 320)) // 카드 전환 렌더 대기
-        await exportOne(i)
-      }
+      for (let i = 0; i < cards.length; i += 1) await exportOne(i)
       setNote('8장 모두 다운로드 완료.')
     } catch {
       setNote('일부 저장 실패 — 다시 시도.')
