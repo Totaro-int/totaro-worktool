@@ -621,6 +621,12 @@ export default async function HubPage(): Promise<React.JSX.Element> {
         </div>
         <div className="flex items-center gap-3">
           <Link
+            href="/studio"
+            className="text-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700"
+          >
+            카드레터 스튜디오
+          </Link>
+          <Link
             href="/metrics"
             className="text-xs font-medium text-slate-500 transition-colors hover:text-blue-600"
           >
