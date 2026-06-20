@@ -1,6 +1,6 @@
 'use client'
 
-import { type Dispatch, type SetStateAction, useCallback, useRef, useState } from 'react'
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 
 import { toPng } from 'html-to-image'
 
@@ -22,11 +22,21 @@ type Props = {
 export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX.Element {
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState('')
+  const [w, setW] = useState(440) // 카드 실측 폭(px) — cqw 대신 px 폰트(내보내기 안정)
   const cardRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const card = cards[cur]
   const hasPhoto = Boolean(card.photo)
+
+  // 카드 폭을 실측해 px 폰트 계산 (container-query 단위는 html-to-image 클론에서 불안정)
+  useEffect(() => {
+    const el = cardRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setW(el.offsetWidth || 440))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const patch = useCallback(
     (i: number, p: Partial<Card>): void => {
@@ -47,8 +57,12 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
   async function exportOne(i: number): Promise<void> {
     const node = cardRef.current
     if (!node) return
-    const scale = node.offsetWidth > 0 ? 1080 / node.offsetWidth : 2
-    const url = await toPng(node, { pixelRatio: scale, cacheBust: true })
+    if (document.fonts?.ready) await document.fonts.ready // 폰트 로드 보장
+    const scale = node.offsetWidth > 0 ? 1080 / node.offsetWidth : 2.5
+    const opts = { pixelRatio: scale, backgroundColor: hasPhoto ? TAUPE : LINEN }
+    // html-to-image 는 첫 캡처가 비는 버그가 있어 한 번 워밍업 후 캡처
+    await toPng(node, opts)
+    const url = await toPng(node, opts)
     const a = document.createElement('a')
     a.href = url
     a.download = `card-${String(i + 1).padStart(2, '0')}.png`
@@ -57,6 +71,7 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
 
   async function exportCurrent(): Promise<void> {
     setBusy(true)
+    setNote('저장 중…')
     try {
       await exportOne(cur)
       setNote('현재 카드 저장 완료.')
@@ -73,7 +88,7 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
     try {
       for (let i = 0; i < cards.length; i += 1) {
         setCur(i)
-        await new Promise((r) => setTimeout(r, 280)) // 카드 전환 렌더 대기
+        await new Promise((r) => setTimeout(r, 320)) // 카드 전환 렌더 대기
         await exportOne(i)
       }
       setNote('8장 모두 다운로드 완료.')
@@ -87,6 +102,8 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
   const kColor = hasPhoto ? LINEN : '#7F7366'
   const hColor = hasPhoto ? '#F7F1E8' : OBSIDIAN
   const sColor = hasPhoto ? '#EADFCF' : '#7F7366'
+  /** 카드 폭 비율(%) → px. cqw 를 대체 — 내보내기에서 안정적으로 렌더된다. */
+  const px = (ratio: number): string => `${(ratio / 100) * w}px`
 
   return (
     <div className="flex flex-col gap-4">
@@ -94,12 +111,7 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
       <div
         ref={cardRef}
         className="relative mx-auto w-full max-w-[440px] overflow-hidden rounded-xl ring-1 ring-slate-200"
-        style={{
-          aspectRatio: '1 / 1',
-          background: hasPhoto ? TAUPE : LINEN,
-          fontFamily: FONT,
-          containerType: 'inline-size',
-        }}
+        style={{ height: `${w}px`, background: hasPhoto ? TAUPE : LINEN, fontFamily: FONT }}
       >
         {hasPhoto ? (
           <>
@@ -114,14 +126,23 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
             <div className="absolute inset-0" style={{ background: 'rgba(28,26,22,0.32)' }} />
           </>
         ) : null}
-        <div className="absolute inset-0 flex flex-col" style={{ padding: '8%' }}>
-          <div style={{ fontSize: '3.4cqw', letterSpacing: '0.3em', color: kColor }}>
-            {card.kicker}
-          </div>
-          <div className="flex-1" />
+        {/* flex 대신 절대위치 — html-to-image 클론에서 flex 분배가 깨져 글자가 쏠리는 것 방지 */}
+        <div
+          style={{
+            position: 'absolute',
+            top: px(8),
+            left: px(8),
+            fontSize: px(3.4),
+            letterSpacing: '0.3em',
+            color: kColor,
+          }}
+        >
+          {card.kicker}
+        </div>
+        <div style={{ position: 'absolute', left: px(8), right: px(8), bottom: px(8) }}>
           <div
             style={{
-              fontSize: '7.6cqw',
+              fontSize: px(7.6),
               fontWeight: 700,
               lineHeight: 1.24,
               whiteSpace: 'pre-line',
@@ -130,9 +151,9 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
           >
             {card.headline}
           </div>
-          <div style={{ marginTop: '2.5cqw', fontSize: '3.8cqw', color: sColor }}>{card.sub}</div>
+          <div style={{ marginTop: px(2.5), fontSize: px(3.8), color: sColor }}>{card.sub}</div>
           <div
-            style={{ marginTop: '3.5cqw', fontSize: '3cqw', letterSpacing: '0.4em', color: kColor }}
+            style={{ marginTop: px(3.5), fontSize: px(3), letterSpacing: '0.4em', color: kColor }}
           >
             MONÉ HOUSE
           </div>
