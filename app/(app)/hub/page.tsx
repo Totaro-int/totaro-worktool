@@ -431,6 +431,35 @@ function wonCompact(n: number): string {
   return `₩${Math.round(n).toLocaleString('ko-KR')}`
 }
 
+/** 모바일용 단순 카드 — 아이소 그래프 대신 반응형 그리드에 쌓는다. 데스크탑은 md: 그래프 유지. */
+function MobileNodeCard({ node }: { node: NodeSpec }): React.JSX.Element {
+  const p = PALETTE[node.accent]
+  return (
+    <Link
+      href={node.href}
+      className={`flex flex-col gap-2.5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-colors active:bg-slate-50 ${node.hero ? 'col-span-2' : ''}`}
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+          style={{ background: `${p.header}1a` }}
+        >
+          <NodeIcon name={node.icon} size={18} color={p.iconColor} />
+        </span>
+        <span className="truncate text-sm font-semibold text-slate-800">{node.name}</span>
+      </div>
+      <div>
+        <p className="truncate text-[10px] font-medium tracking-wide text-slate-400">
+          {node.subText}
+        </p>
+        <p className="text-2xl leading-tight font-extrabold text-slate-900 tabular-nums">
+          {node.value}
+        </p>
+      </div>
+    </Link>
+  )
+}
+
 export default async function HubPage(): Promise<React.JSX.Element> {
   const supabase = await createClient()
   // 인증·할 일·각 거점 데이터를 한 번에 병렬 호출 — 허브 첫 화면에 실데이터를 채운다.
@@ -580,7 +609,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <MissionBanner />
-      <header className="flex items-center justify-between border-b border-slate-200 px-8 py-4">
+      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-slate-200 px-4 py-3 pr-14 md:px-8 md:py-4 md:pr-8">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
             T
@@ -615,8 +644,15 @@ export default async function HubPage(): Promise<React.JSX.Element> {
         </div>
       </header>
 
+      {/* 모바일: 노드 그래프 대신 카드 그리드 (데스크탑은 md: 아이소 그래프) */}
+      <div className="grid grid-cols-2 gap-3 p-4 md:hidden">
+        {nodes.map((node) => (
+          <MobileNodeCard key={node.href} node={node} />
+        ))}
+      </div>
+
       <div
-        className="relative flex-1 overflow-hidden"
+        className="relative hidden flex-1 overflow-hidden md:block"
         style={{
           backgroundColor: '#eef2f8',
           backgroundImage:
