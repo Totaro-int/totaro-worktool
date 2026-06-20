@@ -115,13 +115,13 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
       >
         {hasPhoto ? (
           <>
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${card.photo})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
+            {/* background-image 가 아니라 실제 img — html-to-image 가 안정적으로 캡처함 */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={card.photo ?? ''}
+              alt=""
+              className="absolute inset-0 h-full w-full"
+              style={{ objectFit: 'cover' }}
             />
             <div className="absolute inset-0" style={{ background: 'rgba(28,26,22,0.32)' }} />
           </>
