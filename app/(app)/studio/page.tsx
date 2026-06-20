@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 import { KimChatClient } from '@/app/(app)/hub/ai-team/kim-sahyun/KimChatClient'
 import { StudioEditor } from '@/components/StudioEditor'
+import { StudioReportPanel } from '@/components/StudioReportPanel'
 
 export default function StudioPage(): React.JSX.Element {
   return (
@@ -24,6 +25,7 @@ export default function StudioPage(): React.JSX.Element {
           <StudioEditor />
         </div>
         <div className="w-full lg:w-[400px]">
+          <StudioReportPanel />
           <KimChatClient />
         </div>
       </div>

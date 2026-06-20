@@ -233,7 +233,7 @@ export function StudioEditor(): React.JSX.Element {
             onClick={() => fileRef.current?.click()}
             className="flex-1 rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800"
           >
-            사진 올리기
+            배경 사진 올리기
           </button>
           {hasPhoto ? (
             <button
@@ -241,7 +241,7 @@ export function StudioEditor(): React.JSX.Element {
               onClick={() => patch(cur, { photo: null })}
               className="rounded-lg px-3 py-2 text-xs font-medium text-slate-500 ring-1 ring-slate-200 hover:bg-slate-50"
             >
-              사진 빼기
+              배경 빼기
             </button>
           ) : null}
         </div>
