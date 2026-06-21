@@ -1,6 +1,6 @@
 /**
- * 카드 → 1080² PNG 서버 렌더(sharp). 스튜디오 "이 카드 PNG" 버튼이 호출.
- * html-to-image(브라우저) 대체 — 사진·한글이 안 깨진다.
+ * 카드 → 1080² PNG 서버 렌더(next/og·Satori). 스튜디오 "이 카드 PNG" 버튼이 호출.
+ * html-to-image(브라우저)·sharp 대체 — Vercel 에서도 사진·한글이 안 깨진다.
  */
 import { renderCardImage } from '@/lib/studio/render-card'
 import type { RenderCardInput } from '@/lib/studio/render-card'

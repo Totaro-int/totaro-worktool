@@ -47,12 +47,35 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
     const f = e.target.files?.[0]
     if (!f) return
     const r = new FileReader()
-    r.onload = (ev) => patch(cur, { photo: String(ev.target?.result ?? '') })
+    r.onload = (ev) => {
+      const src = String(ev.target?.result ?? '')
+      // 사진을 최대 1280px 로 축소해 저장. 원본(폰 풀해상도)은 dataURL 이 수 MB라
+      // 저장 시 요청 본문이 Vercel 한도(4.5MB)를 넘어 일부 카드가 저장 실패함.
+      const img = new Image()
+      img.onload = () => {
+        const max = 1280
+        const scale = Math.min(1, max / Math.max(img.width, img.height))
+        const w = Math.max(1, Math.round(img.width * scale))
+        const h = Math.max(1, Math.round(img.height * scale))
+        const cv = document.createElement('canvas')
+        cv.width = w
+        cv.height = h
+        const ctx = cv.getContext('2d')
+        if (!ctx) {
+          patch(cur, { photo: src })
+          return
+        }
+        ctx.drawImage(img, 0, 0, w, h)
+        patch(cur, { photo: cv.toDataURL('image/jpeg', 0.85) })
+      }
+      img.onerror = () => patch(cur, { photo: src })
+      img.src = src
+    }
     r.readAsDataURL(f)
     e.target.value = ''
   }
 
-  /** 서버에서 1080² PNG 합성(sharp) — 브라우저 캡처(html-to-image) 대체. 안 깨짐. */
+  /** 서버에서 1080² PNG 합성(next/og·Satori) — 브라우저 캡처(html-to-image) 대체. 안 깨짐. */
   async function exportOne(i: number): Promise<void> {
     const c = cards[i]
     const res = await fetch('/api/content/render-card', {
