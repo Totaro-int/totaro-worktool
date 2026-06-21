@@ -2,7 +2,7 @@
  * 카드 → 1080² PNG 서버 렌더(sharp). 스튜디오 "이 카드 PNG" 버튼이 호출.
  * html-to-image(브라우저) 대체 — 사진·한글이 안 깨진다.
  */
-import { renderCard } from '@/lib/studio/render-card'
+import { renderCardImage } from '@/lib/studio/render-card'
 import type { RenderCardInput } from '@/lib/studio/render-card'
 import { createClient } from '@/lib/supabase/server'
 
@@ -26,10 +26,7 @@ export async function POST(req: Request): Promise<Response> {
   if (!body.card) return new Response('카드 데이터 없음', { status: 400 })
 
   try {
-    const png = await renderCard(body.card)
-    return new Response(new Uint8Array(png), {
-      headers: { 'content-type': 'image/png', 'cache-control': 'no-store' },
-    })
+    return renderCardImage(body.card)
   } catch (e) {
     console.error('[render-card] 실패:', e)
     return new Response('렌더 실패', { status: 500 })
