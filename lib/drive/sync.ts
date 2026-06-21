@@ -5,6 +5,7 @@
  * 분류(doc_type/description)·본문 발췌(body_excerpt)는 별도 백필 잡이 채운다.
  */
 import { getDriveClient, getRootFolderId, withDriveRetry } from '@/lib/drive/client'
+import { notifyNewDocuments } from '@/lib/notifications/notify-new-doc'
 import { getServiceSupabase } from '@/lib/oauth/utils'
 
 import type { drive_v3 } from 'googleapis'
@@ -138,6 +139,13 @@ export async function runDriveSync(): Promise<SyncResult> {
       .upsert(slice, { onConflict: 'drive_file_id', ignoreDuplicates: true, count: 'exact' })
     if (error) return { ok: false, error: `insert: ${error.message}` }
     inserted += count ?? slice.length
+  }
+
+  // 새로 들어온 문서 → 인앱+폰 알림(보고서/우편 분류·배치). 실패해도 동기화는 성공 처리.
+  if (newRows.length > 0) {
+    await notifyNewDocuments(
+      newRows.map((r) => ({ filename: r.filename, folderPath: r.folder_path }))
+    )
   }
 
   return {

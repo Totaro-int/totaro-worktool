@@ -24,7 +24,7 @@ import {
   type TasksCreateInput,
 } from './agent-handlers'
 import { extractContent } from '../mailroom/extract'
-
+import { notifyNewDocuments } from '../notifications/notify-new-doc'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
@@ -370,6 +370,10 @@ export async function handleUpload(input: UploadInput): Promise<string> {
     status: 'confirmed',
   })) as Array<Record<string, unknown>>
   const docId = inserted[0]?.id ?? ''
+  // 새 문서 → 인앱+폰 알림(보고서 폴더면 보고서 알림으로 분기). 실패해도 저장은 성공.
+  await notifyNewDocuments([
+    { filename, folderPath: input.target_path, id: typeof docId === 'string' ? docId : undefined },
+  ])
   return `✅ 저장됨\n  파일: ${filename}\n  경로: ${input.target_path}\n  id: ${docId}\n  Drive: ${webViewLink ?? '(링크 없음)'}`
 }
 
