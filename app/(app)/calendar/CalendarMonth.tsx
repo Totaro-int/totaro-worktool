@@ -1,22 +1,35 @@
+'use client'
+
 /**
- * 업무 관리 캘린더 월 그리드 — 워크툴 할일(상태색) + 본인 Google 일정(연결 시) + 날짜별 할일 추가.
- * 날짜 칸의 + 를 누르면 상단 추가 폼이 그 날짜로 열린다. 할일 칩=상태색, 일정 칩=옅은 slate.
- * [토타로] 자동등록 일정은 할일과 중복이라 페이지에서 미리 걸러져 들어온다.
+ * 업무 관리 캘린더 — 워크툴 할일을 월 그리드에. 여러 날 작업은 기간 막대로 가로질러 표시하고,
+ * 빈 날짜를 드래그하면 그 기간으로 추가 폼이 열린다(한 칸 클릭=하루짜리). Google 일정은 연결 시 얹음.
+ *
+ * 막대 렌더: 6개 주(week) 행 각각에 날짜칸(바탕) + 멀티데이 막대 오버레이(grid-col span, 레인 greedy).
+ * start_date..due_date 가 기간. start_date 없거나 == due_date 면 하루짜리 칩.
  */
-import type { JSX } from 'react'
+import { useEffect, useRef, useState, type JSX } from 'react'
 
 import Link from 'next/link'
 
 import { inputClass, labelClass } from '@/components/ui'
 import { TASK_STATUS_DOT, TASK_STATUS_LABELS } from '@/lib/constants'
 import type { UpcomingEvent } from '@/lib/google/calendar'
-import type { Member, WorkArea } from '@/lib/types'
+import type { Member, TaskStatus, WorkArea } from '@/lib/types'
 
 import { createTask } from '../tasks/actions'
 
 import type { CalTask } from './page'
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토']
+const DAYNUM_H = 26 // 날짜 번호 줄 높이(px)
+const BAR_H = 22 // 막대 레인 1칸 높이(px)
+
+/** 멀티데이 막대 색(상태별). */
+const STATUS_BAR: Record<TaskStatus, string> = {
+  todo: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200',
+  doing: 'bg-amber-100 text-amber-900 ring-1 ring-inset ring-amber-200',
+  done: 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200',
+}
 
 function ymToDate(yearMonth: string): Date {
   const [y, m] = yearMonth.split('-').map(Number)
@@ -30,17 +43,19 @@ function shiftMonth(yearMonth: string, delta: number): string {
   d.setMonth(d.getMonth() + delta)
   return dateToYM(d)
 }
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  )
-}
 function cellKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
     d.getDate()
   ).padStart(2, '0')}`
+}
+function isSameDay(a: Date, b: Date): boolean {
+  return cellKey(a) === cellKey(b)
+}
+/** 두 'YYYY-MM-DD' 사이 일수(b - a). */
+function daysBetween(a: string, b: string): number {
+  return Math.round(
+    (new Date(`${b}T00:00:00`).getTime() - new Date(`${a}T00:00:00`).getTime()) / 86_400_000
+  )
 }
 function eventStartKey(e: UpcomingEvent): string {
   try {
@@ -57,9 +72,22 @@ function eventTime(e: UpcomingEvent): string {
     return ''
   }
 }
-/** 칩 표시용 — 앞쪽 [에이전트] prefix 제거. */
+/** 칩/막대 표시용 — 앞쪽 [에이전트] prefix 제거. */
 function cleanTitle(title: string): string {
   return title.replace(/^\[[^\]]+\]\s*/, '')
+}
+/** 멀티데이(여러 날) 작업인가 — start_date 가 마감보다 앞일 때. */
+function isMultiDay(t: CalTask): boolean {
+  return Boolean(t.start_date && t.due_date && t.start_date < t.due_date)
+}
+
+type Bar = {
+  task: CalTask
+  colStart: number // 0-6 (주 안에서 시작 칸)
+  colEnd: number // 0-6
+  lane: number
+  trueStart: boolean // 이 주에서 실제 시작
+  trueEnd: boolean // 이 주에서 실제 끝
 }
 
 export function CalendarMonth({
@@ -79,10 +107,45 @@ export function CalendarMonth({
   googleConnected: boolean
   addDate: string | null
 }): JSX.Element {
+  // ── 드래그 상태 ──────────────────────────────────────────
+  const [drag, setDrag] = useState<{ anchor: string; hover: string } | null>(null)
+  const dragRef = useRef<{ anchor: string; hover: string } | null>(null)
+  const setDragState = (v: { anchor: string; hover: string } | null): void => {
+    dragRef.current = v
+    setDrag(v)
+  }
+
+  // ── 추가 폼 상태 ─────────────────────────────────────────
+  const [formOpen, setFormOpen] = useState(Boolean(addDate))
+  const [rangeStart, setRangeStart] = useState(addDate ?? '')
+  const [rangeEnd, setRangeEnd] = useState(addDate ?? '')
+  const titleRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLDetailsElement>(null)
+
+  // 드래그 끝(어디서 놓든) → 범위 확정 + 폼 열기
+  useEffect(() => {
+    function onUp(): void {
+      const d = dragRef.current
+      if (!d) return
+      dragRef.current = null
+      setDrag(null)
+      const [a, b] = [d.anchor, d.hover].sort()
+      setRangeStart(a!)
+      setRangeEnd(b!)
+      setFormOpen(true)
+      requestAnimationFrame(() => {
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        titleRef.current?.focus()
+      })
+    }
+    window.addEventListener('pointerup', onUp)
+    return () => window.removeEventListener('pointerup', onUp)
+  }, [])
+
+  // ── 그리드 셀(42) ────────────────────────────────────────
   const today = new Date()
   const monthDate = ymToDate(month)
   const monthLabel = `${monthDate.getFullYear()}년 ${monthDate.getMonth() + 1}월`
-
   const gridStart = new Date(monthDate)
   gridStart.setDate(1 - monthDate.getDay())
   const cells: Date[] = []
@@ -91,15 +154,17 @@ export function CalendarMonth({
     d.setDate(gridStart.getDate() + i)
     cells.push(d)
   }
+  const weeks: Date[][] = []
+  for (let w = 0; w < 6; w++) weeks.push(cells.slice(w * 7, w * 7 + 7))
 
-  const tasksByDay = new Map<string, CalTask[]>()
+  // ── 하루짜리 할일 / 일정 by 날짜 ────────────────────────
+  const singleByDay = new Map<string, CalTask[]>()
   for (const t of tasks) {
-    if (!t.due_date) continue
-    const arr = tasksByDay.get(t.due_date) ?? []
+    if (isMultiDay(t) || !t.due_date) continue
+    const arr = singleByDay.get(t.due_date) ?? []
     arr.push(t)
-    tasksByDay.set(t.due_date, arr)
+    singleByDay.set(t.due_date, arr)
   }
-
   const eventsByDay = new Map<string, UpcomingEvent[]>()
   for (const e of events) {
     const k = eventStartKey(e)
@@ -109,8 +174,47 @@ export function CalendarMonth({
     eventsByDay.set(k, arr)
   }
 
+  // ── 멀티데이 막대: 주별 레인 배정 ───────────────────────
+  const multi = tasks
+    .filter(isMultiDay)
+    .sort(
+      (a, b) => a.start_date!.localeCompare(b.start_date!) || b.due_date!.localeCompare(a.due_date!)
+    )
+  const weekBars: Bar[][] = weeks.map((week) => {
+    const ws = cellKey(week[0]!)
+    const we = cellKey(week[6]!)
+    const bars: Bar[] = []
+    const lanes: Bar[][] = []
+    for (const t of multi) {
+      const s = t.start_date!
+      const e = t.due_date!
+      if (s > we || e < ws) continue // 이 주와 안 겹침
+      const segS = s < ws ? ws : s
+      const segE = e > we ? we : e
+      const colStart = daysBetween(ws, segS)
+      const colEnd = daysBetween(ws, segE)
+      let lane = lanes.findIndex(
+        (laneBars) => !laneBars.some((b) => !(colEnd < b.colStart || colStart > b.colEnd))
+      )
+      if (lane === -1) {
+        lane = lanes.length
+        lanes.push([])
+      }
+      const bar: Bar = { task: t, colStart, colEnd, lane, trueStart: s >= ws, trueEnd: e <= we }
+      lanes[lane]!.push(bar)
+      bars.push(bar)
+    }
+    return bars
+  })
+  const maxLanes = weekBars.reduce((mx, bars) => Math.max(mx, ...bars.map((b) => b.lane + 1), 0), 0)
+  const laneBand = maxLanes * BAR_H
+
   const prev = shiftMonth(month, -1)
   const next = shiftMonth(month, 1)
+
+  // 드래그 범위 하이라이트 판정
+  const dragLo = drag ? [drag.anchor, drag.hover].sort()[0]! : ''
+  const dragHi = drag ? [drag.anchor, drag.hover].sort()[1]! : ''
 
   return (
     <main className="mx-auto max-w-6xl px-8 py-12">
@@ -162,14 +266,21 @@ export function CalendarMonth({
         </nav>
       </header>
 
-      {/* 할일 추가 — 날짜 칸의 + 를 누르면 그 날짜로 열린다 */}
+      {/* 할일 추가 — 날짜를 드래그하거나 한 칸 클릭하면 그 기간으로 열린다 */}
       <details
-        id="add"
-        open={Boolean(addDate)}
+        ref={formRef}
+        open={formOpen}
+        onToggle={(e) => setFormOpen((e.target as HTMLDetailsElement).open)}
         className="mb-6 rounded-xl bg-white ring-1 ring-slate-200"
       >
         <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-slate-700">
-          + 할일 추가{addDate ? ` · ${addDate}` : ''}
+          + 할일 추가
+          {rangeStart ? (
+            <span className="ml-1 text-slate-400">
+              · {rangeStart}
+              {rangeEnd && rangeEnd !== rangeStart ? ` ~ ${rangeEnd}` : ''}
+            </span>
+          ) : null}
         </summary>
         <form action={createTask} className="space-y-3 border-t border-slate-100 p-5">
           <div>
@@ -177,6 +288,7 @@ export function CalendarMonth({
               할 일
             </label>
             <input
+              ref={titleRef}
               id="cal-title"
               name="title"
               required
@@ -184,19 +296,35 @@ export function CalendarMonth({
               className={inputClass}
             />
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass} htmlFor="cal-start">
+                시작
+              </label>
+              <input
+                type="date"
+                id="cal-start"
+                name="start_date"
+                value={rangeStart}
+                onChange={(e) => setRangeStart(e.target.value)}
+                className={inputClass}
+              />
+            </div>
             <div>
               <label className={labelClass} htmlFor="cal-due">
-                마감일
+                마감
               </label>
               <input
                 type="date"
                 id="cal-due"
                 name="due_date"
-                defaultValue={addDate ?? ''}
+                value={rangeEnd}
+                onChange={(e) => setRangeEnd(e.target.value)}
                 className={inputClass}
               />
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass} htmlFor="cal-area">
                 사업영역
@@ -231,12 +359,12 @@ export function CalendarMonth({
             추가하기
           </button>
           <p className="text-xs text-slate-400">
-            마감일이 있고 본인 Google 이 연결돼 있으면 캘린더에도 자동 등록돼요.
+            시작 ~ 마감이 다르면 여러 날 막대로 표시돼요. 같으면 하루짜리.
           </p>
         </form>
       </details>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white select-none">
         <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/60">
           {DAYS.map((d, i) => (
             <div
@@ -249,103 +377,130 @@ export function CalendarMonth({
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7">
-          {cells.map((d, i) => {
-            const inMonth = d.getMonth() === monthDate.getMonth()
-            const isToday = isSameDay(d, today)
-            const key = cellKey(d)
-            const dayTasks = tasksByDay.get(key) ?? []
-            const dayEvents = eventsByDay.get(key) ?? []
-            const shownTasks = dayTasks.slice(0, 3)
-            const slots = Math.max(0, 3 - shownTasks.length)
-            const shownEvents = dayEvents.slice(0, slots)
-            const overflow =
-              dayTasks.length - shownTasks.length + (dayEvents.length - shownEvents.length)
 
-            const dayNumClass = isToday
-              ? 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white'
-              : inMonth
-                ? d.getDay() === 0
-                  ? 'text-[12px] font-medium text-rose-500'
-                  : 'text-[12px] font-medium text-slate-700'
-                : 'text-[12px] font-medium text-slate-300'
+        {weeks.map((week, wi) => (
+          <div key={wi} className="relative border-b border-slate-100 last:border-b-0">
+            {/* 날짜 칸 (바탕) */}
+            <div className="grid grid-cols-7">
+              {week.map((d, di) => {
+                const inMonth = d.getMonth() === monthDate.getMonth()
+                const isToday = isSameDay(d, today)
+                const key = cellKey(d)
+                const inDrag = Boolean(drag) && key >= dragLo && key <= dragHi
+                const dayTasks = singleByDay.get(key) ?? []
+                const dayEvents = eventsByDay.get(key) ?? []
+                const shownTasks = dayTasks.slice(0, 2)
+                const slots = Math.max(0, 2 - shownTasks.length)
+                const shownEvents = dayEvents.slice(0, slots)
+                const overflow =
+                  dayTasks.length - shownTasks.length + (dayEvents.length - shownEvents.length)
 
-            return (
-              <div
-                key={i}
-                className={`group relative min-h-[120px] border-r border-b border-slate-100 px-2.5 pt-2.5 pb-2 transition-colors ${
-                  inMonth ? 'bg-white hover:bg-slate-50/60' : 'bg-slate-50/40'
-                } ${(i + 1) % 7 === 0 ? 'border-r-0' : ''}`}
-              >
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className={dayNumClass}>{d.getDate()}</span>
-                  <Link
-                    href={`/calendar?month=${month}&d=${key}#add`}
-                    aria-label={`${key} 할일 추가`}
-                    className="flex h-5 w-5 items-center justify-center rounded-md text-sm leading-none text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-100 hover:text-slate-700"
+                const dayNumClass = isToday
+                  ? 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white'
+                  : inMonth
+                    ? d.getDay() === 0
+                      ? 'text-[12px] font-medium text-rose-500'
+                      : 'text-[12px] font-medium text-slate-700'
+                    : 'text-[12px] font-medium text-slate-300'
+
+                return (
+                  <div
+                    key={di}
+                    onPointerDown={(e) => {
+                      e.preventDefault()
+                      setDragState({ anchor: key, hover: key })
+                    }}
+                    onPointerEnter={() => {
+                      if (dragRef.current)
+                        setDragState({ anchor: dragRef.current.anchor, hover: key })
+                    }}
+                    className={`group relative min-h-[120px] cursor-pointer px-2.5 pb-2 transition-colors ${
+                      (di + 1) % 7 === 0 ? '' : 'border-r border-slate-100'
+                    } ${inDrag ? 'bg-indigo-50' : inMonth ? 'bg-white hover:bg-slate-50/60' : 'bg-slate-50/40'}`}
+                    style={{ paddingTop: DAYNUM_H + laneBand + 4 }}
                   >
-                    +
-                  </Link>
-                </div>
-                <div className="space-y-1">
-                  {shownTasks.map((t) => {
-                    const done = t.status === 'done'
-                    return (
-                      <span
-                        key={t.id}
-                        title={`${cleanTitle(t.title)} · ${TASK_STATUS_LABELS[t.status]}`}
-                        className="flex items-center gap-1.5 truncate rounded-[5px] bg-slate-50 px-1.5 py-0.5 text-[10.5px] leading-snug font-medium ring-1 ring-slate-100"
-                      >
+                    <div
+                      className="absolute inset-x-2.5 flex items-center justify-between"
+                      style={{ top: 6 }}
+                    >
+                      <span className={dayNumClass}>{d.getDate()}</span>
+                      <span className="text-sm leading-none text-slate-300 opacity-0 group-hover:opacity-100">
+                        +
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      {shownTasks.map((t) => (
                         <span
-                          aria-hidden="true"
-                          className={`h-2.5 w-0.5 flex-none rounded-full ${TASK_STATUS_DOT[t.status]}`}
-                        />
-                        <span
-                          className={`truncate ${done ? 'text-slate-400 line-through' : 'text-slate-700'}`}
+                          key={t.id}
+                          title={`${cleanTitle(t.title)} · ${TASK_STATUS_LABELS[t.status]}`}
+                          className="flex items-center gap-1.5 truncate rounded-[5px] bg-slate-50 px-1.5 py-0.5 text-[10.5px] leading-snug font-medium ring-1 ring-slate-100"
                         >
-                          {cleanTitle(t.title)}
+                          <span
+                            aria-hidden="true"
+                            className={`h-2.5 w-0.5 flex-none rounded-full ${TASK_STATUS_DOT[t.status]}`}
+                          />
+                          <span
+                            className={`truncate ${t.status === 'done' ? 'text-slate-400 line-through' : 'text-slate-700'}`}
+                          >
+                            {cleanTitle(t.title)}
+                          </span>
                         </span>
-                      </span>
-                    )
-                  })}
-                  {shownEvents.map((e) => {
-                    const t = eventTime(e)
-                    const chip = (
-                      <span className="flex items-center gap-1.5 truncate rounded-[5px] bg-indigo-50/60 px-1.5 py-0.5 text-[10.5px] leading-snug font-medium text-indigo-900">
-                        <span
-                          aria-hidden="true"
-                          className="h-2.5 w-0.5 flex-none rounded-full bg-indigo-400"
-                        />
-                        {t ? (
-                          <span className="text-[10px] tabular-nums opacity-60">{t}</span>
-                        ) : null}
-                        <span className="truncate">{e.summary}</span>
-                      </span>
-                    )
-                    return e.htmlLink ? (
-                      <a
-                        key={e.id}
-                        href={e.htmlLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={e.summary}
-                      >
-                        {chip}
-                      </a>
-                    ) : (
-                      <span key={e.id} title={e.summary}>
-                        {chip}
-                      </span>
-                    )
-                  })}
-                  {overflow > 0 ? (
-                    <p className="px-1.5 text-[10px] font-medium text-slate-400">외 {overflow}건</p>
-                  ) : null}
-                </div>
+                      ))}
+                      {shownEvents.map((e) => {
+                        const tm = eventTime(e)
+                        return (
+                          <span
+                            key={e.id}
+                            title={e.summary}
+                            className="flex items-center gap-1.5 truncate rounded-[5px] bg-indigo-50/60 px-1.5 py-0.5 text-[10.5px] leading-snug font-medium text-indigo-900"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="h-2.5 w-0.5 flex-none rounded-full bg-indigo-400"
+                            />
+                            {tm ? (
+                              <span className="text-[10px] tabular-nums opacity-60">{tm}</span>
+                            ) : null}
+                            <span className="truncate">{e.summary}</span>
+                          </span>
+                        )
+                      })}
+                      {overflow > 0 ? (
+                        <p className="px-1.5 text-[10px] font-medium text-slate-400">
+                          외 {overflow}건
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* 멀티데이 막대 오버레이 */}
+            {weekBars[wi]!.length > 0 ? (
+              <div
+                className="pointer-events-none absolute inset-x-0 grid grid-cols-7 gap-x-px px-px"
+                style={{ top: DAYNUM_H + 2, gridAutoRows: `${BAR_H}px` }}
+              >
+                {weekBars[wi]!.map((b) => (
+                  <div
+                    key={b.task.id}
+                    title={`${cleanTitle(b.task.title)} · ${b.task.start_date}~${b.task.due_date}`}
+                    style={{
+                      gridColumn: `${b.colStart + 1} / ${b.colEnd + 2}`,
+                      gridRow: b.lane + 1,
+                    }}
+                    className={`mx-0.5 flex h-[18px] items-center truncate px-2 text-[10.5px] leading-[18px] font-medium ${
+                      STATUS_BAR[b.task.status]
+                    } ${b.trueStart ? 'rounded-l-full' : ''} ${b.trueEnd ? 'rounded-r-full' : ''}`}
+                  >
+                    <span className="truncate">{cleanTitle(b.task.title)}</span>
+                  </div>
+                ))}
               </div>
-            )
-          })}
-        </div>
+            ) : null}
+          </div>
+        ))}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-5 text-[11px] text-slate-400">
@@ -364,11 +519,7 @@ export function CalendarMonth({
           <span className={`h-2.5 w-0.5 rounded-full ${TASK_STATUS_DOT.done}`} aria-hidden="true" />
           완료
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-0.5 rounded-full bg-indigo-400" aria-hidden="true" />
-          Google 일정
-        </span>
-        <span className="ml-auto">날짜 칸의 + 로 그날 할일 추가</span>
+        <span className="ml-auto">날짜를 드래그하면 여러 날 작업, 한 칸 클릭하면 하루짜리</span>
       </div>
     </main>
   )

@@ -40,6 +40,9 @@ export async function createTask(formData: FormData): Promise<void> {
 
   const description = String(formData.get('description') ?? '').trim() || null
   const dueDate = String(formData.get('due_date') ?? '') || null
+  // start_date 는 마감보다 앞일 때만 멀티데이로 인정(아니면 하루짜리).
+  const startRaw = String(formData.get('start_date') ?? '') || null
+  const startDate = startRaw && dueDate && startRaw < dueDate ? startRaw : null
 
   const { data: inserted, error } = await supabase
     .from('tasks')
@@ -48,6 +51,7 @@ export async function createTask(formData: FormData): Promise<void> {
       description,
       work_area_id: String(formData.get('work_area_id') ?? '') || null,
       assignee_id: String(formData.get('assignee_id') ?? '') || null,
+      start_date: startDate,
       due_date: dueDate,
       status: 'todo',
       created_by: user.id,
@@ -63,6 +67,7 @@ export async function createTask(formData: FormData): Promise<void> {
       await pushTaskToCalendar(user.id, inserted.id, {
         title,
         description,
+        start_date: startDate,
         due_date: dueDate,
       })
     } catch {
@@ -77,7 +82,7 @@ export async function createTask(formData: FormData): Promise<void> {
 async function pushTaskToCalendar(
   userId: string,
   taskId: string,
-  t: { title: string; description: string | null; due_date: string }
+  t: { title: string; description: string | null; start_date: string | null; due_date: string }
 ): Promise<boolean> {
   const admin = getServiceSupabase()
   const result = await createCalendarEvent(userId, t)
@@ -110,7 +115,7 @@ export async function syncMyTasksToCalendar(): Promise<void> {
 
   const { data } = await supabase
     .from('tasks')
-    .select('id, title, description, due_date, google_event_id')
+    .select('id, title, description, start_date, due_date, google_event_id')
     .eq('assignee_id', user.id)
     .not('due_date', 'is', null)
     .is('google_event_id', null)
@@ -119,6 +124,7 @@ export async function syncMyTasksToCalendar(): Promise<void> {
     id: string
     title: string
     description: string | null
+    start_date: string | null
     due_date: string
   }>
 
@@ -128,6 +134,7 @@ export async function syncMyTasksToCalendar(): Promise<void> {
       const ok = await pushTaskToCalendar(user.id, t.id, {
         title: t.title,
         description: t.description,
+        start_date: t.start_date,
         due_date: t.due_date,
       })
       if (ok) synced += 1

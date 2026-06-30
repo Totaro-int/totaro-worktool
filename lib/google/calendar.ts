@@ -14,7 +14,8 @@ const CAL = 'primary' // 사용자 기본 캘린더
 export type CalendarTaskInput = {
   title: string
   description: string | null
-  due_date: string | null // YYYY-MM-DD
+  start_date?: string | null // YYYY-MM-DD — 있으면 멀티데이(여러 날) 기간
+  due_date: string | null // YYYY-MM-DD (기간의 끝/마감)
   url?: string | null // 워크툴 task 링크 (선택)
 }
 
@@ -27,11 +28,13 @@ type CalendarEvent = {
   htmlLink?: string
 }
 
-/** task → Calendar event 본문. 시각 없는 마감일이라 all-day. */
+/** task → Calendar event 본문. 시각 없는 마감일이라 all-day(기간 있으면 여러 날 span). */
 function buildEventBody(t: CalendarTaskInput): Record<string, unknown> | null {
   if (!t.due_date) return null
-  // all-day 이벤트는 end.date 가 exclusive — 다음날로.
-  const start = t.due_date
+  // start_date 가 마감보다 앞이면 멀티데이 — 시작일부터. 아니면 마감 하루.
+  const hasRange = Boolean(t.start_date && t.start_date < t.due_date)
+  const start = hasRange ? t.start_date! : t.due_date
+  // all-day 이벤트는 end.date 가 exclusive — 마지막날 포함되게 다음날로.
   const end = addOneDay(t.due_date)
   const description = [t.description ?? '', t.url ? `\n\n워크툴: ${t.url}` : ''].join('').trim()
   return {

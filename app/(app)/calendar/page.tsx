@@ -21,17 +21,25 @@ function currentYearMonth(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-/** 해당 월의 [시작일, 다음달 1일) — due_date 범위 조회용. */
-function monthBounds(yearMonth: string): { start: string; end: string } {
+/** 월 그리드(6주=42칸)의 보이는 날짜 범위 [첫칸, 마지막칸] — 겹침 조회용. */
+function gridRange(yearMonth: string): { start: string; end: string } {
   const [y, m] = yearMonth.split('-').map(Number)
-  const start = `${yearMonth}-01`
-  const end = new Date(Date.UTC(y!, m!, 1)).toISOString().slice(0, 10) // 다음달 1일
-  return { start, end }
+  const first = new Date(y!, (m ?? 1) - 1, 1)
+  const gs = new Date(first)
+  gs.setDate(1 - first.getDay()) // 1일이 든 주의 일요일
+  const ge = new Date(gs)
+  ge.setDate(gs.getDate() + 41) // 6주 후 마지막 칸
+  const fmt = (d: Date): string =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(
+      2,
+      '0'
+    )}`
+  return { start: fmt(gs), end: fmt(ge) }
 }
 
 export type CalTask = Pick<
   Task,
-  'id' | 'title' | 'status' | 'due_date' | 'assignee_id' | 'work_area_id'
+  'id' | 'title' | 'status' | 'start_date' | 'due_date' | 'assignee_id' | 'work_area_id'
 >
 
 export default async function CalendarPage({
@@ -52,14 +60,15 @@ export default async function CalendarPage({
 
   const { members, workAreas } = await getLookups()
 
-  // 워크툴 할일 — 이 달 마감분
-  const { start, end } = monthBounds(month)
+  // 워크툴 할일 — 보이는 그리드와 겹치는 분(마감이 범위 안 OR 시작이 범위 안 → 여러 날 작업도 포함)
+  const { start, end } = gridRange(month)
   const { data: taskData } = await supabase
     .from('tasks')
-    .select('id, title, status, due_date, assignee_id, work_area_id')
+    .select('id, title, status, start_date, due_date, assignee_id, work_area_id')
     .not('due_date', 'is', null)
-    .gte('due_date', start)
-    .lt('due_date', end)
+    .or(
+      `and(due_date.gte.${start},due_date.lte.${end}),and(start_date.gte.${start},start_date.lte.${end})`
+    )
     .order('due_date')
   const tasks = (taskData ?? []) as CalTask[]
 
