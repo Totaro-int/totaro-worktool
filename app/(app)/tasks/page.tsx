@@ -10,9 +10,16 @@ import { getLookups } from '@/lib/lookups'
 import { createClient } from '@/lib/supabase/server'
 import type { Member, Task, TaskStatus, WorkArea } from '@/lib/types'
 
-import { createTask, deleteTask, updateTaskStatus } from './actions'
+import { createTask, deleteTask, syncMyTasksToCalendar, updateTaskStatus } from './actions'
 
-export default async function TasksPage(): Promise<React.JSX.Element> {
+export default async function TasksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cal_synced?: string; cal_total?: string }>
+}): Promise<React.JSX.Element> {
+  const sp = await searchParams
+  const calSynced = sp.cal_synced ? Number(sp.cal_synced) : null
+  const calTotal = sp.cal_total ? Number(sp.cal_total) : null
   const { members, workAreas, memberById, workAreaById } = await getLookups()
   const supabase = await createClient()
   const { data } = await supabase
@@ -88,6 +95,31 @@ export default async function TasksPage(): Promise<React.JSX.Element> {
               </button>
             </form>
           </details>
+
+          {/* 구글 캘린더 동기화 — 마감일 있는 내 할일을 한 번에 캘린더로 */}
+          <div className="mb-6 flex flex-wrap items-center gap-3">
+            <form action={syncMyTasksToCalendar}>
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-200 transition-colors hover:bg-slate-50"
+              >
+                📅 내 할일 구글 캘린더에 동기화
+              </button>
+            </form>
+            {calSynced !== null && (
+              <span className="text-sm text-slate-500">
+                {calSynced > 0
+                  ? `✅ ${calSynced}개 캘린더에 등록${
+                      calTotal && calTotal > calSynced
+                        ? ` · ${calTotal - calSynced}개 실패(Google 연결 확인)`
+                        : ''
+                    }`
+                  : calTotal === 0
+                    ? '올릴 새 할일이 없어요 (이미 다 동기화됨).'
+                    : '동기화 실패 — /contacts 에서 Google 연결을 확인하세요.'}
+              </span>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {TASK_STATUSES.map((status) => {

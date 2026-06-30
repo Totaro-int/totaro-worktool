@@ -72,21 +72,21 @@ export async function createTask(formData: FormData): Promise<void> {
   revalidateBoards()
 }
 
-/** task → Google Calendar push. 성공 시 google_event_id 저장, 실패 시 error 저장. */
+/** task → Google Calendar push. 성공 시 google_event_id 저장(+true), 실패/skip 시 false. */
 async function pushTaskToCalendar(
   userId: string,
   taskId: string,
   t: { title: string; description: string | null; due_date: string }
-): Promise<void> {
+): Promise<boolean> {
   const admin = getServiceSupabase()
   const result = await createCalendarEvent(userId, t)
-  if ('skipped' in result) return
+  if ('skipped' in result) return false
   if ('error' in result) {
     await admin
       .from('tasks')
       .update({ google_sync_error: result.error.slice(0, 200) })
       .eq('id', taskId)
-    return
+    return false
   }
   await admin
     .from('tasks')
@@ -96,6 +96,47 @@ async function pushTaskToCalendar(
       google_sync_error: null,
     })
     .eq('id', taskId)
+  return true
+}
+
+/**
+ * 본인에게 배정된 '마감일 있고 아직 캘린더에 안 올라간' 할 일을 모두 Google Calendar 에 push.
+ * MCP·일괄 등록 등 UI 밖에서 만든 할 일은 자동 동기화를 안 타므로, 이 버튼으로 한 번에 올린다.
+ * 멱등 — google_event_id 가 이미 있으면 대상에서 제외(중복 방지).
+ */
+export async function syncMyTasksToCalendar(): Promise<void> {
+  const { supabase, user } = await authed()
+
+  const { data } = await supabase
+    .from('tasks')
+    .select('id, title, description, due_date, google_event_id')
+    .eq('assignee_id', user.id)
+    .not('due_date', 'is', null)
+    .is('google_event_id', null)
+    .order('due_date')
+  const list = (data ?? []) as Array<{
+    id: string
+    title: string
+    description: string | null
+    due_date: string
+  }>
+
+  let synced = 0
+  for (const t of list) {
+    try {
+      const ok = await pushTaskToCalendar(user.id, t.id, {
+        title: t.title,
+        description: t.description,
+        due_date: t.due_date,
+      })
+      if (ok) synced += 1
+    } catch {
+      // 한 건 실패해도 나머지 계속. 에러는 pushTaskToCalendar 가 google_sync_error 로 저장.
+    }
+  }
+
+  revalidateBoards()
+  redirect(`/tasks?cal_synced=${synced}&cal_total=${list.length}`)
 }
 
 /** 할 일의 진행 상태를 바꾼다. 완료로 옮기면 활동 피드에도 기록한다. */
