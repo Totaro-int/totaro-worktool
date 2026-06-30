@@ -24,6 +24,7 @@ async function authed(): Promise<{ supabase: SupabaseClient; user: User }> {
 /** 할 일이 보이는 모든 보드를 다시 검증한다. */
 function revalidateBoards(): void {
   revalidatePath('/tasks')
+  revalidatePath('/calendar')
   revalidatePath('/dashboard')
   revalidatePath('/hub/github')
   revalidatePath('/hub/naver')

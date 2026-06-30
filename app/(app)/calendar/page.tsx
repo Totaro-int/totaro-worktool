@@ -1,11 +1,16 @@
-/** 캘린더 — 월 그리드. 본인 Google 캘린더 일정 모두 표시. */
+/**
+ * 업무 관리 캘린더 — 월 그리드에 워크툴 할일(마감일 기준)을 표시하고, 날짜 칸에서 바로 할일 추가.
+ * Google 계정이 연결돼 있으면 본인 일정도 함께 얹는다(자동등록 [토타로] 분은 할일과 중복이라 숨김).
+ */
 import type { JSX } from 'react'
 
 import { redirect } from 'next/navigation'
 
 import { listEventsInMonth } from '@/lib/google/calendar'
 import { getConnection } from '@/lib/google/oauth'
+import { getLookups } from '@/lib/lookups'
 import { createClient } from '@/lib/supabase/server'
+import type { Task } from '@/lib/types'
 
 import { CalendarMonth } from './CalendarMonth'
 
@@ -16,10 +21,23 @@ function currentYearMonth(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
+/** 해당 월의 [시작일, 다음달 1일) — due_date 범위 조회용. */
+function monthBounds(yearMonth: string): { start: string; end: string } {
+  const [y, m] = yearMonth.split('-').map(Number)
+  const start = `${yearMonth}-01`
+  const end = new Date(Date.UTC(y!, m!, 1)).toISOString().slice(0, 10) // 다음달 1일
+  return { start, end }
+}
+
+export type CalTask = Pick<
+  Task,
+  'id' | 'title' | 'status' | 'due_date' | 'assignee_id' | 'work_area_id'
+>
+
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>
+  searchParams: Promise<{ month?: string; d?: string }>
 }): Promise<JSX.Element> {
   const supabase = await createClient()
   const {
@@ -27,31 +45,37 @@ export default async function CalendarPage({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login?error=auth')
 
-  const { connected } = await getConnection(user.id)
-  if (!connected) {
-    return (
-      <main className="mx-auto max-w-2xl px-6 py-16 text-center">
-        <p className="text-[10px] font-bold tracking-[0.2em] text-blue-600">CALENDAR</p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">캘린더</h1>
-        <p className="mt-6 text-sm text-slate-500">
-          본인 Google 계정 연결이 필요합니다.
-          <br />
-          <a
-            href="/contacts"
-            className="mt-3 inline-block font-semibold text-blue-600 hover:underline"
-          >
-            /contacts 에서 연결하기 →
-          </a>
-        </p>
-      </main>
-    )
-  }
-
   const params = await searchParams
   const month =
     (params.month && /^\d{4}-\d{2}$/.test(params.month) ? params.month : null) ?? currentYearMonth()
+  const addDate = params.d && /^\d{4}-\d{2}-\d{2}$/.test(params.d) ? params.d : null
 
-  const events = await listEventsInMonth(user.id, month)
+  const { members, workAreas } = await getLookups()
 
-  return <CalendarMonth month={month} events={events} />
+  // 워크툴 할일 — 이 달 마감분
+  const { start, end } = monthBounds(month)
+  const { data: taskData } = await supabase
+    .from('tasks')
+    .select('id, title, status, due_date, assignee_id, work_area_id')
+    .not('due_date', 'is', null)
+    .gte('due_date', start)
+    .lt('due_date', end)
+    .order('due_date')
+  const tasks = (taskData ?? []) as CalTask[]
+
+  // 본인 Google 일정 — 연결돼 있을 때만(없어도 할일 캘린더는 그대로 동작)
+  const { connected } = await getConnection(user.id)
+  const events = connected ? await listEventsInMonth(user.id, month) : []
+
+  return (
+    <CalendarMonth
+      month={month}
+      tasks={tasks}
+      events={events}
+      members={members}
+      workAreas={workAreas}
+      googleConnected={connected}
+      addDate={addDate}
+    />
+  )
 }
