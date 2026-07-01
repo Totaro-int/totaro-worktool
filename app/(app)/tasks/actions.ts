@@ -174,6 +174,24 @@ export async function updateTaskStatus(formData: FormData): Promise<void> {
   revalidateBoards()
 }
 
+/** 할 일의 메모(설명)·제목 수정 — 캘린더 상세 패널 인라인 편집용. */
+export async function updateTask(formData: FormData): Promise<void> {
+  const { supabase } = await authed()
+
+  const id = String(formData.get('id') ?? '')
+  if (!id) return
+  const description = String(formData.get('description') ?? '').trim() || null
+  const titleRaw = String(formData.get('title') ?? '').trim()
+
+  const patch: { description: string | null; title?: string } = { description }
+  if (titleRaw) patch.title = titleRaw
+
+  const { error } = await supabase.from('tasks').update(patch).eq('id', id)
+  if (error) throw new Error(`할 일 수정 실패: ${error.message}`)
+
+  revalidateBoards()
+}
+
 /** 할 일을 삭제한다. 캘린더 이벤트 있으면 같이 삭제. */
 export async function deleteTask(formData: FormData): Promise<void> {
   const { supabase, user } = await authed()

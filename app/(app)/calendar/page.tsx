@@ -39,7 +39,14 @@ function gridRange(yearMonth: string): { start: string; end: string } {
 
 export type CalTask = Pick<
   Task,
-  'id' | 'title' | 'status' | 'start_date' | 'due_date' | 'assignee_id' | 'work_area_id'
+  | 'id'
+  | 'title'
+  | 'description'
+  | 'status'
+  | 'start_date'
+  | 'due_date'
+  | 'assignee_id'
+  | 'work_area_id'
 >
 
 export default async function CalendarPage({
@@ -64,7 +71,7 @@ export default async function CalendarPage({
   const { start, end } = gridRange(month)
   const { data: taskData } = await supabase
     .from('tasks')
-    .select('id, title, status, start_date, due_date, assignee_id, work_area_id')
+    .select('id, title, description, status, start_date, due_date, assignee_id, work_area_id')
     .not('due_date', 'is', null)
     .or(
       `and(due_date.gte.${start},due_date.lte.${end}),and(start_date.gte.${start},start_date.lte.${end})`

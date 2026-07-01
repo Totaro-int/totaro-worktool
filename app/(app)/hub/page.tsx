@@ -627,6 +627,12 @@ export default async function HubPage(): Promise<React.JSX.Element> {
             카드레터 스튜디오
           </Link>
           <Link
+            href="/calendar"
+            className="text-xs font-medium text-slate-500 transition-colors hover:text-blue-600"
+          >
+            캘린더
+          </Link>
+          <Link
             href="/metrics"
             className="text-xs font-medium text-slate-500 transition-colors hover:text-blue-600"
           >
