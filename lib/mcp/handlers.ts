@@ -56,6 +56,27 @@ export async function sbPost(pathQuery: string, body: unknown): Promise<unknown>
   return res.json()
 }
 
+export async function sbPatch(pathQuery: string, body: unknown): Promise<void> {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${pathQuery}`, {
+    method: 'PATCH',
+    headers: { ...svcHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`Supabase ${res.status}: ${(await res.text()).slice(0, 200)}`)
+}
+
+/** PostgREST RPC 호출(service_role). 함수 없음/실패는 throw → 호출부가 폴백. */
+export async function sbRpc(fn: string, args: Record<string, unknown>): Promise<unknown> {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: { ...svcHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(args),
+  })
+  if (!res.ok)
+    throw new Error(`Supabase rpc ${fn} ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  return res.json()
+}
+
 // ─────────────────────────────────────────────────────────────
 // 핸들러: 검색·읽기·목록 (mailroom_search / read / list)
 // ─────────────────────────────────────────────────────────────
@@ -374,6 +395,24 @@ export async function handleUpload(input: UploadInput): Promise<string> {
   await notifyNewDocuments([
     { filename, folderPath: input.target_path, id: typeof docId === 'string' ? docId : undefined },
   ])
+  // 시맨틱 검색용 임베딩 즉시 생성 — 실패해도 저장은 성공(시간당 백필 크론이 소급).
+  if (typeof docId === 'string' && docId) {
+    try {
+      const vec = await embedText(
+        [filename, input.target_path, description, input.text.slice(0, 1500)]
+          .filter(Boolean)
+          .join('\n'),
+        'RETRIEVAL_DOCUMENT'
+      )
+      if (vec) {
+        await sbPatch(`inbox_documents?id=eq.${encodeURIComponent(docId)}`, {
+          embedding: JSON.stringify(vec),
+        })
+      }
+    } catch {
+      // 백필 크론이 처리
+    }
+  }
   return `✅ 저장됨\n  파일: ${filename}\n  경로: ${input.target_path}\n  id: ${docId}\n  Drive: ${webViewLink ?? '(링크 없음)'}`
 }
 

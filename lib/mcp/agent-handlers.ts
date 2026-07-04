@@ -7,7 +7,8 @@
  *   - 라벨은 통제 어휘(labels)만 — 자유 텍스트 라벨 금지
  *   - 기억(agent_memories)에는 출처(source)와 신뢰도(confidence)를 권장
  */
-import { sbGet, sbPost } from './handlers'
+import { sbGet, sbPatch, sbPost, sbRpc } from './handlers'
+import { embedText } from '../assistant/embedding'
 
 type AgentRow = { id: string; slug: string; name: string; status: string }
 
@@ -92,6 +93,21 @@ export async function handleMemoryWrite(input: MemoryWriteInput): Promise<string
   })) as Array<{ id: string }>
 
   const id = rows[0]?.id ?? '?'
+
+  // 시맨틱 recall 용 임베딩 즉시 생성 — 실패해도 저장은 유효(시간당 백필 크론이 소급).
+  if (id !== '?') {
+    try {
+      const vec = await embedText(content, 'RETRIEVAL_DOCUMENT')
+      if (vec) {
+        await sbPatch(`agent_memories?id=eq.${encodeURIComponent(id)}`, {
+          embedding: JSON.stringify(vec),
+        })
+      }
+    } catch {
+      // 백필 크론이 처리
+    }
+  }
+
   await logAction(agent.id, 'memory_write', content.slice(0, 120), 'agent_memories', id, {
     scope,
     kind,
@@ -106,17 +122,46 @@ export type MemorySearchInput = {
   limit?: number
 }
 
+function formatMemories(rows: Array<Record<string, unknown>>): string {
+  return rows
+    .map((r, i) => {
+      const src = r.source_table
+        ? ` [출처: ${r.source_table}/${String(r.source_id).slice(0, 8)}]`
+        : ''
+      return `${i + 1}. (${r.scope}/${r.kind}, 신뢰도 ${r.confidence}) ${r.content}${src}`
+    })
+    .join('\n')
+}
+
 export async function handleMemorySearch(input: MemorySearchInput): Promise<string> {
   const limit = Math.min(Math.max(input.limit ?? 10, 1), 30)
-  const q = encodeURIComponent(input.query ?? '')
-  if (!q) throw new Error('query 필수')
+  const rawQuery = (input.query ?? '').trim()
+  if (!rawQuery) throw new Error('query 필수')
 
+  const agent = input.agent ? await resolveAgent(input.agent) : null
+
+  // 1차: 시맨틱(의미) 검색 — 질문 임베딩 → match_agent_memories RPC.
+  // 임베딩 실패·함수 미설치·0건이면 아래 ilike 키워드 검색으로 폴백(안 깨짐).
+  try {
+    const vec = await embedText(rawQuery, 'RETRIEVAL_QUERY')
+    if (vec) {
+      const rows = (await sbRpc('match_agent_memories', {
+        query_embedding: JSON.stringify(vec),
+        match_limit: limit,
+        filter_agent: agent?.id ?? null,
+        filter_scope: input.scope ?? null,
+      })) as Array<Record<string, unknown>>
+      if (rows.length > 0) return formatMemories(rows)
+    }
+  } catch {
+    // RPC 미설치/실패 → 키워드 폴백
+  }
+
+  // 2차: 키워드(ilike) 폴백 — 임베딩 안 된 최신 기억도 잡는다.
+  const q = encodeURIComponent(rawQuery)
   const conditions: string[] = [`content=ilike.*${q}*`, 'or=(expires_at.is.null,expires_at.gt.now)']
   if (input.scope) conditions.push(`scope=eq.${encodeURIComponent(input.scope)}`)
-  if (input.agent) {
-    const agent = await resolveAgent(input.agent)
-    // 본인 기억 + 전사 공유(company) 둘 다
-    conditions.pop() // scope 조건과 충돌 방지 위해 단순화: agent 지정 시 본인+공유
+  if (agent) {
     const base = conditions.filter((c) => !c.startsWith('scope='))
     base.push(`or=(agent_id.eq.${agent.id},scope.eq.company)`)
     conditions.length = 0
@@ -129,14 +174,7 @@ export async function handleMemorySearch(input: MemorySearchInput): Promise<stri
   )) as Array<Record<string, unknown>>
 
   if (rows.length === 0) return '일치하는 기억 없음.'
-  return rows
-    .map((r, i) => {
-      const src = r.source_table
-        ? ` [출처: ${r.source_table}/${String(r.source_id).slice(0, 8)}]`
-        : ''
-      return `${i + 1}. (${r.scope}/${r.kind}, 신뢰도 ${r.confidence}) ${r.content}${src}`
-    })
-    .join('\n')
+  return formatMemories(rows)
 }
 
 // ─────────────────────────────────────────────────────────────

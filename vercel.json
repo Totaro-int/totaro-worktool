@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/drive-sync",
       "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron/embed-backfill",
+      "schedule": "30 * * * *"
     }
   ]
 }
