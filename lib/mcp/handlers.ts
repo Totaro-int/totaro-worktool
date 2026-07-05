@@ -23,8 +23,11 @@ import {
   type MemoryWriteInput,
   type TasksCreateInput,
 } from './agent-handlers'
+import { handleBrainGet, handleBrainSearch } from './brain-handlers'
 import { extractContent } from '../mailroom/extract'
 import { notifyNewDocuments } from '../notifications/notify-new-doc'
+
+import type { BrainGetInput, BrainSearchInput } from './brain-handlers'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
@@ -579,6 +582,10 @@ export async function dispatchTool(
       return handleSearch(args as SearchInput)
     case 'mailroom_search_semantic':
       return handleSearchSemantic(args as SearchSemanticInput)
+    case 'brain_search':
+      return handleBrainSearch(args as BrainSearchInput)
+    case 'brain_get':
+      return handleBrainGet(args as BrainGetInput)
     case 'mailroom_read':
       return handleRead(args as ReadInput)
     case 'mailroom_list':

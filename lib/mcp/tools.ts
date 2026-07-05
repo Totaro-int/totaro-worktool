@@ -53,6 +53,31 @@ export const TOOLS: ToolDefinition[] = [
     },
   },
   {
+    name: 'brain_search',
+    description:
+      '**회사 지식 브레인(gbrain)** 검색 — 브랜드 법칙(MONÉ HOUSE)·회사 전략·제품 팩트·팀 상식·과거 마케팅 보고서 아카이브. 브랜드/전략/제품에 대해 답하거나 콘텐츠를 만들기 전에 여기서 근거를 먼저 찾을 것. 제목·본문 부분일치. (우편함 문서는 mailroom_search, 운영 기억은 memory_search)',
+    inputSchema: {
+      type: 'object',
+      required: ['query'],
+      properties: {
+        query: { type: 'string', description: '검색어 (예: "브랜드 보이스", "협탁 사이즈")' },
+        limit: { type: 'number', description: '결과 개수 (기본 8, 최대 20)' },
+      },
+    },
+  },
+  {
+    name: 'brain_get',
+    description:
+      '회사 지식 브레인 페이지 **전문** 읽기. brain_search 결과의 slug 로 호출. 예: mone-brand-core(브랜드 법칙 전문), totaro-strategy(전략), mone-products(제품 팩트), totaro-team-ops(팀·운영), report-분석-YYYY-MM-DD(과거 보고서).',
+    inputSchema: {
+      type: 'object',
+      required: ['slug'],
+      properties: {
+        slug: { type: 'string', description: '페이지 slug' },
+      },
+    },
+  },
+  {
     name: 'mailroom_read',
     description:
       '⚠️ 로컬 파일이 아니라 **워크툴 우편실에 인덱싱된 Google Drive 문서** 본문 텍스트 추출 (PDF·docx·txt·md 등). Drive 에서 실제 파일 다운로드 후 텍스트 추출 (최대 8000자). file_id 는 mailroom_search / folder_browse 결과에 나오는 UUID. 로컬 파일은 Read 도구 별도.',
