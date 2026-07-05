@@ -38,3 +38,127 @@ body {
     animation: none;
   }
 }
+
+/* ============================================================
+   CHIPSET — SF 반도체 모듈 디자인 시스템 (.chipset 스코프)
+   다크 기판(PCB) + 네온 회로 + 칩 패키지 패널.
+   A0: /design 갤러리에서만 사용 → 승인 후 A1에서 앱 셸에 적용.
+   기존 라이트 UI 는 건드리지 않는다(스코프 밖 무영향).
+   ============================================================ */
+.chipset {
+  /* 기판·패널 */
+  --chip-bg: #0a0e14;
+  --chip-bg-deep: #070a0f;
+  --chip-panel: #10161f;
+  --chip-panel-hi: #151d29;
+  --chip-line: #223041;
+  --chip-metal: #3b4c63;
+  /* 텍스트 */
+  --chip-text: #dbe7f4;
+  --chip-dim: #7e8ca0;
+  --chip-faint: #4a5568;
+  /* 네온 */
+  --chip-cyan: #2fe0ff;
+  --chip-cyan-glow: rgba(47, 224, 255, 0.28);
+  --chip-amber: #ffb454;
+  --chip-emerald: #3ddc97;
+  --chip-rose: #ff6b81;
+  --chip-violet: #a78bfa;
+
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(47, 224, 255, 0.05), transparent 60%),
+    radial-gradient(900px 500px at 90% 110%, rgba(167, 139, 250, 0.04), transparent 60%),
+    var(--chip-bg);
+  color: var(--chip-text);
+}
+.chipset ::selection {
+  background: rgba(47, 224, 255, 0.25);
+}
+
+/* 칩 패키지 패널 — 금속 베벨 + 살짝 떠있는 그림자 */
+.chip-panel {
+  position: relative;
+  background: linear-gradient(180deg, var(--chip-panel-hi), var(--chip-panel));
+  border: 1px solid var(--chip-line);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 8px 24px rgba(0, 0, 0, 0.45);
+}
+/* 우상단 노치(칩 패키지 마킹) */
+.chip-panel--notch {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+/* 호버 시 2.5D 틸트 + 네온 에지 */
+.chip-panel--tilt {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.chip-panel--tilt:hover {
+  transform: perspective(900px) rotateX(1.6deg) rotateY(-1.2deg) translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 34px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(47, 224, 255, 0.14),
+    0 0 24px rgba(47, 224, 255, 0.09);
+}
+
+/* 핀 헤더 — 칩 다리 마킹 */
+.chip-pins {
+  height: 3px;
+  border-radius: 2px;
+  opacity: 0.55;
+  background-image: repeating-linear-gradient(90deg, var(--chip-metal) 0 6px, transparent 6px 14px);
+}
+
+/* LED — 상태광 */
+.chip-led {
+  box-shadow:
+    0 0 6px currentColor,
+    0 0 14px currentColor;
+}
+@keyframes chip-led-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.chip-led--pulse {
+  animation: chip-led-pulse 1.6s ease-in-out infinite;
+}
+
+/* 회로 트레이스 — 흐르는 점선 */
+.chip-trace {
+  stroke-dasharray: 6 8;
+  animation: chip-trace-flow 1.8s linear infinite;
+}
+@keyframes chip-trace-flow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+/* 스캔라인 — 아주 옅은 CRT 질감 (배경 전용) */
+.chip-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.015) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip-led--pulse,
+  .chip-trace {
+    animation: none;
+  }
+  .chip-panel--tilt,
+  .chip-panel--tilt:hover {
+    transform: none;
+    transition: none;
+  }
+}
