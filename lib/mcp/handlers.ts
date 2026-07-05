@@ -392,6 +392,8 @@ export async function handleUpload(input: UploadInput): Promise<string> {
     ai_reasoning: description,
     doc_type: 'Claude 생성 문서',
     status: 'confirmed',
+    // 본문 발췌 캐시 — 시맨틱 검색·브레인 인제스트·평가가 Drive 재다운로드 없이 쓴다
+    body_excerpt: input.text.slice(0, 2000),
   })) as Array<Record<string, unknown>>
   const docId = inserted[0]?.id ?? ''
   // 새 문서 → 인앱+폰 알림(보고서 폴더면 보고서 알림으로 분기). 실패해도 저장은 성공.
