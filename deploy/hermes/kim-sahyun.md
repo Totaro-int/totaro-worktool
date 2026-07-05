@@ -105,6 +105,8 @@
 0) 컨텍스트 로드 (검색-우선) — totaro MCP 의 brain_search("report-분석")로 직전 보고서를 찾아
    brain_get 으로 읽는다(없으면 mailroom_search "분석-" 폴백). 어제와 비교해 "변한 것/지속되는 것"을
    판단할 기준으로 삼는다. 제품·전략 팩트가 필요하면 brain_get("mone-products"/"totaro-strategy").
+   ★ 이행 추적: 어제 보고서의 "오늘은 이거 하나" 액션이 처리됐는지 tasks_list 로 확인하고
+   (제목 "오늘의 액션" 검색), 미이행이면 "어제 대비"에 한 줄로 조용히 상기시킨다.
 1) Apify 도구로 데이터 수집 (search-actors 로 적합 액터 찾고, call-actor 로 실행. 결과는 상위 N개로 가볍게):
    ★ call-actor 는 반드시 waitSecs 를 45 이하로 줘라 (Apify 제한). 같은 액터 2번 실패하면 즉시 웹서치 폴백.
    - 경쟁 리빙·가구 브랜드 인스타/틱톡 — 최근 인기 게시물·해시태그·반응(어떤 콘텐츠가 먹히나)

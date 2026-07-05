@@ -24,6 +24,7 @@ import {
   type TasksCreateInput,
 } from './agent-handlers'
 import { handleBrainGet, handleBrainSearch } from './brain-handlers'
+import { maybeAutoTaskFromReport } from './report-actions'
 import { extractContent } from '../mailroom/extract'
 import { notifyNewDocuments } from '../notifications/notify-new-doc'
 
@@ -400,6 +401,8 @@ export async function handleUpload(input: UploadInput): Promise<string> {
   await notifyNewDocuments([
     { filename, folderPath: input.target_path, id: typeof docId === 'string' ? docId : undefined },
   ])
+  // 자율 실행(B6): 마케팅 분석 보고서의 "오늘은 이거 하나" 액션 → 할일 자동 생성(중복 방지).
+  await maybeAutoTaskFromReport(input.target_path, filename, input.text)
   // 시맨틱 검색용 임베딩 즉시 생성 — 실패해도 저장은 성공(시간당 백필 크론이 소급).
   if (typeof docId === 'string' && docId) {
     try {
