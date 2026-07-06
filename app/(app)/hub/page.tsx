@@ -1,6 +1,3 @@
-import Link from 'next/link'
-
-import { signOut } from '@/app/auth/actions'
 import { HubBoard, type HubNode } from '@/components/HubBoard'
 import { getAgentData } from '@/lib/agents'
 import { getGithubData } from '@/lib/github'
@@ -11,8 +8,6 @@ import type { Task } from '@/lib/types'
 
 import { CalendarToday } from './CalendarToday'
 import { MissionBanner } from './MissionBanner'
-
-const CYAN = '#35e0ff'
 
 /** 원화 압축 표기 — ₩3.2억 / ₩1,240만 / ₩820. (기존 표기 유지) */
 function wonCompact(n: number): string {
@@ -69,16 +64,6 @@ export default async function HubPage(): Promise<React.JSX.Element> {
   const com = commerceResult.status === 'ok' ? commerceResult : null
   const ag = agentResult.status === 'ok' ? agentResult : null
   const mr = mailroomResult.status === 'ok' ? mailroomResult : null
-
-  let displayName = user?.email?.split('@')[0] ?? '멤버'
-  if (user) {
-    const { data: memberRow } = await supabase
-      .from('members')
-      .select('name')
-      .eq('id', user.id)
-      .maybeSingle()
-    if (memberRow?.name) displayName = memberRow.name
-  }
 
   // 허브 9거점 (실데이터). 배치·모양은 HubBoard 가 href 로 결정.
   const nodes: HubNode[] = [
@@ -138,13 +123,6 @@ export default async function HubPage(): Promise<React.JSX.Element> {
     },
   ]
 
-  const navLinks = [
-    { href: '/studio', label: '카드레터 스튜디오' },
-    { href: '/calendar', label: '캘린더' },
-    { href: '/metrics', label: '우리의 지표' },
-    { href: '/claude-log', label: '팀 작업 기록' },
-  ]
-
   return (
     <div
       className="flex min-h-screen flex-col"
@@ -154,55 +132,6 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       }}
     >
       <MissionBanner />
-
-      {/* 시스템 바 */}
-      <header
-        className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b px-4 py-3 pr-14 md:px-8 md:pr-8"
-        style={{ borderColor: 'rgba(53,224,255,.14)', background: 'rgba(8,17,32,.6)' }}
-      >
-        <div className="flex items-center gap-2.5">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-md font-mono text-sm font-bold"
-            style={{
-              color: '#06222b',
-              background: `linear-gradient(180deg, ${CYAN}, #189ec2)`,
-              boxShadow: `0 0 16px ${CYAN}66`,
-            }}
-          >
-            T
-          </div>
-          <div>
-            <p className="font-mono text-sm font-bold tracking-tight">
-              TOTARO<span style={{ color: CYAN }}>·</span>WORKHUB
-            </p>
-            <p className="font-mono text-[10px] tracking-wider" style={{ color: '#7e8ca0' }}>
-              팀 업무 거점을 한눈에
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 font-mono text-[11px]">
-          {navLinks.map((l, i) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="transition-colors hover:brightness-150"
-              style={{ color: i === 0 ? CYAN : '#8ea0b8' }}
-            >
-              {l.label}
-            </Link>
-          ))}
-          <span style={{ color: '#4a5568' }}>{displayName}</span>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="rounded-md border px-3 py-1.5 transition-colors hover:brightness-150"
-              style={{ borderColor: 'rgba(53,224,255,.18)', color: '#8ea0b8' }}
-            >
-              로그아웃
-            </button>
-          </form>
-        </div>
-      </header>
 
       {/* 리드아웃 티커 */}
       <div
