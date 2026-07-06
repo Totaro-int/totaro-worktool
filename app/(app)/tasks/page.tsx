@@ -33,11 +33,11 @@ export default async function TasksPage({
       <PageHeader title="할 일" description="사업영역별 업무를 계획하고 진행 상황을 추적합니다." />
       <div className="p-8">
         <div className="mx-auto max-w-6xl">
-          <details className="mb-6 rounded-xl bg-white ring-1 ring-slate-200">
-            <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-slate-700">
+          <details className="mb-6 rounded-xl bg-[#101f38] ring-1 ring-[#1c3556]">
+            <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-[#c4d2e4]">
               + 새 할 일 추가
             </summary>
-            <form action={createTask} className="space-y-3 border-t border-slate-100 p-5">
+            <form action={createTask} className="space-y-3 border-t border-[#12233c] p-5">
               <div>
                 <label className={labelClass} htmlFor="task-title">
                   할 일
@@ -101,13 +101,13 @@ export default async function TasksPage({
             <form action={syncMyTasksToCalendar}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-200 transition-colors hover:bg-slate-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#101f38] px-3.5 py-2 text-sm font-medium text-[#c4d2e4] ring-1 ring-[#1c3556] transition-colors hover:bg-[#14263f]"
               >
                 📅 내 할일 구글 캘린더에 동기화
               </button>
             </form>
             {calSynced !== null && (
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-[#8ea0b8]">
                 {calSynced > 0
                   ? `✅ ${calSynced}개 캘린더에 등록${
                       calTotal && calTotal > calSynced
@@ -125,17 +125,17 @@ export default async function TasksPage({
             {TASK_STATUSES.map((status) => {
               const columnTasks = tasks.filter((t) => t.status === status)
               return (
-                <section key={status} className="rounded-xl bg-white ring-1 ring-slate-200">
-                  <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
+                <section key={status} className="rounded-xl bg-[#101f38] ring-1 ring-[#1c3556]">
+                  <div className="flex items-center gap-2 border-b border-[#12233c] px-4 py-3">
                     <span className={`h-2 w-2 rounded-full ${TASK_STATUS_DOT[status]}`} />
-                    <h2 className="text-sm font-semibold text-slate-700">
+                    <h2 className="text-sm font-semibold text-[#c4d2e4]">
                       {TASK_STATUS_LABELS[status]}
                     </h2>
-                    <span className="ml-auto text-xs text-slate-400">{columnTasks.length}</span>
+                    <span className="ml-auto text-xs text-[#6b7c96]">{columnTasks.length}</span>
                   </div>
                   <div className="space-y-2 p-3">
                     {columnTasks.length === 0 ? (
-                      <p className="px-2 py-6 text-center text-xs text-slate-300">비어 있음</p>
+                      <p className="px-2 py-6 text-center text-xs text-[#4a5568]">비어 있음</p>
                     ) : (
                       columnTasks.map((task) => (
                         <TaskCard
@@ -167,26 +167,26 @@ function TaskCard({
   assignee?: Member
 }): React.JSX.Element {
   return (
-    <div className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
+    <div className="rounded-lg bg-[#101f38] p-3 ring-1 ring-[#1c3556]">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-slate-900">{task.title}</p>
+        <p className="text-sm font-medium text-[#dbe7f4]">{task.title}</p>
         <form action={deleteTask}>
           <input type="hidden" name="id" value={task.id} />
           <button
             type="submit"
-            className="shrink-0 text-xs text-slate-300 transition-colors hover:text-red-500"
+            className="shrink-0 text-xs text-[#4a5568] transition-colors hover:text-red-500"
           >
             삭제
           </button>
         </form>
       </div>
       {task.description && (
-        <p className="mt-1 line-clamp-2 text-xs text-slate-500">{task.description}</p>
+        <p className="mt-1 line-clamp-2 text-xs text-[#8ea0b8]">{task.description}</p>
       )}
       <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
         <WorkAreaBadge area={area} />
-        {assignee && <span className="text-xs text-slate-400">{assignee.name}</span>}
-        {task.due_date && <span className="text-xs text-slate-400">마감 {task.due_date}</span>}
+        {assignee && <span className="text-xs text-[#6b7c96]">{assignee.name}</span>}
+        {task.due_date && <span className="text-xs text-[#6b7c96]">마감 {task.due_date}</span>}
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {task.status !== 'todo' && (
@@ -228,8 +228,8 @@ function MoveButton({
         type="submit"
         className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
           primary
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            ? 'bg-[#189ec2] text-white hover:bg-[#35e0ff]'
+            : 'bg-[#0c1830] text-[#9fb4d0] hover:bg-[#1c3556]'
         }`}
       >
         {label}

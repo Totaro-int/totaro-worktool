@@ -83,7 +83,7 @@ export function NotificationsFloat(): React.JSX.Element {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-md ring-1 ring-slate-200 transition-colors hover:bg-slate-50"
+          className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#101f38] text-[#c4d2e4] shadow-md ring-1 ring-[#1c3556] transition-colors hover:bg-[#14263f]"
           aria-label="알림"
         >
           <BellIcon />
@@ -95,14 +95,14 @@ export function NotificationsFloat(): React.JSX.Element {
         </button>
 
         {open && (
-          <div className="absolute top-12 right-0 max-h-[70vh] w-96 overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-              <div className="text-sm font-semibold text-slate-900">알림</div>
+          <div className="absolute top-12 right-0 max-h-[70vh] w-96 overflow-hidden rounded-xl bg-[#101f38] shadow-lg ring-1 ring-[#1c3556]">
+            <div className="flex items-center justify-between border-b border-[#12233c] px-4 py-3">
+              <div className="text-sm font-semibold text-[#dbe7f4]">알림</div>
               {unreadCount > 0 && (
                 <button
                   type="button"
                   onClick={() => void handleMarkAll()}
-                  className="text-xs text-slate-500 hover:text-slate-700"
+                  className="text-xs text-[#8ea0b8] hover:text-[#c4d2e4]"
                 >
                   모두 읽음
                 </button>
@@ -110,7 +110,7 @@ export function NotificationsFloat(): React.JSX.Element {
             </div>
             <div className="max-h-[60vh] overflow-y-auto">
               {items.length === 0 && (
-                <div className="px-4 py-10 text-center text-sm text-slate-400">알림 없음</div>
+                <div className="px-4 py-10 text-center text-sm text-[#6b7c96]">알림 없음</div>
               )}
               {items.map((n) => (
                 <NotificationRow key={n.id} item={n} onMarkRead={() => void handleMarkOne(n.id)} />
@@ -124,23 +124,23 @@ export function NotificationsFloat(): React.JSX.Element {
       {toast && (
         <div
           role="alert"
-          className="animate-in fixed top-3 right-16 z-50 w-80 rounded-xl bg-white p-4 shadow-lg ring-1 ring-slate-200"
+          className="animate-in fixed top-3 right-16 z-50 w-80 rounded-xl bg-[#101f38] p-4 shadow-lg ring-1 ring-[#1c3556]"
         >
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[#35e0ff]">
               📬
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-slate-900">{toast.title}</div>
+              <div className="text-sm font-semibold text-[#dbe7f4]">{toast.title}</div>
               {toast.body && (
-                <div className="mt-0.5 text-xs text-slate-600">{toast.body.slice(0, 90)}</div>
+                <div className="mt-0.5 text-xs text-[#9fb4d0]">{toast.body.slice(0, 90)}</div>
               )}
               {toast.doc?.driveUrl && (
                 <a
                   href={toast.doc.driveUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800"
+                  className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-[#35e0ff] hover:text-indigo-800"
                   onClick={() => void handleMarkOne(toast.id)}
                 >
                   🔗 Drive 에서 열기
@@ -150,7 +150,7 @@ export function NotificationsFloat(): React.JSX.Element {
             <button
               type="button"
               onClick={() => setToast(null)}
-              className="text-slate-400 hover:text-slate-700"
+              className="text-[#6b7c96] hover:text-[#c4d2e4]"
               aria-label="닫기"
             >
               ✕
@@ -172,17 +172,17 @@ function NotificationRow({
   const isUnread = !item.readAt
   return (
     <div
-      className={`border-b border-slate-100 px-4 py-3 transition-colors hover:bg-slate-50 ${
+      className={`border-b border-[#12233c] px-4 py-3 transition-colors hover:bg-[#14263f] ${
         isUnread ? 'bg-indigo-50/40' : ''
       }`}
     >
       <div className="flex items-start gap-2">
         {isUnread && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />}
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-medium text-slate-900">{item.title}</div>
-          {item.body && <div className="mt-0.5 text-xs text-slate-600">{item.body}</div>}
+          <div className="text-sm font-medium text-[#dbe7f4]">{item.title}</div>
+          {item.body && <div className="mt-0.5 text-xs text-[#9fb4d0]">{item.body}</div>}
           {item.doc?.folderPath && (
-            <div className="mt-0.5 text-xs text-slate-400">📁 {item.doc.folderPath}</div>
+            <div className="mt-0.5 text-xs text-[#6b7c96]">📁 {item.doc.folderPath}</div>
           )}
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {item.doc?.driveUrl && (
@@ -200,7 +200,7 @@ function NotificationRow({
               <a
                 href={item.link}
                 onClick={onMarkRead}
-                className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-[11px] font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+                className="inline-flex items-center gap-1 rounded-md bg-[#101f38] px-2 py-1 text-[11px] font-medium text-[#c4d2e4] ring-1 ring-[#1c3556] hover:bg-[#14263f]"
               >
                 /inbox 에서 보기
               </a>
@@ -209,14 +209,14 @@ function NotificationRow({
               <button
                 type="button"
                 onClick={onMarkRead}
-                className="rounded-md px-2 py-1 text-[11px] text-slate-400 hover:text-slate-700"
+                className="rounded-md px-2 py-1 text-[11px] text-[#6b7c96] hover:text-[#c4d2e4]"
               >
                 읽음 표시
               </button>
             )}
           </div>
         </div>
-        <div className="shrink-0 text-[11px] text-slate-400">{relativeTime(item.createdAt)}</div>
+        <div className="shrink-0 text-[11px] text-[#6b7c96]">{relativeTime(item.createdAt)}</div>
       </div>
     </div>
   )

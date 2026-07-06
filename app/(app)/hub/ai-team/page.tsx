@@ -115,17 +115,17 @@ export default async function AiTeamPage(): Promise<JSX.Element> {
   const workingCount = desks.filter((d) => d.workingNow).length
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0c1830]">
       <PageHeader
         title="AI부서"
         description="토타로의 AI 직원들이 책상을 지키며 24시간 근무합니다. 책상을 누르면 그 직원의 업무를 자세히 볼 수 있어요."
       >
-        <div className="rounded-xl bg-white px-4 py-2 text-right ring-1 ring-slate-200">
-          <p className="text-2xl leading-none font-bold text-slate-900 tabular-nums">
+        <div className="rounded-xl bg-[#101f38] px-4 py-2 text-right ring-1 ring-[#1c3556]">
+          <p className="text-2xl leading-none font-bold text-[#dbe7f4] tabular-nums">
             {workingCount}
-            <span className="text-base font-medium text-slate-400">/{desks.length}</span>
+            <span className="text-base font-medium text-[#6b7c96]">/{desks.length}</span>
           </p>
-          <p className="mt-1 text-[11px] font-medium tracking-wide text-slate-400">근무 중</p>
+          <p className="mt-1 text-[11px] font-medium tracking-wide text-[#6b7c96]">근무 중</p>
         </div>
       </PageHeader>
 

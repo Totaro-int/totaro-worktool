@@ -132,7 +132,7 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
       {/* 캔버스 */}
       <div
         ref={cardRef}
-        className="relative mx-auto w-full max-w-[440px] overflow-hidden rounded-xl ring-1 ring-slate-200"
+        className="relative mx-auto w-full max-w-[440px] overflow-hidden rounded-xl ring-1 ring-[#1c3556]"
         style={{ height: `${w}px`, background: hasPhoto ? TAUPE : LINEN, fontFamily: FONT }}
       >
         {hasPhoto ? (
@@ -192,7 +192,7 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
             className={`h-11 w-11 shrink-0 rounded-md text-xs font-semibold transition-colors ${
               i === cur
                 ? 'bg-slate-900 text-white'
-                : 'bg-white text-slate-500 ring-1 ring-slate-200 hover:bg-slate-50'
+                : 'bg-[#101f38] text-[#8ea0b8] ring-1 ring-[#1c3556] hover:bg-[#14263f]'
             }`}
           >
             {i + 1}
@@ -201,7 +201,7 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
       </div>
 
       {/* 현재 카드 편집 */}
-      <div className="flex flex-col gap-2 rounded-xl bg-white p-3 ring-1 ring-slate-200">
+      <div className="flex flex-col gap-2 rounded-xl bg-[#101f38] p-3 ring-1 ring-[#1c3556]">
         <div className="flex gap-2">
           <button
             type="button"
@@ -214,7 +214,7 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
             <button
               type="button"
               onClick={() => patch(cur, { photo: null })}
-              className="rounded-lg px-3 py-2 text-xs font-medium text-slate-500 ring-1 ring-slate-200 hover:bg-slate-50"
+              className="rounded-lg px-3 py-2 text-xs font-medium text-[#8ea0b8] ring-1 ring-[#1c3556] hover:bg-[#14263f]"
             >
               배경 빼기
             </button>
@@ -226,20 +226,20 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
           onChange={(e) => patch(cur, { headline: e.target.value })}
           rows={2}
           placeholder="제목 (줄바꿈 가능)"
-          className="resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+          className="resize-none rounded-lg border border-[#1c3556] px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
         />
         <input
           value={card.sub}
           onChange={(e) => patch(cur, { sub: e.target.value })}
           placeholder="소제목"
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+          className="rounded-lg border border-[#1c3556] px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
         />
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => void exportCurrent()}
             disabled={busy}
-            className="flex-1 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-50"
+            className="flex-1 rounded-lg px-3 py-2 text-xs font-medium text-[#c4d2e4] ring-1 ring-[#1c3556] hover:bg-[#14263f] disabled:opacity-50"
           >
             이 카드 PNG
           </button>
@@ -247,12 +247,12 @@ export function StudioEditor({ cards, setCards, cur, setCur }: Props): React.JSX
             type="button"
             onClick={() => void exportAll()}
             disabled={busy}
-            className="flex-1 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-50"
+            className="flex-1 rounded-lg px-3 py-2 text-xs font-medium text-[#c4d2e4] ring-1 ring-[#1c3556] hover:bg-[#14263f] disabled:opacity-50"
           >
             8장 모두 저장
           </button>
         </div>
-        {note ? <p className="text-xs text-slate-500">{note}</p> : null}
+        {note ? <p className="text-xs text-[#8ea0b8]">{note}</p> : null}
       </div>
     </div>
   )

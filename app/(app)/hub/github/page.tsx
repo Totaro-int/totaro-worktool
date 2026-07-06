@@ -29,7 +29,7 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          <span className="font-mono text-[10px] tracking-[0.14em] text-slate-400">
+          <span className="font-mono text-[10px] tracking-[0.14em] text-[#6b7c96]">
             GITHUB ONLINE · {data.org} · {data.repoCount} REPOS
           </span>
         </div>
@@ -50,7 +50,7 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
 
       <ConsolePanel title="최근 커밋 · 조직 전체" accent="blue" flush>
         {data.recentCommits.length === 0 ? (
-          <p className="px-5 py-6 text-sm text-slate-400">표시할 커밋이 없습니다.</p>
+          <p className="px-5 py-6 text-sm text-[#6b7c96]">표시할 커밋이 없습니다.</p>
         ) : (
           <ul className="divide-y divide-slate-100">
             {data.recentCommits.map((c) => (
@@ -62,12 +62,12 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
                   href={c.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-w-0 flex-1 truncate text-sm text-slate-700 transition-colors hover:text-blue-600 hover:underline"
+                  className="min-w-0 flex-1 truncate text-sm text-[#c4d2e4] transition-colors hover:text-blue-600 hover:underline"
                 >
                   {c.message}
                 </a>
-                <span className="shrink-0 text-xs text-slate-400">{c.author}</span>
-                <span className="shrink-0 text-xs text-slate-300">{c.relativeTime}</span>
+                <span className="shrink-0 text-xs text-[#6b7c96]">{c.author}</span>
+                <span className="shrink-0 text-xs text-[#4a5568]">{c.relativeTime}</span>
               </li>
             ))}
           </ul>
@@ -82,14 +82,14 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
                 href={r.url}
                 target="_blank"
                 rel="noreferrer"
-                className="min-w-0 flex-1 truncate font-mono text-xs text-slate-600 transition-colors hover:text-blue-600 hover:underline"
+                className="min-w-0 flex-1 truncate font-mono text-xs text-[#9fb4d0] transition-colors hover:text-blue-600 hover:underline"
               >
                 {r.name}
               </a>
               {r.private && (
-                <span className="shrink-0 font-mono text-[10px] text-slate-300">PRIVATE</span>
+                <span className="shrink-0 font-mono text-[10px] text-[#4a5568]">PRIVATE</span>
               )}
-              <span className="shrink-0 text-xs text-slate-400">{r.pushedRelative}</span>
+              <span className="shrink-0 text-xs text-[#6b7c96]">{r.pushedRelative}</span>
             </li>
           ))}
         </ul>
@@ -112,24 +112,24 @@ function ErrorCard({ message }: { message: string }): React.JSX.Element {
 
 function SetupCard(): React.JSX.Element {
   return (
-    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      <h2 className="text-base font-semibold text-slate-900">GitHub 연동 설정이 필요합니다</h2>
-      <p className="mt-1.5 text-sm text-slate-500">
+    <div className="rounded-xl bg-[#101f38] p-6 shadow-sm ring-1 ring-[#1c3556]">
+      <h2 className="text-base font-semibold text-[#dbe7f4]">GitHub 연동 설정이 필요합니다</h2>
+      <p className="mt-1.5 text-sm text-[#8ea0b8]">
         프로젝트 루트의{' '}
-        <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-600">
+        <code className="rounded bg-[#0c1830] px-1 py-0.5 font-mono text-xs text-[#9fb4d0]">
           .env.local
         </code>{' '}
         파일에 아래 값을 입력한 뒤 개발 서버를 재시작하세요. 조직 전체를 보려면{' '}
-        <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-600">
+        <code className="rounded bg-[#0c1830] px-1 py-0.5 font-mono text-xs text-[#9fb4d0]">
           GITHUB_REPO
         </code>{' '}
         앞부분(owner)이 조직 이름이면 됩니다.
       </p>
-      <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 px-4 py-3 text-xs leading-relaxed text-slate-200">
+      <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 px-4 py-3 text-xs leading-relaxed text-[#3a4a63]">
         <code>{`GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 GITHUB_REPO=Totaro-int/totaro-worktool`}</code>
       </pre>
-      <p className="mt-3 text-xs text-slate-400">
+      <p className="mt-3 text-xs text-[#6b7c96]">
         토큰은 classic PAT에 repo 스코프(조직 비공개 저장소 읽기 권한)가 필요합니다.
       </p>
     </div>

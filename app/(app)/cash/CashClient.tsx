@@ -50,58 +50,58 @@ export function CashClient({ initial }: { initial: CashSnapshot[] }): React.JSX.
 
   return (
     <main className="mx-auto max-w-3xl px-8 py-12">
-      <header className="mb-10 flex items-end justify-between border-b border-slate-200 pb-6">
+      <header className="mb-10 flex items-end justify-between border-b border-[#1c3556] pb-6">
         <div>
-          <p className="text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">Cash</p>
-          <h1 className="mt-2 text-[32px] leading-none font-semibold tracking-tight text-slate-900">
+          <p className="text-[10px] font-medium tracking-[0.3em] text-[#6b7c96] uppercase">Cash</p>
+          <h1 className="mt-2 text-[32px] leading-none font-semibold tracking-tight text-[#dbe7f4]">
             잔고 일지
           </h1>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-[#8ea0b8]">
             매일 한 줄. 같은 날 다시 입력하면 덮어씁니다.
           </p>
         </div>
         <Link
           href="/hub"
-          className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
+          className="rounded-md px-3 py-1.5 text-xs font-medium text-[#8ea0b8] transition-colors hover:text-[#dbe7f4]"
         >
           허브
         </Link>
       </header>
 
       {latest ? (
-        <section className="mb-10 overflow-hidden rounded-xl border border-slate-200 bg-slate-900 text-white">
+        <section className="mb-10 overflow-hidden rounded-xl border border-[#1c3556] bg-slate-900 text-white">
           <div className="px-7 py-7">
             <div className="flex items-baseline justify-between">
-              <p className="text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+              <p className="text-[10px] font-medium tracking-[0.3em] text-[#6b7c96] uppercase">
                 오늘 가용 현금
               </p>
-              <p className="text-[10px] font-medium tracking-[0.18em] text-slate-500 uppercase tabular-nums">
+              <p className="text-[10px] font-medium tracking-[0.18em] text-[#8ea0b8] uppercase tabular-nums">
                 {latest.as_of_date}
               </p>
             </div>
             <p className="mt-4 flex items-baseline gap-1.5 text-[42px] leading-none font-semibold tracking-tight tabular-nums">
-              <span className="text-slate-500">₩</span>
+              <span className="text-[#8ea0b8]">₩</span>
               <span>{fmtKRWFull(latest.balance_krw)}</span>
             </p>
             {prev ? (
-              <p className="mt-3 text-xs text-slate-400">
-                <span className="text-slate-500">전일 대비</span>{' '}
+              <p className="mt-3 text-xs text-[#6b7c96]">
+                <span className="text-[#8ea0b8]">전일 대비</span>{' '}
                 <span
                   className={`font-medium tabular-nums ${
-                    delta > 0 ? 'text-emerald-300' : delta < 0 ? 'text-rose-300' : 'text-slate-400'
+                    delta > 0 ? 'text-emerald-300' : delta < 0 ? 'text-rose-300' : 'text-[#6b7c96]'
                   }`}
                 >
                   {delta > 0 ? '+' : delta < 0 ? '−' : ''}₩{fmtKRW(Math.abs(delta))}
                 </span>
-                <span className="ml-2 text-slate-500">({prev.as_of_date})</span>
+                <span className="ml-2 text-[#8ea0b8]">({prev.as_of_date})</span>
               </p>
             ) : null}
           </div>
         </section>
       ) : null}
 
-      <section className="mb-12 rounded-xl border border-slate-200 bg-white p-6">
-        <p className="mb-4 text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+      <section className="mb-12 rounded-xl border border-[#1c3556] bg-[#101f38] p-6">
+        <p className="mb-4 text-[10px] font-medium tracking-[0.3em] text-[#6b7c96] uppercase">
           새 기록
         </p>
         <form action={onSubmit} className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
@@ -133,36 +133,36 @@ export function CashClient({ initial }: { initial: CashSnapshot[] }): React.JSX.
       </section>
 
       <section>
-        <p className="mb-4 text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+        <p className="mb-4 text-[10px] font-medium tracking-[0.3em] text-[#6b7c96] uppercase">
           최근 기록
         </p>
         {snapshots.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-200 px-4 py-10 text-center text-xs text-slate-400">
+          <p className="rounded-xl border border-dashed border-[#1c3556] px-4 py-10 text-center text-xs text-[#6b7c96]">
             아직 기록이 없습니다.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-[#1c3556] bg-[#101f38]">
             {snapshots.map((s, i) => {
               const nx = snapshots[i + 1]
               const d = nx ? s.balance_krw - nx.balance_krw : 0
               return (
                 <li
                   key={s.id}
-                  className="group flex items-center justify-between gap-4 px-5 py-3.5 text-sm transition-colors hover:bg-slate-50/60"
+                  className="group flex items-center justify-between gap-4 px-5 py-3.5 text-sm transition-colors hover:bg-[#14263f]/60"
                 >
                   <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-slate-800 tabular-nums">
+                    <p className="text-[13px] font-medium text-[#dbe7f4] tabular-nums">
                       {s.as_of_date}
                       {s.account_alias ? (
-                        <span className="ml-2 text-[11px] font-normal text-slate-400">
+                        <span className="ml-2 text-[11px] font-normal text-[#6b7c96]">
                           {s.account_alias}
                         </span>
                       ) : null}
                     </p>
-                    {s.note ? <p className="mt-0.5 text-[11px] text-slate-500">{s.note}</p> : null}
+                    {s.note ? <p className="mt-0.5 text-[11px] text-[#8ea0b8]">{s.note}</p> : null}
                   </div>
                   <div className="text-right">
-                    <p className="text-[13px] font-semibold text-slate-900 tabular-nums">
+                    <p className="text-[13px] font-semibold text-[#dbe7f4] tabular-nums">
                       ₩{fmtKRWFull(s.balance_krw)}
                     </p>
                     {nx && d !== 0 ? (
@@ -174,12 +174,12 @@ export function CashClient({ initial }: { initial: CashSnapshot[] }): React.JSX.
                         {d > 0 ? '+' : '−'}₩{fmtKRW(Math.abs(d))}
                       </p>
                     ) : nx ? (
-                      <p className="text-[10px] text-slate-300">변동 없음</p>
+                      <p className="text-[10px] text-[#4a5568]">변동 없음</p>
                     ) : null}
                   </div>
                   <button
                     onClick={() => onDelete(s.id)}
-                    className="ml-1 text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-500"
+                    className="ml-1 text-[#4a5568] opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-500"
                     title="삭제"
                     aria-label="삭제"
                   >
@@ -216,13 +216,13 @@ function Field({
 } & React.InputHTMLAttributes<HTMLInputElement>): React.JSX.Element {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[10px] font-medium tracking-[0.2em] text-slate-400 uppercase">
+      <span className="mb-1.5 block text-[10px] font-medium tracking-[0.2em] text-[#6b7c96] uppercase">
         {label}
       </span>
       <input
         name={name}
         {...rest}
-        className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors placeholder:text-slate-300 focus:border-slate-400 focus:outline-none"
+        className="w-full rounded-md border border-[#1c3556] bg-[#101f38] px-3 py-2 text-sm text-[#dbe7f4] transition-colors placeholder:text-[#4a5568] focus:border-slate-400 focus:outline-none"
       />
     </label>
   )

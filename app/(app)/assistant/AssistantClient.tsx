@@ -205,12 +205,12 @@ export function AssistantClient({
   return (
     <div className="mx-auto flex h-[calc(100vh-8.5rem)] w-full max-w-3xl flex-col px-4">
       {!empty && (
-        <div className="flex justify-end border-b border-slate-100 py-2">
+        <div className="flex justify-end border-b border-[#12233c] py-2">
           <button
             type="button"
             onClick={() => void handleNewChat()}
             disabled={loading}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#8ea0b8] transition-colors hover:bg-[#14263f] hover:text-[#c4d2e4] disabled:cursor-not-allowed disabled:opacity-50"
           >
             + 새 대화
           </button>
@@ -219,11 +219,11 @@ export function AssistantClient({
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-6">
         {empty ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-xl font-bold text-white">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#189ec2] text-xl font-bold text-white">
               T
             </div>
-            <h2 className="mt-4 text-lg font-semibold text-slate-900">토타로 AI 직원</h2>
-            <p className="mt-1 max-w-md text-sm text-slate-500">
+            <h2 className="mt-4 text-lg font-semibold text-[#dbe7f4]">토타로 AI 직원</h2>
+            <p className="mt-1 max-w-md text-sm text-[#8ea0b8]">
               우편실에 쌓인 회사 자료 {indexedCount.toLocaleString()}건을 바탕으로 답해드려요.
               <br />
               계약·메일·지원사업·견적 뭐든 물어보세요.
@@ -234,7 +234,7 @@ export function AssistantClient({
                   key={ex}
                   type="button"
                   onClick={() => void send(ex)}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-slate-900"
+                  className="rounded-xl border border-[#1c3556] bg-[#101f38] px-4 py-3 text-left text-sm text-[#9fb4d0] transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-[#dbe7f4]"
                 >
                   {ex}
                 </button>
@@ -259,7 +259,7 @@ export function AssistantClient({
           e.preventDefault()
           void send(input)
         }}
-        className="border-t border-slate-200 bg-white/80 py-4 backdrop-blur"
+        className="border-t border-[#1c3556] bg-[#101f38]/80 py-4 backdrop-blur"
       >
         <div className="flex items-end gap-2">
           <textarea
@@ -273,13 +273,13 @@ export function AssistantClient({
             }}
             rows={1}
             placeholder="회사 자료에 대해 물어보세요… (Shift+Enter 줄바꿈)"
-            className="max-h-40 flex-1 resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 transition-colors outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="max-h-40 flex-1 resize-none rounded-xl border border-[#24405f] bg-[#101f38] px-4 py-3 text-sm text-[#dbe7f4] transition-colors outline-none focus:border-[#35e0ff] focus:ring-1 focus:ring-[#35e0ff]"
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="rounded-xl bg-[#189ec2] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#35e0ff] disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             보내기
           </button>
@@ -293,7 +293,7 @@ function MessageBubble({ message }: { message: Message }): React.JSX.Element {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-indigo-600 px-4 py-2.5 text-sm whitespace-pre-wrap text-white">
+        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[#189ec2] px-4 py-2.5 text-sm whitespace-pre-wrap text-white">
           {message.content}
         </div>
       </div>
@@ -309,7 +309,7 @@ function MessageBubble({ message }: { message: Message }): React.JSX.Element {
               ? 'bg-rose-50 text-rose-700'
               : message.degraded
                 ? 'bg-amber-50 text-amber-800'
-                : 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200'
+                : 'bg-[#101f38] text-[#dbe7f4] shadow-sm ring-1 ring-[#1c3556]'
           }`}
         >
           <MarkdownContent text={message.content} />
@@ -337,14 +337,14 @@ function MarkdownContent({ text }: { text: string }): React.JSX.Element {
         remarkPlugins={[remarkGfm]}
         components={{
           // 헤더
-          h1: (p) => <h1 className="mt-2 mb-2 text-lg font-bold text-slate-900" {...p} />,
-          h2: (p) => <h2 className="mt-3 mb-2 text-base font-bold text-slate-900" {...p} />,
-          h3: (p) => <h3 className="mt-3 mb-1.5 text-sm font-bold text-slate-900" {...p} />,
-          h4: (p) => <h4 className="mt-2 mb-1 text-sm font-semibold text-slate-900" {...p} />,
+          h1: (p) => <h1 className="mt-2 mb-2 text-lg font-bold text-[#dbe7f4]" {...p} />,
+          h2: (p) => <h2 className="mt-3 mb-2 text-base font-bold text-[#dbe7f4]" {...p} />,
+          h3: (p) => <h3 className="mt-3 mb-1.5 text-sm font-bold text-[#dbe7f4]" {...p} />,
+          h4: (p) => <h4 className="mt-2 mb-1 text-sm font-semibold text-[#dbe7f4]" {...p} />,
           // 단락
           p: (p) => <p className="mb-2 last:mb-0" {...p} />,
           // 강조
-          strong: (p) => <strong className="font-semibold text-slate-900" {...p} />,
+          strong: (p) => <strong className="font-semibold text-[#dbe7f4]" {...p} />,
           em: (p) => <em className="italic" {...p} />,
           // 리스트
           ul: (p) => <ul className="my-2 ml-5 list-disc space-y-1" {...p} />,
@@ -353,7 +353,7 @@ function MarkdownContent({ text }: { text: string }): React.JSX.Element {
           // 인용
           blockquote: (p) => (
             <blockquote
-              className="my-2 border-l-4 border-slate-300 bg-slate-50 px-3 py-1.5 text-slate-700"
+              className="my-2 border-l-4 border-[#24405f] bg-[#0c1830] px-3 py-1.5 text-[#c4d2e4]"
               {...p}
             />
           ),
@@ -362,7 +362,7 @@ function MarkdownContent({ text }: { text: string }): React.JSX.Element {
             const isInline = !(rest as { className?: string }).className?.includes('language-')
             if (isInline) {
               return (
-                <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[12px] text-slate-900">
+                <code className="rounded bg-[#0c1830] px-1 py-0.5 font-mono text-[12px] text-[#dbe7f4]">
                   {children}
                 </code>
               )
@@ -385,7 +385,7 @@ function MarkdownContent({ text }: { text: string }): React.JSX.Element {
               href={href}
               target="_blank"
               rel="noreferrer"
-              className="text-indigo-600 underline underline-offset-2 hover:text-indigo-800"
+              className="text-[#35e0ff] underline underline-offset-2 hover:text-indigo-800"
               {...rest}
             >
               {children}
@@ -397,11 +397,11 @@ function MarkdownContent({ text }: { text: string }): React.JSX.Element {
               <table className="w-full border-collapse text-xs" {...p} />
             </div>
           ),
-          thead: (p) => <thead className="bg-slate-100 text-left" {...p} />,
-          th: (p) => <th className="border border-slate-200 px-2 py-1.5 font-semibold" {...p} />,
-          td: (p) => <td className="border border-slate-200 px-2 py-1.5 align-top" {...p} />,
+          thead: (p) => <thead className="bg-[#0c1830] text-left" {...p} />,
+          th: (p) => <th className="border border-[#1c3556] px-2 py-1.5 font-semibold" {...p} />,
+          td: (p) => <td className="border border-[#1c3556] px-2 py-1.5 align-top" {...p} />,
           // 수평선
-          hr: (p) => <hr className="my-3 border-slate-200" {...p} />,
+          hr: (p) => <hr className="my-3 border-[#1c3556]" {...p} />,
         }}
       >
         {text}
@@ -412,16 +412,16 @@ function MarkdownContent({ text }: { text: string }): React.JSX.Element {
 
 function SourceCard({ source }: { source: AssistantSource }): React.JSX.Element {
   const inner = (
-    <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs transition-colors hover:border-indigo-300 hover:bg-indigo-50/40">
-      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded bg-indigo-100 text-[10px] font-semibold text-indigo-700">
+    <div className="flex items-start gap-2 rounded-lg border border-[#1c3556] bg-[#101f38] px-3 py-2 text-xs transition-colors hover:border-indigo-300 hover:bg-indigo-50/40">
+      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded bg-indigo-100 text-[10px] font-semibold text-[#35e0ff]">
         {source.n}
       </span>
       <div className="min-w-0">
-        <p className="truncate font-medium text-slate-700">{source.filename}</p>
-        <p className="truncate text-slate-400">
+        <p className="truncate font-medium text-[#c4d2e4]">{source.filename}</p>
+        <p className="truncate text-[#6b7c96]">
           {[source.docType, source.folderPath].filter(Boolean).join(' · ') || '우편실 자료'}
         </p>
-        {source.summary && <p className="mt-0.5 line-clamp-2 text-slate-500">{source.summary}</p>}
+        {source.summary && <p className="mt-0.5 line-clamp-2 text-[#8ea0b8]">{source.summary}</p>}
       </div>
       {source.link && <span className="ml-auto shrink-0 self-center text-indigo-400">↗</span>}
     </div>
@@ -438,11 +438,11 @@ function SourceCard({ source }: { source: AssistantSource }): React.JSX.Element 
 function ThinkingBubble(): React.JSX.Element {
   return (
     <div className="flex justify-start">
-      <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200">
+      <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-[#101f38] px-4 py-3 shadow-sm ring-1 ring-[#1c3556]">
         <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:-0.3s]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:-0.15s]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300" />
-        <span className="ml-2 text-xs text-slate-400">자료 뒤져보는 중…</span>
+        <span className="ml-2 text-xs text-[#6b7c96]">자료 뒤져보는 중…</span>
       </div>
     </div>
   )

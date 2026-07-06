@@ -15,7 +15,7 @@ export default async function AppLayout({
 }): Promise<React.JSX.Element> {
   if (!isSupabaseConfigured) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
+      <main className="flex min-h-screen items-center justify-center bg-[#0c1830] p-6">
         <SetupNotice />
       </main>
     )

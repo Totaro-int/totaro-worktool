@@ -105,7 +105,7 @@ export default async function NaverHubPage({
                 searchAd.status === 'ok' ? 'bg-emerald-500' : 'bg-amber-400'
               }`}
             />
-            <span className="font-mono text-[10px] tracking-[0.14em] text-slate-400">
+            <span className="font-mono text-[10px] tracking-[0.14em] text-[#6b7c96]">
               검색광고 {searchAd.status === 'ok' ? 'ONLINE' : 'OFFLINE'}
             </span>
           </div>
@@ -190,7 +190,7 @@ export default async function NaverHubPage({
           </p>
         )}
 
-        <p className="font-mono text-[10px] tracking-wide text-slate-400">
+        <p className="font-mono text-[10px] tracking-wide text-[#6b7c96]">
           {range.since} ~ {range.until} · 네이버 검색광고 API · 커머스 스냅샷
           {syncedAt ? ` ${timeAgo(syncedAt)}` : ''}
         </p>
@@ -208,14 +208,14 @@ function DateBar({ active }: { active: RangeKey }): React.JSX.Element {
   ]
   return (
     <div className="flex items-center gap-2.5">
-      <span className="font-mono text-[10px] tracking-[0.2em] text-slate-400">RANGE</span>
-      <div className="flex gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
+      <span className="font-mono text-[10px] tracking-[0.2em] text-[#6b7c96]">RANGE</span>
+      <div className="flex gap-1 rounded-lg bg-[#101f38] p-1 shadow-sm ring-1 ring-[#1c3556]">
         {opts.map((o) => (
           <Link
             key={o.key}
             href={`/hub/naver?range=${o.key}`}
             className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-              active === o.key ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-100'
+              active === o.key ? 'bg-blue-600 text-white' : 'text-[#8ea0b8] hover:bg-[#14263f]'
             }`}
           >
             {o.label}
@@ -238,8 +238,8 @@ function KpiCell({
 }): React.JSX.Element {
   return (
     <div>
-      <p className="font-mono text-[10px] tracking-[0.14em] text-slate-400">{label}</p>
-      <p className={`mt-1 font-bold text-slate-900 tabular-nums ${big ? 'text-2xl' : 'text-lg'}`}>
+      <p className="font-mono text-[10px] tracking-[0.14em] text-[#6b7c96]">{label}</p>
+      <p className={`mt-1 font-bold text-[#dbe7f4] tabular-nums ${big ? 'text-2xl' : 'text-lg'}`}>
         {value}
       </p>
     </div>
@@ -263,7 +263,7 @@ function KpiPanel({
   const hasTarget = targetRoas != null && targetRoas > 0
   const achievement = targetRoas != null && targetRoas > 0 ? (actualRoas / targetRoas) * 100 : 0
   return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-md ring-1 ring-slate-200">
+    <div className="overflow-hidden rounded-xl bg-[#101f38] shadow-md ring-1 ring-[#1c3556]">
       <div className="flex items-center justify-between bg-blue-600 px-5 py-2.5">
         <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-white">
           KPI · 마케팅비 대비 매출 목표
@@ -274,7 +274,7 @@ function KpiPanel({
         {missing ? (
           <p className="text-sm text-amber-600">
             KPI 테이블이 없습니다 — Supabase SQL Editor에서{' '}
-            <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-600">
+            <code className="rounded bg-[#0c1830] px-1 py-0.5 font-mono text-xs text-[#9fb4d0]">
               supabase/naver-kpi.sql
             </code>{' '}
             을 실행하세요.
@@ -289,12 +289,12 @@ function KpiPanel({
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-mono tracking-wide text-slate-400">달성률</span>
-                <span className="font-bold text-slate-700 tabular-nums">
+                <span className="font-mono tracking-wide text-[#6b7c96]">달성률</span>
+                <span className="font-bold text-[#c4d2e4] tabular-nums">
                   {hasTarget ? `${achievement.toFixed(0)}%` : '—'}
                 </span>
               </div>
-              <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-slate-100">
+              <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-[#0c1830]">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600"
                   style={{ width: `${Math.min(Math.max(achievement, 0), 100)}%` }}
@@ -312,9 +312,9 @@ function KpiPanel({
                   min={1}
                   step={10}
                   defaultValue={targetRoas ?? 400}
-                  className="w-28 rounded-lg border border-slate-300 px-3 py-1.5 text-sm tabular-nums outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-28 rounded-lg border border-[#24405f] px-3 py-1.5 text-sm tabular-nums outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
-                <span className="text-sm text-slate-400">%</span>
+                <span className="text-sm text-[#6b7c96]">%</span>
                 <button
                   type="submit"
                   className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700"

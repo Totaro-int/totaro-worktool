@@ -54,20 +54,20 @@ export async function CalendarToday({
   const events = await listUpcomingEvents(userId, 7, 8)
 
   return (
-    <div className="pointer-events-auto absolute right-6 bottom-6 w-[290px] overflow-hidden rounded-xl border border-slate-200 bg-white/95 shadow-sm backdrop-blur">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
-        <p className="text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+    <div className="pointer-events-auto absolute right-6 bottom-6 w-[290px] overflow-hidden rounded-xl border border-[#1c3556] bg-[#101f38]/95 shadow-sm backdrop-blur">
+      <div className="flex items-center justify-between border-b border-[#12233c] px-4 py-2.5">
+        <p className="text-[10px] font-medium tracking-[0.3em] text-[#6b7c96] uppercase">
           Upcoming
         </p>
         <Link
           href="/calendar"
-          className="text-[10px] font-medium text-slate-500 transition-colors hover:text-slate-900"
+          className="text-[10px] font-medium text-[#8ea0b8] transition-colors hover:text-[#dbe7f4]"
         >
           전체 →
         </Link>
       </div>
       {events.length === 0 ? (
-        <p className="px-4 py-5 text-center text-[11px] text-slate-400">이번 주 일정 없음</p>
+        <p className="px-4 py-5 text-center text-[11px] text-[#6b7c96]">이번 주 일정 없음</p>
       ) : (
         <ul className="divide-y divide-slate-100">
           {events.slice(0, 5).map((e) => {
@@ -87,26 +87,26 @@ export async function CalendarToday({
                         href={e.htmlLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block truncate text-[12px] font-medium text-slate-800 transition-colors hover:text-slate-900"
+                        className="block truncate text-[12px] font-medium text-[#dbe7f4] transition-colors hover:text-[#dbe7f4]"
                         title={e.summary}
                       >
                         {cleanSummary(e.summary)}
                       </a>
                     ) : (
-                      <span className="block truncate text-[12px] font-medium text-slate-800">
+                      <span className="block truncate text-[12px] font-medium text-[#dbe7f4]">
                         {cleanSummary(e.summary)}
                       </span>
                     )}
-                    <p className="mt-0.5 text-[10px] text-slate-400 tabular-nums">
+                    <p className="mt-0.5 text-[10px] text-[#6b7c96] tabular-nums">
                       {formatEventDay(e.start)}
                       {!e.allDay ? (
                         <>
-                          <span className="mx-1.5 text-slate-300">·</span>
+                          <span className="mx-1.5 text-[#4a5568]">·</span>
                           {formatEventTime(e.start, e.allDay)}
                         </>
                       ) : (
                         <>
-                          <span className="mx-1.5 text-slate-300">·</span>종일
+                          <span className="mx-1.5 text-[#4a5568]">·</span>종일
                         </>
                       )}
                     </p>

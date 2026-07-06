@@ -25,7 +25,7 @@ const DAYNUM_H = 26
 const BAR_H = 22
 
 const STATUS_BAR: Record<TaskStatus, string> = {
-  todo: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200',
+  todo: 'bg-[#0c1830] text-[#c4d2e4] ring-1 ring-inset ring-[#1c3556]',
   doing: 'bg-amber-100 text-amber-900 ring-1 ring-inset ring-amber-200',
   done: 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200',
 }
@@ -236,16 +236,16 @@ export function CalendarMonth({
 
   return (
     <main className="mx-auto max-w-6xl px-8 py-12">
-      <header className="mb-6 flex items-end justify-between border-b border-slate-200 pb-6">
+      <header className="mb-6 flex items-end justify-between border-b border-[#1c3556] pb-6">
         <div>
-          <p className="text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+          <p className="text-[10px] font-medium tracking-[0.3em] text-[#6b7c96] uppercase">
             업무 관리 캘린더
           </p>
-          <h1 className="mt-2 text-[32px] leading-none font-semibold tracking-tight text-slate-900">
+          <h1 className="mt-2 text-[32px] leading-none font-semibold tracking-tight text-[#dbe7f4]">
             {monthLabel}
           </h1>
-          <p className="mt-3 text-xs text-slate-500">
-            할일 {tasks.length}건<span className="mx-2 text-slate-300">·</span>
+          <p className="mt-3 text-xs text-[#8ea0b8]">
+            할일 {tasks.length}건<span className="mx-2 text-[#4a5568]">·</span>
             {googleConnected ? (
               <>일정 {events.length}건</>
             ) : (
@@ -258,26 +258,26 @@ export function CalendarMonth({
         <nav className="flex items-center gap-1">
           <Link
             href={`/calendar?month=${prev}`}
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-[#8ea0b8] transition-colors hover:bg-[#14263f] hover:text-[#dbe7f4]"
           >
             이전
           </Link>
           <Link
             href="/calendar"
-            className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
+            className="rounded-md border border-[#1c3556] px-3 py-1.5 text-xs font-medium text-[#c4d2e4] transition-colors hover:bg-[#14263f]"
           >
             오늘
           </Link>
           <Link
             href={`/calendar?month=${next}`}
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-[#8ea0b8] transition-colors hover:bg-[#14263f] hover:text-[#dbe7f4]"
           >
             다음
           </Link>
-          <span className="mx-2 h-4 w-px bg-slate-200" aria-hidden="true" />
+          <span className="mx-2 h-4 w-px bg-[#14263f]" aria-hidden="true" />
           <Link
             href="/tasks"
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-[#8ea0b8] transition-colors hover:text-[#dbe7f4]"
           >
             보드
           </Link>
@@ -289,18 +289,18 @@ export function CalendarMonth({
         ref={formRef}
         open={formOpen}
         onToggle={(e) => setFormOpen((e.target as HTMLDetailsElement).open)}
-        className="mb-6 rounded-xl bg-white ring-1 ring-slate-200"
+        className="mb-6 rounded-xl bg-[#101f38] ring-1 ring-[#1c3556]"
       >
-        <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-slate-700">
+        <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-[#c4d2e4]">
           + 할일 추가
           {rangeStart ? (
-            <span className="ml-1 text-slate-400">
+            <span className="ml-1 text-[#6b7c96]">
               · {rangeStart}
               {rangeEnd && rangeEnd !== rangeStart ? ` ~ ${rangeEnd}` : ''}
             </span>
           ) : null}
         </summary>
-        <form action={createTask} className="space-y-3 border-t border-slate-100 p-5">
+        <form action={createTask} className="space-y-3 border-t border-[#12233c] p-5">
           <div>
             <label className={labelClass} htmlFor="cal-title">
               할 일
@@ -388,19 +388,19 @@ export function CalendarMonth({
           >
             추가하기
           </button>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#6b7c96]">
             시작 ~ 마감이 다르면 여러 날 막대로 표시돼요. 같으면 하루짜리.
           </p>
         </form>
       </details>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white select-none">
-        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/60">
+      <div className="overflow-hidden rounded-xl border border-[#1c3556] bg-[#101f38] select-none">
+        <div className="grid grid-cols-7 border-b border-[#1c3556] bg-[#0c1830]/60">
           {DAYS.map((d, i) => (
             <div
               key={d}
               className={`px-3 py-3 text-center text-[10px] font-semibold tracking-[0.2em] uppercase ${
-                i === 0 ? 'text-rose-400' : 'text-slate-400'
+                i === 0 ? 'text-rose-400' : 'text-[#6b7c96]'
               }`}
             >
               {d}
@@ -409,7 +409,7 @@ export function CalendarMonth({
         </div>
 
         {weeks.map((week, wi) => (
-          <div key={wi} className="relative border-b border-slate-100 last:border-b-0">
+          <div key={wi} className="relative border-b border-[#12233c] last:border-b-0">
             <div className="grid grid-cols-7">
               {week.map((d, di) => {
                 const inMonth = d.getMonth() === monthDate.getMonth()
@@ -430,8 +430,8 @@ export function CalendarMonth({
                   : inMonth
                     ? d.getDay() === 0
                       ? 'text-[12px] font-medium text-rose-500'
-                      : 'text-[12px] font-medium text-slate-700'
-                    : 'text-[12px] font-medium text-slate-300'
+                      : 'text-[12px] font-medium text-[#c4d2e4]'
+                    : 'text-[12px] font-medium text-[#4a5568]'
 
                 return (
                   <div
@@ -445,15 +445,15 @@ export function CalendarMonth({
                         setDragState({ anchor: dragRef.current.anchor, hover: key })
                     }}
                     className={`group relative min-h-[120px] cursor-pointer px-2.5 pb-2 transition-colors ${
-                      (di + 1) % 7 === 0 ? '' : 'border-r border-slate-100'
+                      (di + 1) % 7 === 0 ? '' : 'border-r border-[#12233c]'
                     } ${
                       isSel
                         ? 'bg-indigo-50/70 ring-2 ring-indigo-300 ring-inset'
                         : inDrag
                           ? 'bg-indigo-50'
                           : inMonth
-                            ? 'bg-white hover:bg-slate-50/60'
-                            : 'bg-slate-50/40'
+                            ? 'bg-[#101f38] hover:bg-[#14263f]/60'
+                            : 'bg-[#0c1830]/40'
                     }`}
                     style={{ paddingTop: DAYNUM_H + laneBand + 4 }}
                   >
@@ -470,7 +470,7 @@ export function CalendarMonth({
                           e.stopPropagation()
                           openAdd(key)
                         }}
-                        className="flex h-5 w-5 items-center justify-center rounded-md text-sm leading-none text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-200 hover:text-slate-700"
+                        className="flex h-5 w-5 items-center justify-center rounded-md text-sm leading-none text-[#6b7c96] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#1c3556] hover:text-[#c4d2e4]"
                       >
                         +
                       </button>
@@ -480,14 +480,14 @@ export function CalendarMonth({
                         <span
                           key={t.id}
                           title={`${cleanTitle(t.title)} · ${TASK_STATUS_LABELS[t.status]}`}
-                          className="flex items-center gap-1.5 truncate rounded-[5px] bg-slate-50 px-1.5 py-0.5 text-[10.5px] leading-snug font-medium ring-1 ring-slate-100"
+                          className="flex items-center gap-1.5 truncate rounded-[5px] bg-[#0c1830] px-1.5 py-0.5 text-[10.5px] leading-snug font-medium ring-1 ring-[#1c3556]"
                         >
                           <span
                             aria-hidden="true"
                             className={`h-2.5 w-0.5 flex-none rounded-full ${TASK_STATUS_DOT[t.status]}`}
                           />
                           <span
-                            className={`truncate ${t.status === 'done' ? 'text-slate-400 line-through' : 'text-slate-700'}`}
+                            className={`truncate ${t.status === 'done' ? 'text-[#6b7c96] line-through' : 'text-[#c4d2e4]'}`}
                           >
                             {cleanTitle(t.title)}
                           </span>
@@ -513,7 +513,7 @@ export function CalendarMonth({
                         )
                       })}
                       {overflow > 0 ? (
-                        <p className="px-1.5 text-[10px] font-medium text-slate-400">
+                        <p className="px-1.5 text-[10px] font-medium text-[#6b7c96]">
                           외 {overflow}건
                         </p>
                       ) : null}
@@ -551,12 +551,12 @@ export function CalendarMonth({
 
       {/* 선택한 날 상세 — 그날 업무 전부 + 메모 편집 + 상태 이동 */}
       {selectedDay ? (
-        <section className="mt-6 rounded-xl border border-slate-200 bg-white">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
-            <h2 className="text-sm font-semibold text-slate-800">
+        <section className="mt-6 rounded-xl border border-[#1c3556] bg-[#101f38]">
+          <div className="flex items-center justify-between border-b border-[#12233c] px-5 py-3.5">
+            <h2 className="text-sm font-semibold text-[#dbe7f4]">
               {selectedDay} 업무 {selTasks.length}건
               {selEvents.length > 0 ? (
-                <span className="ml-2 text-xs font-normal text-slate-400">
+                <span className="ml-2 text-xs font-normal text-[#6b7c96]">
                   · 일정 {selEvents.length}
                 </span>
               ) : null}
@@ -572,7 +572,7 @@ export function CalendarMonth({
               <button
                 type="button"
                 onClick={() => setSelectedDay(null)}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 ring-1 ring-slate-200 hover:bg-slate-50"
+                className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#8ea0b8] ring-1 ring-[#1c3556] hover:bg-[#14263f]"
               >
                 닫기
               </button>
@@ -580,7 +580,7 @@ export function CalendarMonth({
           </div>
 
           {selTasks.length === 0 && selEvents.length === 0 ? (
-            <p className="px-5 py-8 text-center text-xs text-slate-400">
+            <p className="px-5 py-8 text-center text-xs text-[#6b7c96]">
               이 날 업무가 없어요. 우측 위 &lsquo;+ 이 날 추가&rsquo;로 만들 수 있어요.
             </p>
           ) : (
@@ -598,25 +598,25 @@ export function CalendarMonth({
                             className={`h-2.5 w-1 flex-none rounded-full ${TASK_STATUS_DOT[t.status]}`}
                           />
                           <span
-                            className={`text-sm font-medium ${t.status === 'done' ? 'text-slate-400 line-through' : 'text-slate-900'}`}
+                            className={`text-sm font-medium ${t.status === 'done' ? 'text-[#6b7c96] line-through' : 'text-[#dbe7f4]'}`}
                           >
                             {cleanTitle(t.title)}
                           </span>
                         </div>
-                        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-[#6b7c96]">
                           {area ? <WorkAreaBadge area={area} /> : null}
                           {assignee ? <span>{assignee.name}</span> : null}
                           <span>
                             {isMultiDay(t) ? `${t.start_date} ~ ${t.due_date}` : t.due_date}
                           </span>
-                          <span className="text-slate-300">{TASK_STATUS_LABELS[t.status]}</span>
+                          <span className="text-[#4a5568]">{TASK_STATUS_LABELS[t.status]}</span>
                         </div>
                       </div>
                       <form action={deleteTask}>
                         <input type="hidden" name="id" value={t.id} />
                         <button
                           type="submit"
-                          className="shrink-0 text-xs text-slate-300 transition-colors hover:text-red-500"
+                          className="shrink-0 text-xs text-[#4a5568] transition-colors hover:text-red-500"
                         >
                           삭제
                         </button>
@@ -630,7 +630,7 @@ export function CalendarMonth({
                         rows={2}
                         defaultValue={t.description ?? ''}
                         placeholder="메모를 남겨보세요…"
-                        className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+                        className="w-full resize-none rounded-lg border border-[#1c3556] px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
                       />
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         <button
@@ -653,7 +653,7 @@ export function CalendarMonth({
                           />
                           <button
                             type="submit"
-                            className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200"
+                            className="rounded-md bg-[#0c1830] px-2.5 py-1 text-xs font-medium text-[#9fb4d0] hover:bg-[#1c3556]"
                           >
                             ← 이전
                           </button>
@@ -669,7 +669,7 @@ export function CalendarMonth({
                           />
                           <button
                             type="submit"
-                            className="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-700"
+                            className="rounded-md bg-[#189ec2] px-2.5 py-1 text-xs font-medium text-white hover:bg-[#35e0ff]"
                           >
                             {t.status === 'todo' ? '시작 →' : '완료 →'}
                           </button>
@@ -688,9 +688,9 @@ export function CalendarMonth({
                       aria-hidden="true"
                       className="h-2.5 w-1 flex-none rounded-full bg-indigo-400"
                     />
-                    {tm ? <span className="text-xs text-slate-400 tabular-nums">{tm}</span> : null}
-                    <span className="truncate text-sm text-slate-700">{e.summary}</span>
-                    <span className="ml-auto text-[10px] text-slate-300">Google 일정</span>
+                    {tm ? <span className="text-xs text-[#6b7c96] tabular-nums">{tm}</span> : null}
+                    <span className="truncate text-sm text-[#c4d2e4]">{e.summary}</span>
+                    <span className="ml-auto text-[10px] text-[#4a5568]">Google 일정</span>
                   </div>
                 )
               })}
@@ -699,7 +699,7 @@ export function CalendarMonth({
         </section>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap items-center gap-5 text-[11px] text-slate-400">
+      <div className="mt-6 flex flex-wrap items-center gap-5 text-[11px] text-[#6b7c96]">
         <span className="flex items-center gap-1.5">
           <span className={`h-2.5 w-0.5 rounded-full ${TASK_STATUS_DOT.todo}`} aria-hidden="true" />
           할 일

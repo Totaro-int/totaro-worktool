@@ -81,7 +81,7 @@ export default async function AssistantFilesPage({
   filesHere.sort((a, b) => a.filename.localeCompare(b.filename, 'ko'))
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-[#0c1830]">
       <PageHeader title="AI 직원 — 파일" description="우편실 자료를 폴더로 탐색 · Drive 와 연동" />
       <FilesBrowser
         currentPath={currentPath}

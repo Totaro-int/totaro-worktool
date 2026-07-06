@@ -105,9 +105,9 @@ function fmtDate(iso: string): string {
 
 function Stat({ label, value }: { label: string; value: string }): JSX.Element {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <p className="text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
-      <p className="mt-0.5 text-xs text-slate-400">{label}</p>
+    <div className="rounded-xl border border-[#1c3556] bg-[#101f38] px-4 py-3">
+      <p className="text-2xl font-bold text-[#dbe7f4] tabular-nums">{value}</p>
+      <p className="mt-0.5 text-xs text-[#6b7c96]">{label}</p>
     </div>
   )
 }
@@ -175,12 +175,12 @@ export default async function AgentDashboardPage({
   const report = slug === 'kim-sahyun' ? await latestReport('마케팅 분석') : null
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0c1830]">
       {/* 헤더 — AI부서로 되돌아가기 */}
-      <header className="border-b border-slate-200 bg-white px-8 py-5">
+      <header className="border-b border-[#1c3556] bg-[#101f38] px-8 py-5">
         <Link
           href="/hub/ai-team"
-          className="group inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          className="group inline-flex items-center gap-1.5 rounded-full bg-[#0c1830] px-3 py-1.5 text-xs font-medium text-[#9fb4d0] ring-1 ring-[#1c3556] transition-colors hover:bg-[#14263f] hover:text-[#dbe7f4]"
         >
           <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">
             ←
@@ -188,12 +188,12 @@ export default async function AgentDashboardPage({
           AI부서
         </Link>
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold text-slate-900">{agent.name}</h1>
-          <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+          <h1 className="text-xl font-semibold text-[#dbe7f4]">{agent.name}</h1>
+          <span className="inline-flex items-center rounded-md bg-[#0c1830] px-2 py-0.5 text-xs font-medium text-[#8ea0b8]">
             {agent.department ?? '미배정'}
           </span>
           {workingNow ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 ring-1 ring-indigo-200">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-[#35e0ff] ring-1 ring-indigo-200">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-500" />
@@ -201,20 +201,20 @@ export default async function AgentDashboardPage({
               근무 중
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-400 ring-1 ring-slate-200">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0c1830] px-2.5 py-1 text-[11px] font-medium text-[#6b7c96] ring-1 ring-[#1c3556]">
               <span className="h-2 w-2 rounded-full bg-slate-300" />
               대기 중
             </span>
           )}
         </div>
         {agent.role_description && (
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#8ea0b8]">
             {agent.role_description}
           </p>
         )}
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#6b7c96]">
           <span>
-            모델 <span className="font-medium text-slate-600">{agent.model ?? '—'}</span>
+            모델 <span className="font-medium text-[#9fb4d0]">{agent.model ?? '—'}</span>
           </span>
           <span>근무 시작 {fmtDate(agent.created_at)}</span>
         </div>
@@ -222,7 +222,7 @@ export default async function AgentDashboardPage({
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href={`/hub/ai-team/${slug}/chat`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#189ec2] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#35e0ff]"
             >
               💬 김사현과 대화하기
             </Link>
@@ -234,7 +234,7 @@ export default async function AgentDashboardPage({
             </Link>
             <Link
               href="/inbox"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#101f38] px-3.5 py-2 text-xs font-medium text-[#9fb4d0] ring-1 ring-[#1c3556] transition-colors hover:bg-[#14263f]"
             >
               📋 보고서 보기 (우편실)
             </Link>
@@ -247,25 +247,25 @@ export default async function AgentDashboardPage({
         {slug === 'kim-sahyun' && (
           <section className="mb-8">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-700">📊 오늘의 보고서</h2>
-              {report && <span className="text-xs text-slate-400">{fmtKST(report.createdAt)}</span>}
+              <h2 className="text-sm font-semibold text-[#c4d2e4]">📊 오늘의 보고서</h2>
+              {report && <span className="text-xs text-[#6b7c96]">{fmtKST(report.createdAt)}</span>}
             </div>
             {report ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-[#1c3556] bg-[#101f38] p-5 shadow-sm">
                 {report.content ? (
                   <div className="max-h-[28rem] overflow-y-auto pr-1">
                     <ReportView content={report.content} />
                   </div>
                 ) : (
-                  <p className="text-sm leading-relaxed text-slate-500">
+                  <p className="text-sm leading-relaxed text-[#8ea0b8]">
                     {report.summary ?? '보고서 본문을 불러오지 못했습니다.'}
                   </p>
                 )}
-                <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-3">
-                  <span className="min-w-0 truncate text-xs text-slate-400">{report.filename}</span>
+                <div className="mt-4 flex items-center gap-3 border-t border-[#12233c] pt-3">
+                  <span className="min-w-0 truncate text-xs text-[#6b7c96]">{report.filename}</span>
                   <Link
                     href={`/hub/ai-team/${slug}/chat`}
-                    className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
+                    className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#189ec2] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#35e0ff]"
                   >
                     💬 이 보고서로 대화
                   </Link>
@@ -274,7 +274,7 @@ export default async function AgentDashboardPage({
                       href={report.driveLink}
                       target="_blank"
                       rel="noreferrer"
-                      className="shrink-0 text-xs font-medium text-slate-500 hover:text-slate-800"
+                      className="shrink-0 text-xs font-medium text-[#8ea0b8] hover:text-[#dbe7f4]"
                     >
                       전문 ↗
                     </a>
@@ -308,15 +308,15 @@ export default async function AgentDashboardPage({
 
         {/* 활동 타임라인 */}
         <section className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold text-slate-700">활동 타임라인</h2>
+          <h2 className="mb-3 text-sm font-semibold text-[#c4d2e4]">활동 타임라인</h2>
           {actions.length === 0 ? (
             <EmptyState message="아직 기록된 활동이 없습니다. 첫 일과를 기다리는 중입니다." />
           ) : (
-            <ol className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <ol className="overflow-hidden rounded-xl border border-[#1c3556] bg-[#101f38]">
               {actions.map((a, i) => (
                 <li
                   key={a.id}
-                  className={`flex gap-3 px-4 py-3 ${i > 0 ? 'border-t border-slate-100' : ''}`}
+                  className={`flex gap-3 px-4 py-3 ${i > 0 ? 'border-t border-[#12233c]' : ''}`}
                 >
                   <div className="mt-0.5 flex flex-col items-center">
                     <span
@@ -325,22 +325,22 @@ export default async function AgentDashboardPage({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-600">
+                      <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-[#35e0ff]">
                         {actionLabel(a.action)}
                       </span>
                       {a.target_table && (
-                        <span className="text-[11px] text-slate-400">{a.target_table}</span>
+                        <span className="text-[11px] text-[#6b7c96]">{a.target_table}</span>
                       )}
                       {!a.success && (
                         <span className="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-600">
                           실패
                         </span>
                       )}
-                      <span className="ml-auto text-[11px] whitespace-nowrap text-slate-400">
+                      <span className="ml-auto text-[11px] whitespace-nowrap text-[#6b7c96]">
                         {fmtKST(a.created_at)}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm leading-snug text-slate-700">{a.summary}</p>
+                    <p className="mt-1 text-sm leading-snug text-[#c4d2e4]">{a.summary}</p>
                   </div>
                 </li>
               ))}
@@ -350,26 +350,29 @@ export default async function AgentDashboardPage({
 
         {/* 쌓은 지식 */}
         <section className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold text-slate-700">쌓은 지식</h2>
+          <h2 className="mb-3 text-sm font-semibold text-[#c4d2e4]">쌓은 지식</h2>
           {memories.length === 0 ? (
             <EmptyState message="아직 저장한 지식이 없습니다." />
           ) : (
             <ul className="grid gap-3 sm:grid-cols-2">
               {memories.map((m) => (
-                <li key={m.id} className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                <li
+                  key={m.id}
+                  className="rounded-xl border border-[#1c3556] bg-[#101f38] px-4 py-3"
+                >
                   <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-                    <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                    <span className="inline-flex items-center rounded-md bg-[#0c1830] px-1.5 py-0.5 text-[10px] font-medium text-[#8ea0b8]">
                       {kindLabel(m.kind)}
                     </span>
-                    <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                    <span className="inline-flex items-center rounded-md bg-[#0c1830] px-1.5 py-0.5 text-[10px] font-medium text-[#8ea0b8]">
                       {scopeLabel(m.scope)}
                     </span>
-                    <span className="text-[10px] text-slate-300">
+                    <span className="text-[10px] text-[#4a5568]">
                       신뢰도 {Math.round(m.confidence * 100)}%
                     </span>
                   </div>
-                  <p className="line-clamp-4 text-sm leading-snug text-slate-700">{m.content}</p>
-                  <p className="mt-1.5 text-[10px] text-slate-400">{fmtKST(m.created_at)}</p>
+                  <p className="line-clamp-4 text-sm leading-snug text-[#c4d2e4]">{m.content}</p>
+                  <p className="mt-1.5 text-[10px] text-[#6b7c96]">{fmtKST(m.created_at)}</p>
                 </li>
               ))}
             </ul>

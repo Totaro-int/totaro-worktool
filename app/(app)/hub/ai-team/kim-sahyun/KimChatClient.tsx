@@ -126,13 +126,13 @@ export function KimChatClient(): React.JSX.Element {
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-6">
         {empty ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-xl font-bold text-white">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#189ec2] text-xl font-bold text-white">
               사
             </div>
-            <h2 className="mt-4 text-lg font-semibold text-slate-900">
+            <h2 className="mt-4 text-lg font-semibold text-[#dbe7f4]">
               김사현 · 마케팅 애널리스트
             </h2>
-            <p className="mt-1 max-w-md text-sm text-slate-500">
+            <p className="mt-1 max-w-md text-sm text-[#8ea0b8]">
               매일 마케팅 분석을 하는 AI 직원이에요. 시장·경쟁사·콘텐츠·전환 뭐든 물어보세요.
             </p>
             <div className="mt-6 grid w-full max-w-lg grid-cols-1 gap-2 sm:grid-cols-2">
@@ -141,7 +141,7 @@ export function KimChatClient(): React.JSX.Element {
                   key={ex}
                   type="button"
                   onClick={() => void send(ex)}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-slate-900"
+                  className="rounded-xl border border-[#1c3556] bg-[#101f38] px-4 py-3 text-left text-sm text-[#9fb4d0] transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-[#dbe7f4]"
                 >
                   {ex}
                 </button>
@@ -166,7 +166,7 @@ export function KimChatClient(): React.JSX.Element {
           e.preventDefault()
           void send(input)
         }}
-        className="border-t border-slate-200 bg-white/80 py-4 backdrop-blur"
+        className="border-t border-[#1c3556] bg-[#101f38]/80 py-4 backdrop-blur"
       >
         <div className="flex items-end gap-2">
           <textarea
@@ -180,13 +180,13 @@ export function KimChatClient(): React.JSX.Element {
             }}
             rows={1}
             placeholder="김사현에게 물어보세요… (Shift+Enter 줄바꿈)"
-            className="max-h-40 flex-1 resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 transition-colors outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="max-h-40 flex-1 resize-none rounded-xl border border-[#24405f] bg-[#101f38] px-4 py-3 text-sm text-[#dbe7f4] transition-colors outline-none focus:border-[#35e0ff] focus:ring-1 focus:ring-[#35e0ff]"
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="rounded-xl bg-[#189ec2] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#35e0ff] disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             보내기
           </button>
@@ -200,7 +200,7 @@ function Bubble({ m }: { m: Msg }): React.JSX.Element {
   if (m.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-indigo-600 px-4 py-2.5 text-sm whitespace-pre-wrap text-white">
+        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[#189ec2] px-4 py-2.5 text-sm whitespace-pre-wrap text-white">
           {m.content}
         </div>
       </div>
@@ -213,18 +213,18 @@ function Bubble({ m }: { m: Msg }): React.JSX.Element {
           className={`rounded-2xl rounded-tl-sm px-4 py-3 text-sm ${
             m.error
               ? 'bg-rose-50 text-rose-700'
-              : 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200'
+              : 'bg-[#101f38] text-[#dbe7f4] shadow-sm ring-1 ring-[#1c3556]'
           }`}
         >
           <div className="markdown-body text-sm leading-relaxed break-words">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                h1: (p) => <h1 className="mt-2 mb-2 text-base font-bold text-slate-900" {...p} />,
-                h2: (p) => <h2 className="mt-3 mb-2 text-base font-bold text-slate-900" {...p} />,
-                h3: (p) => <h3 className="mt-3 mb-1.5 text-sm font-bold text-slate-900" {...p} />,
+                h1: (p) => <h1 className="mt-2 mb-2 text-base font-bold text-[#dbe7f4]" {...p} />,
+                h2: (p) => <h2 className="mt-3 mb-2 text-base font-bold text-[#dbe7f4]" {...p} />,
+                h3: (p) => <h3 className="mt-3 mb-1.5 text-sm font-bold text-[#dbe7f4]" {...p} />,
                 p: (p) => <p className="mb-2 last:mb-0" {...p} />,
-                strong: (p) => <strong className="font-semibold text-slate-900" {...p} />,
+                strong: (p) => <strong className="font-semibold text-[#dbe7f4]" {...p} />,
                 ul: (p) => <ul className="my-2 ml-5 list-disc space-y-1" {...p} />,
                 ol: (p) => <ol className="my-2 ml-5 list-decimal space-y-1" {...p} />,
                 li: (p) => <li className="leading-snug" {...p} />,
@@ -233,7 +233,7 @@ function Bubble({ m }: { m: Msg }): React.JSX.Element {
                     href={href}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-indigo-600 underline underline-offset-2 hover:text-indigo-800"
+                    className="text-[#35e0ff] underline underline-offset-2 hover:text-indigo-800"
                     {...rest}
                   >
                     {children}
@@ -246,11 +246,11 @@ function Bubble({ m }: { m: Msg }): React.JSX.Element {
                 ),
                 th: (p) => (
                   <th
-                    className="border border-slate-200 bg-slate-100 px-2 py-1.5 font-semibold"
+                    className="border border-[#1c3556] bg-[#0c1830] px-2 py-1.5 font-semibold"
                     {...p}
                   />
                 ),
-                td: (p) => <td className="border border-slate-200 px-2 py-1.5 align-top" {...p} />,
+                td: (p) => <td className="border border-[#1c3556] px-2 py-1.5 align-top" {...p} />,
               }}
             >
               {m.content}
@@ -268,16 +268,16 @@ function Bubble({ m }: { m: Msg }): React.JSX.Element {
                 href={s.link ?? undefined}
                 target={s.link ? '_blank' : undefined}
                 rel="noreferrer"
-                className={`flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs ${
+                className={`flex items-start gap-2 rounded-lg border border-[#1c3556] bg-[#101f38] px-3 py-2 text-xs ${
                   s.link ? 'transition-colors hover:border-indigo-300 hover:bg-indigo-50/40' : ''
                 }`}
               >
-                <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded bg-indigo-100 text-[10px] font-semibold text-indigo-700">
+                <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded bg-indigo-100 text-[10px] font-semibold text-[#35e0ff]">
                   {s.n}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-slate-700">{s.filename}</p>
-                  {s.summary && <p className="line-clamp-2 text-slate-500">{s.summary}</p>}
+                  <p className="truncate font-medium text-[#c4d2e4]">{s.filename}</p>
+                  {s.summary && <p className="line-clamp-2 text-[#8ea0b8]">{s.summary}</p>}
                 </div>
                 {s.link && <span className="ml-auto shrink-0 self-center text-indigo-400">↗</span>}
               </a>
@@ -292,11 +292,11 @@ function Bubble({ m }: { m: Msg }): React.JSX.Element {
 function Thinking(): React.JSX.Element {
   return (
     <div className="flex justify-start">
-      <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200">
+      <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-[#101f38] px-4 py-3 shadow-sm ring-1 ring-[#1c3556]">
         <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:-0.3s]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:-0.15s]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300" />
-        <span className="ml-2 text-xs text-slate-400">자료 뒤져보는 중…</span>
+        <span className="ml-2 text-xs text-[#6b7c96]">자료 뒤져보는 중…</span>
       </div>
     </div>
   )

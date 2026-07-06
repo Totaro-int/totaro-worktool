@@ -71,25 +71,25 @@ export function StudioChat({
   }
 
   return (
-    <div className="flex h-[460px] flex-col overflow-hidden rounded-xl bg-white ring-1 ring-slate-200">
-      <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2.5">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[11px] font-bold text-white">
+    <div className="flex h-[460px] flex-col overflow-hidden rounded-xl bg-[#101f38] ring-1 ring-[#1c3556]">
+      <div className="flex items-center gap-2 border-b border-[#12233c] px-3 py-2.5">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#189ec2] text-[11px] font-bold text-white">
           사
         </span>
-        <span className="text-sm font-semibold text-slate-800">사현이</span>
-        <span className="text-[11px] text-slate-400">· 말하면 카드에 반영</span>
+        <span className="text-sm font-semibold text-[#dbe7f4]">사현이</span>
+        <span className="text-[11px] text-[#6b7c96]">· 말하면 카드에 반영</span>
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-2.5 overflow-y-auto p-3">
         {messages.length === 0 ? (
           <div className="mt-3 space-y-1.5 text-xs">
-            <p className="mb-2 text-center text-slate-400">카드를 말로 고쳐봐 👇</p>
+            <p className="mb-2 text-center text-[#6b7c96]">카드를 말로 고쳐봐 👇</p>
             {EXAMPLES.map((ex) => (
               <button
                 key={ex}
                 type="button"
                 onClick={() => void send(ex)}
-                className="block w-full rounded-lg bg-slate-50 px-3 py-2 text-left text-slate-500 ring-1 ring-slate-200 hover:bg-slate-100"
+                className="block w-full rounded-lg bg-[#0c1830] px-3 py-2 text-left text-[#8ea0b8] ring-1 ring-[#1c3556] hover:bg-[#14263f]"
               >
                 {ex}
               </button>
@@ -101,8 +101,8 @@ export function StudioChat({
               key={i}
               className={`max-w-[88%] rounded-xl px-3 py-2 text-sm whitespace-pre-line ${
                 m.role === 'user'
-                  ? 'ml-auto bg-indigo-600 text-white'
-                  : 'bg-slate-100 text-slate-700'
+                  ? 'ml-auto bg-[#189ec2] text-white'
+                  : 'bg-[#0c1830] text-[#c4d2e4]'
               }`}
             >
               {m.text}
@@ -110,13 +110,13 @@ export function StudioChat({
           ))
         )}
         {busy ? (
-          <div className="inline-block rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-400">
+          <div className="inline-block rounded-xl bg-[#0c1830] px-3 py-2 text-sm text-[#6b7c96]">
             사현이가 카드 손보는 중…
           </div>
         ) : null}
       </div>
 
-      <div className="flex items-end gap-2 border-t border-slate-100 p-2.5">
+      <div className="flex items-end gap-2 border-t border-[#12233c] p-2.5">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -128,7 +128,7 @@ export function StudioChat({
           }}
           rows={1}
           placeholder="사현이에게… (예: 3번 더 짧게)"
-          className="flex-1 resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+          className="flex-1 resize-none rounded-lg border border-[#1c3556] px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
         />
         <button
           type="button"

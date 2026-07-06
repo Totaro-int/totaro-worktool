@@ -73,7 +73,7 @@ export default async function MetricsPage(): Promise<React.JSX.Element> {
   return (
     <>
       <PageHeader title="우리의 지표" description="영역마다 숫자 하나씩만 본다." />
-      <div className="bg-white">
+      <div className="bg-[#101f38]">
         <div className="mx-auto max-w-5xl px-6 sm:px-10">
           {/* 미션 */}
           <section aria-labelledby="mission-heading" className="py-16 sm:py-20">

@@ -34,10 +34,10 @@ function axisAccent(folderPath: string): {
   if (folderPath.includes('/05 '))
     return { bar: 'bg-pink-500', bg: 'bg-pink-50', text: 'text-pink-700', emoji: '📣' }
   if (folderPath.includes('/06 '))
-    return { bar: 'bg-slate-500', bg: 'bg-slate-100', text: 'text-slate-700', emoji: '🏢' }
+    return { bar: 'bg-slate-500', bg: 'bg-[#0c1830]', text: 'text-[#c4d2e4]', emoji: '🏢' }
   if (folderPath.includes('/07 '))
     return { bar: 'bg-orange-500', bg: 'bg-orange-50', text: 'text-orange-700', emoji: '🧳' }
-  return { bar: 'bg-slate-400', bg: 'bg-slate-50', text: 'text-slate-600', emoji: '📄' }
+  return { bar: 'bg-slate-400', bg: 'bg-[#0c1830]', text: 'text-[#9fb4d0]', emoji: '📄' }
 }
 
 function formatBytes(bytes: number): string {
@@ -307,7 +307,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
         <header className="flex items-center gap-3">
           <Link
             href="/hub"
-            className="group inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="group inline-flex items-center gap-1.5 rounded-full bg-[#101f38] px-3 py-1.5 text-xs font-medium text-[#9fb4d0] ring-1 ring-[#1c3556] transition-colors hover:bg-[#14263f] hover:text-[#dbe7f4]"
             aria-label="허브로 돌아가기"
           >
             <span className="transition-transform group-hover:-translate-x-0.5" aria-hidden="true">
@@ -319,8 +319,8 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
             📥
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">내부 AI 우편실</h1>
-            <p className="text-xs text-slate-500">
+            <h1 className="text-xl font-bold text-[#dbe7f4]">내부 AI 우편실</h1>
+            <p className="text-xs text-[#8ea0b8]">
               파일을 떨어트리면 AI가 적절한 Drive 폴더에 자동 분류·저장합니다
             </p>
           </div>
@@ -333,8 +333,8 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
             isDragActive
               ? 'scale-[1.01] border-blue-500 bg-blue-50/80 shadow-lg shadow-blue-200/50'
               : file
-                ? 'border-slate-300 bg-white shadow-sm'
-                : 'border-slate-300 bg-white/70 backdrop-blur-sm hover:border-slate-400 hover:bg-white'
+                ? 'border-[#24405f] bg-[#101f38] shadow-sm'
+                : 'border-[#24405f] bg-[#101f38]/70 backdrop-blur-sm hover:border-slate-400 hover:bg-[#14263f]'
           }`}
         >
           <input {...getInputProps()} />
@@ -343,8 +343,8 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
               <div className="flex items-center justify-center gap-3">
                 <div className="text-3xl">{fileTypeIcon(file.type, file.name)}</div>
                 <div className="text-left">
-                  <p className="font-semibold text-slate-800">{file.name}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="font-semibold text-[#dbe7f4]">{file.name}</p>
+                  <p className="text-xs text-[#8ea0b8]">
                     {formatBytes(file.size)} · {file.type || '알 수 없음'}
                   </p>
                 </div>
@@ -354,7 +354,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
                     e.stopPropagation()
                     reset()
                   }}
-                  className="ml-2 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="ml-2 rounded-md p-1 text-[#6b7c96] hover:bg-[#14263f] hover:text-[#c4d2e4]"
                   aria-label="파일 제거"
                 >
                   ✕
@@ -370,11 +370,11 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
                 <div className="text-4xl opacity-50 transition-opacity group-hover:opacity-80">
                   📥
                 </div>
-                <p className="text-sm font-medium text-slate-700">
+                <p className="text-sm font-medium text-[#c4d2e4]">
                   파일을 끌어다 놓거나{' '}
                   <span className="text-blue-600 underline">클릭해서 선택</span>
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#6b7c96]">
                   PDF · docx · 이미지 · 한글 등. 카톡 대신 여기로. 여러 개 동시에 OK.
                 </p>
               </div>
@@ -399,22 +399,22 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
 
         {/* 폼 — 파일 선택 후 (idle 상태에만) */}
         {file && stage === 'idle' && (
-          <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="space-y-4 rounded-2xl border border-[#1c3556] bg-[#101f38] p-5 shadow-sm">
             <div>
-              <label className="mb-1.5 block text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+              <label className="mb-1.5 block text-[11px] font-semibold tracking-wide text-[#8ea0b8] uppercase">
                 한 줄 설명{' '}
-                <span className="text-slate-400 normal-case">(선택, 그러나 정확도 ↑)</span>
+                <span className="text-[#6b7c96] normal-case">(선택, 그러나 정확도 ↑)</span>
               </label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="예: 모네 하우스 계약 초안"
-                className="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm transition-colors outline-none placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-[#1c3556] bg-[#0c1830]/50 px-3 py-2.5 text-sm transition-colors outline-none placeholder:text-[#6b7c96] focus:border-blue-500 focus:bg-[#101f38] focus:ring-2 focus:ring-blue-100"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+              <label className="mb-1.5 block text-[11px] font-semibold tracking-wide text-[#8ea0b8] uppercase">
                 알림 받을 사람
               </label>
               <div className="flex flex-wrap gap-2">
@@ -428,7 +428,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
                       className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
                         on
                           ? 'border-indigo-500 bg-indigo-500 text-white shadow-sm shadow-indigo-200'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                          : 'border-[#1c3556] bg-[#101f38] text-[#9fb4d0] hover:border-[#24405f] hover:bg-[#14263f]'
                       }`}
                     >
                       {on ? '✓ ' : ''}
@@ -459,14 +459,14 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
 
         {/* 분류 결과 — 확인 단계 */}
         {stage === 'classified' && classification && accent && (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-[#1c3556] bg-[#101f38] shadow-sm">
             {/* 상단 액센트 바 */}
             <div className={`h-1 ${accent.bar}`} />
             <div className="space-y-4 p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{accent.emoji}</span>
-                  <h2 className="text-base font-bold text-slate-900">분류 결과</h2>
+                  <h2 className="text-base font-bold text-[#dbe7f4]">분류 결과</h2>
                 </div>
                 <div
                   className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${accent.bg} ${accent.text}`}
@@ -478,58 +478,58 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
 
               <div className="space-y-3 text-sm">
                 <div className="space-y-1">
-                  <div className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+                  <div className="text-[11px] font-semibold tracking-wide text-[#8ea0b8] uppercase">
                     📁 저장 위치
                   </div>
                   <input
                     type="text"
                     value={editedFolder}
                     onChange={(e) => setEditedFolder(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-800 outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-200"
+                    className="w-full rounded-lg border border-[#1c3556] bg-[#0c1830] px-3 py-2 font-mono text-xs text-[#dbe7f4] outline-none focus:border-blue-500 focus:bg-[#101f38] focus:ring-1 focus:ring-blue-200"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-0.5 rounded-lg bg-slate-50 p-3">
-                    <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+                  <div className="space-y-0.5 rounded-lg bg-[#0c1830] p-3">
+                    <div className="text-[10px] font-semibold tracking-wide text-[#8ea0b8] uppercase">
                       🏷 문서 종류
                     </div>
-                    <div className="font-medium text-slate-800">
+                    <div className="font-medium text-[#dbe7f4]">
                       {classification.doc_type || '—'}
                     </div>
                   </div>
-                  <div className="space-y-0.5 rounded-lg bg-slate-50 p-3">
-                    <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+                  <div className="space-y-0.5 rounded-lg bg-[#0c1830] p-3">
+                    <div className="text-[10px] font-semibold tracking-wide text-[#8ea0b8] uppercase">
                       🔔 알림
                     </div>
-                    <div className="text-xs text-slate-700">
+                    <div className="text-xs text-[#c4d2e4]">
                       {(classification.notify_users ?? []).join(', ') || '(없음)'}
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-0.5 rounded-lg bg-slate-50 p-3">
-                  <div className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+                <div className="space-y-0.5 rounded-lg bg-[#0c1830] p-3">
+                  <div className="text-[10px] font-semibold tracking-wide text-[#8ea0b8] uppercase">
                     📝 요약
                   </div>
-                  <div className="text-slate-700 italic">{classification.summary || '—'}</div>
+                  <div className="text-[#c4d2e4] italic">{classification.summary || '—'}</div>
                 </div>
 
                 {(classification.alternatives?.length ?? 0) > 0 && (
-                  <details className="rounded-lg border border-slate-200 bg-slate-50/50 p-2">
-                    <summary className="cursor-pointer text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+                  <details className="rounded-lg border border-[#1c3556] bg-[#0c1830]/50 p-2">
+                    <summary className="cursor-pointer text-[11px] font-semibold tracking-wide text-[#8ea0b8] uppercase">
                       대안 폴더 {classification.alternatives?.length}개
                     </summary>
-                    <div className="mt-2 space-y-1 text-xs text-slate-600">
+                    <div className="mt-2 space-y-1 text-xs text-[#9fb4d0]">
                       {classification.alternatives?.map((a) => (
                         <button
                           type="button"
                           key={a.folder}
                           onClick={() => setEditedFolder(a.folder)}
-                          className="block w-full rounded p-1.5 text-left font-mono hover:bg-white"
+                          className="block w-full rounded p-1.5 text-left font-mono hover:bg-[#14263f]"
                         >
                           · {a.folder}{' '}
-                          <span className="text-slate-400">
+                          <span className="text-[#6b7c96]">
                             ({Math.round(a.confidence * 100)}%)
                           </span>
                         </button>
@@ -557,7 +557,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
                     reset()
                   }}
                   disabled={isPending}
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                  className="rounded-lg border border-[#1c3556] bg-[#101f38] px-4 py-2.5 text-sm font-medium text-[#9fb4d0] transition-colors hover:bg-[#14263f] disabled:opacity-50"
                 >
                   취소
                 </button>
@@ -568,7 +568,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
 
         {/* 진행 — 저장 중 */}
         {stage === 'confirming' && (
-          <div className="flex items-center justify-center gap-3 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-6 text-sm text-indigo-700">
+          <div className="flex items-center justify-center gap-3 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-6 text-sm text-[#35e0ff]">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-300 border-t-indigo-700" />
             <span>Drive에 업로드 중...</span>
           </div>
@@ -579,7 +579,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
           <div className="space-y-3 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-6 text-center shadow-sm">
             <div className="text-5xl">🎉</div>
             <p className="text-base font-bold text-emerald-800">Drive에 저장 완료</p>
-            <p className="font-mono text-xs text-slate-500">{classification?.target_folder_path}</p>
+            <p className="font-mono text-xs text-[#8ea0b8]">{classification?.target_folder_path}</p>
             <button
               type="button"
               onClick={reset}
@@ -609,7 +609,7 @@ export function InboxClient({ members }: { members: Member[] }): React.JSX.Eleme
         )}
 
         {/* 푸터 안내 */}
-        <p className="pt-4 text-center text-[10px] text-slate-400">
+        <p className="pt-4 text-center text-[10px] text-[#6b7c96]">
           AI가 추측 못 하는 건 사용자가 선택. 자율성 원칙: 되돌릴 수 있는 건 자유, 못 되돌리는 건
           너만.
         </p>
@@ -646,11 +646,11 @@ function BatchPanel({
   const allDone = done + errors === items.length && running === false && items.length > 0
 
   return (
-    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="space-y-4 rounded-2xl border border-[#1c3556] bg-[#101f38] p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-bold text-slate-900">📦 일괄 업로드 ({items.length}개)</h2>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <h2 className="text-sm font-bold text-[#dbe7f4]">📦 일괄 업로드 ({items.length}개)</h2>
+          <p className="mt-0.5 text-xs text-[#8ea0b8]">
             AI 추천 폴더로 자동 분류·저장 (개별 검토 X). 진행 중엔 제거 불가.
           </p>
         </div>
@@ -660,7 +660,7 @@ function BatchPanel({
               <button
                 type="button"
                 onClick={onReset}
-                className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+                className="rounded-lg bg-[#101f38] px-3 py-1.5 text-xs font-medium text-[#9fb4d0] ring-1 ring-[#1c3556] hover:bg-[#14263f]"
               >
                 취소
               </button>
@@ -674,7 +674,7 @@ function BatchPanel({
             </>
           )}
           {running && (
-            <span className="rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700">
+            <span className="rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-[#35e0ff]">
               처리 중... {done + errors}/{items.length}
             </span>
           )}
@@ -692,7 +692,7 @@ function BatchPanel({
 
       {/* 공통 알림 대상 (있으면 전부에 적용) */}
       <div>
-        <label className="mb-1.5 block text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+        <label className="mb-1.5 block text-[11px] font-semibold tracking-wide text-[#8ea0b8] uppercase">
           공통 알림 대상 (전부에 적용)
         </label>
         <div className="flex flex-wrap gap-1.5">
@@ -704,8 +704,8 @@ function BatchPanel({
               onClick={() => onToggleNotify(m.id)}
               className={`rounded-full px-2.5 py-1 text-xs ring-1 transition-colors ${
                 notifyIds.includes(m.id)
-                  ? 'bg-indigo-600 text-white ring-indigo-600'
-                  : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'
+                  ? 'bg-[#189ec2] text-white ring-indigo-600'
+                  : 'bg-[#101f38] text-[#9fb4d0] ring-[#1c3556] hover:bg-[#14263f]'
               } ${running ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               {m.name}
@@ -715,25 +715,25 @@ function BatchPanel({
       </div>
 
       {/* 파일 리스트 */}
-      <ul className="divide-y divide-slate-100 rounded-xl border border-slate-100">
+      <ul className="divide-y divide-slate-100 rounded-xl border border-[#12233c]">
         {items.map((it) => (
           <li key={it.key} className="px-3 py-2.5">
             <div className="flex items-center gap-3">
               <span className="text-xl">{fileTypeIcon(it.file.type, it.file.name)}</span>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-slate-800">{it.file.name}</div>
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-slate-500">
+                <div className="truncate text-sm font-medium text-[#dbe7f4]">{it.file.name}</div>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-[#8ea0b8]">
                   <span>{formatBytes(it.file.size)}</span>
                   {it.targetPath && (
                     <>
                       <span>·</span>
-                      <span className="text-slate-600">→ {it.targetPath}</span>
+                      <span className="text-[#9fb4d0]">→ {it.targetPath}</span>
                     </>
                   )}
                   {it.docType && (
                     <>
                       <span>·</span>
-                      <span className="text-slate-500">{it.docType}</span>
+                      <span className="text-[#8ea0b8]">{it.docType}</span>
                     </>
                   )}
                   {it.error && <span className="text-rose-600">❌ {it.error}</span>}
@@ -744,7 +744,7 @@ function BatchPanel({
                 <button
                   type="button"
                   onClick={() => onRemove(it.key)}
-                  className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded p-1 text-[#6b7c96] hover:bg-[#14263f] hover:text-[#c4d2e4]"
                   aria-label="제거"
                 >
                   ✕
@@ -758,12 +758,12 @@ function BatchPanel({
                 value={it.description ?? ''}
                 onChange={(e) => onDescription(it.key, e.target.value)}
                 placeholder="이 파일 한 줄 설명 (선택, 분류 정확도 ↑)"
-                className="mt-1.5 ml-9 block w-[calc(100%-2.5rem)] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none"
+                className="mt-1.5 ml-9 block w-[calc(100%-2.5rem)] rounded-md border border-[#1c3556] bg-[#101f38] px-2 py-1 text-xs placeholder:text-[#6b7c96] focus:border-indigo-400 focus:outline-none"
               />
             )}
             {/* 저장된 설명 표시 — 처리 중·완료 후 */}
             {it.description && it.status !== 'pending' && (
-              <div className="mt-1 ml-9 text-[11px] text-slate-500">💬 {it.description}</div>
+              <div className="mt-1 ml-9 text-[11px] text-[#8ea0b8]">💬 {it.description}</div>
             )}
           </li>
         ))}
@@ -800,7 +800,7 @@ function StatusBadge({ status }: { status: BatchStatus }): React.JSX.Element {
     )
   if (status === 'classifying')
     return (
-      <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700">
+      <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-medium text-[#35e0ff]">
         분류 중
       </span>
     )
@@ -811,7 +811,7 @@ function StatusBadge({ status }: { status: BatchStatus }): React.JSX.Element {
       </span>
     )
   return (
-    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+    <span className="rounded bg-[#0c1830] px-1.5 py-0.5 text-[10px] font-medium text-[#8ea0b8]">
       대기
     </span>
   )

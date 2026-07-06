@@ -52,7 +52,7 @@ export function StudioReportPanel(): React.JSX.Element {
       : '📋 오늘 보고서 가져오기'
 
   return (
-    <div className="mb-3 rounded-xl bg-white p-3 ring-1 ring-slate-200">
+    <div className="mb-3 rounded-xl bg-[#101f38] p-3 ring-1 ring-[#1c3556]">
       <button
         type="button"
         onClick={toggle}
@@ -61,27 +61,27 @@ export function StudioReportPanel(): React.JSX.Element {
       >
         {label}
       </button>
-      {err ? <p className="mt-2 text-xs text-slate-400">{err}</p> : null}
+      {err ? <p className="mt-2 text-xs text-[#6b7c96]">{err}</p> : null}
       {report && open ? (
         <div className="mt-3">
-          <div className="mb-1 flex items-center justify-between gap-2 text-[11px] text-slate-400">
+          <div className="mb-1 flex items-center justify-between gap-2 text-[11px] text-[#6b7c96]">
             <span className="min-w-0 truncate">{report.filename}</span>
             {report.driveLink ? (
               <a
                 href={report.driveLink}
                 target="_blank"
                 rel="noreferrer"
-                className="shrink-0 hover:text-slate-700"
+                className="shrink-0 hover:text-[#c4d2e4]"
               >
                 전문 ↗
               </a>
             ) : null}
           </div>
-          <div className="max-h-72 overflow-y-auto rounded-lg bg-slate-50 p-3">
+          <div className="max-h-72 overflow-y-auto rounded-lg bg-[#0c1830] p-3">
             {report.content ? (
               <ReportView content={report.content} />
             ) : (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#8ea0b8]">
                 {report.summary ?? '본문을 불러오지 못했어요.'}
               </p>
             )}

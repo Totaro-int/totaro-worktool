@@ -105,7 +105,7 @@ function botTypeBadge(type: BotIdentity['type']): { label: string; cls: string }
     case 'user':
       return { label: '사용자', cls: 'bg-emerald-100 text-emerald-800' }
     case 'human':
-      return { label: '사람', cls: 'bg-slate-200 text-slate-700' }
+      return { label: '사람', cls: 'bg-[#14263f] text-[#c4d2e4]' }
     default:
       return { label: '기타', cls: 'bg-amber-100 text-amber-800' }
   }
@@ -151,8 +151,8 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
     <div className="mx-auto max-w-7xl space-y-8 p-8">
       <header className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Honeypot Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <h1 className="text-3xl font-bold text-[#dbe7f4]">Honeypot Dashboard</h1>
+          <p className="mt-1 text-sm text-[#9fb4d0]">
             AI 크롤러 실측 — AEO/GEO Reverse Engineering · 최근 500건
           </p>
         </div>
@@ -174,13 +174,13 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
 
       {/* By bot */}
       <section>
-        <h2 className="mb-3 text-xl font-semibold text-slate-900">봇별 hit (User-Agent 식별)</h2>
+        <h2 className="mb-3 text-xl font-semibold text-[#dbe7f4]">봇별 hit (User-Agent 식별)</h2>
         {byBot.length === 0 ? (
           <EmptyHint />
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-lg border border-[#1c3556] bg-[#101f38] shadow-sm">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-slate-600">
+              <thead className="bg-[#0c1830] text-left text-[#9fb4d0]">
                 <tr>
                   <th className="px-4 py-2 font-medium">봇</th>
                   <th className="px-4 py-2 font-medium">분류</th>
@@ -201,12 +201,12 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
                           {badge.label}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-slate-600">{agg.identity.provider}</td>
+                      <td className="px-4 py-2 text-[#9fb4d0]">{agg.identity.provider}</td>
                       <td className="px-4 py-2 text-right font-mono font-semibold">{agg.count}</td>
-                      <td className="px-4 py-2 text-xs text-slate-600">
+                      <td className="px-4 py-2 text-xs text-[#9fb4d0]">
                         {Array.from(agg.variants).join(', ')}
                       </td>
-                      <td className="px-4 py-2 text-xs text-slate-500">{fmtTime(agg.lastHitAt)}</td>
+                      <td className="px-4 py-2 text-xs text-[#8ea0b8]">{fmtTime(agg.lastHitAt)}</td>
                     </tr>
                   )
                 })}
@@ -218,13 +218,13 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
 
       {/* By variant */}
       <section>
-        <h2 className="mb-3 text-xl font-semibold text-slate-900">Variant 별 hit</h2>
+        <h2 className="mb-3 text-xl font-semibold text-[#dbe7f4]">Variant 별 hit</h2>
         {byVariant.length === 0 ? (
           <EmptyHint />
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-lg border border-[#1c3556] bg-[#101f38] shadow-sm">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-slate-600">
+              <thead className="bg-[#0c1830] text-left text-[#9fb4d0]">
                 <tr>
                   <th className="px-4 py-2 font-medium">Variant</th>
                   <th className="px-4 py-2 text-right font-medium">hits</th>
@@ -237,10 +237,10 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
                   <tr key={v.variant}>
                     <td className="px-4 py-2 font-mono">{v.variant}</td>
                     <td className="px-4 py-2 text-right font-mono font-semibold">{v.count}</td>
-                    <td className="px-4 py-2 text-xs text-slate-600">
+                    <td className="px-4 py-2 text-xs text-[#9fb4d0]">
                       {Array.from(v.bots).join(', ')}
                     </td>
-                    <td className="px-4 py-2 text-xs text-slate-500">{fmtTime(v.lastHitAt)}</td>
+                    <td className="px-4 py-2 text-xs text-[#8ea0b8]">{fmtTime(v.lastHitAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -251,13 +251,13 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
 
       {/* Recent hits */}
       <section>
-        <h2 className="mb-3 text-xl font-semibold text-slate-900">최근 hits (raw)</h2>
+        <h2 className="mb-3 text-xl font-semibold text-[#dbe7f4]">최근 hits (raw)</h2>
         {hits.length === 0 ? (
           <EmptyHint />
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-lg border border-[#1c3556] bg-[#101f38] shadow-sm">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-slate-600">
+              <thead className="bg-[#0c1830] text-left text-[#9fb4d0]">
                 <tr>
                   <th className="px-3 py-2 font-medium">시간</th>
                   <th className="px-3 py-2 font-medium">variant</th>
@@ -274,15 +274,15 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
                   const id = identifyBot(h.user_agent)
                   return (
                     <tr key={h.id}>
-                      <td className="px-3 py-2 text-xs text-slate-500">{fmtTime(h.hit_at)}</td>
+                      <td className="px-3 py-2 text-xs text-[#8ea0b8]">{fmtTime(h.hit_at)}</td>
                       <td className="px-3 py-2 font-mono text-xs">{h.variant}</td>
-                      <td className="px-3 py-2 font-mono text-xs text-slate-600">
+                      <td className="px-3 py-2 font-mono text-xs text-[#9fb4d0]">
                         {h.honeypot_id}
                       </td>
                       <td className="px-3 py-2 text-xs">
                         <span className="font-mono">{id.name}</span>
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs text-slate-600">{h.ip ?? '—'}</td>
+                      <td className="px-3 py-2 font-mono text-xs text-[#9fb4d0]">{h.ip ?? '—'}</td>
                       <td className="px-3 py-2 text-right font-mono text-xs">
                         {h.status_returned ?? '—'}
                       </td>
@@ -301,7 +301,7 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
         )}
       </section>
 
-      <footer className="text-xs text-slate-500">
+      <footer className="text-xs text-[#8ea0b8]">
         테스트 방법: <code>docs/honeypot-test-battery.md</code> 참고. 페이지 자동 갱신은 없음 — 위의
         새로고침 버튼을 누르세요.
       </footer>
@@ -311,16 +311,16 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
 
 function SummaryCard({ label, value }: { label: string; value: string }): React.JSX.Element {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
+    <div className="rounded-lg border border-[#1c3556] bg-[#101f38] p-4 shadow-sm">
+      <p className="text-xs font-medium text-[#8ea0b8]">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-[#dbe7f4]">{value}</p>
     </div>
   )
 }
 
 function EmptyHint(): React.JSX.Element {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+    <div className="rounded-lg border border-dashed border-[#24405f] bg-[#101f38] p-8 text-center text-sm text-[#8ea0b8]">
       아직 hit 가 없습니다. <code>docs/honeypot-test-battery.md</code> 의 prompt 를 AI 에 던지고
       새로고침하세요.
     </div>

@@ -40,11 +40,11 @@ export function StatPanel({
   note?: string
 }): React.JSX.Element {
   return (
-    <div className="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+    <div className="relative overflow-hidden rounded-xl bg-[#101f38] p-4 shadow-sm ring-1 ring-[#1c3556]">
       <div className={`absolute inset-x-0 top-0 h-[3px] ${ACCENT_BAR[accent]}`} />
-      <p className="font-mono text-[10px] tracking-[0.14em] text-slate-400">{label}</p>
-      <p className="mt-2 text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
-      {sub && <p className="mt-0.5 text-[11px] text-slate-400">{sub}</p>}
+      <p className="font-mono text-[10px] tracking-[0.14em] text-[#6b7c96]">{label}</p>
+      <p className="mt-2 text-2xl font-bold text-[#dbe7f4] tabular-nums">{value}</p>
+      {sub && <p className="mt-0.5 text-[11px] text-[#6b7c96]">{sub}</p>}
       {note && <p className="mt-1.5 text-[11px] font-medium text-amber-600">{note}</p>}
     </div>
   )
@@ -65,13 +65,13 @@ export function ConsolePanel({
   children: ReactNode
 }): React.JSX.Element {
   return (
-    <section className="relative overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+    <section className="relative overflow-hidden rounded-xl bg-[#101f38] shadow-sm ring-1 ring-[#1c3556]">
       <div className={`absolute inset-x-0 top-0 h-[3px] ${ACCENT_BAR[accent]}`} />
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
-        <h2 className="font-mono text-[11px] font-semibold tracking-[0.14em] text-slate-500">
+      <div className="flex items-center justify-between border-b border-[#12233c] px-5 py-3">
+        <h2 className="font-mono text-[11px] font-semibold tracking-[0.14em] text-[#8ea0b8]">
           {title}
         </h2>
-        {meta && <span className="font-mono text-[10px] text-slate-400">{meta}</span>}
+        {meta && <span className="font-mono text-[10px] text-[#6b7c96]">{meta}</span>}
       </div>
       <div className={flush ? '' : 'p-5'}>{children}</div>
     </section>

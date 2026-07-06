@@ -24,17 +24,17 @@ export default async function AgentChatPage({
   const name = (data as { name: string } | null)?.name ?? '김사현'
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <header className="border-b border-slate-200 bg-white px-6 py-4">
+    <div className="flex min-h-screen flex-col bg-[#0c1830]">
+      <header className="border-b border-[#1c3556] bg-[#101f38] px-6 py-4">
         <Link
           href={`/hub/ai-team/${slug}`}
-          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
+          className="inline-flex items-center gap-1 text-xs font-medium text-[#8ea0b8] transition-colors hover:text-[#dbe7f4]"
         >
           <span aria-hidden="true">←</span> {name} 대시보드
         </Link>
         <div className="mt-1 flex items-center gap-2">
-          <h1 className="text-lg font-semibold text-slate-900">{name}과 대화</h1>
-          <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-600">
+          <h1 className="text-lg font-semibold text-[#dbe7f4]">{name}과 대화</h1>
+          <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-[#35e0ff]">
             마케팅 애널리스트
           </span>
         </div>

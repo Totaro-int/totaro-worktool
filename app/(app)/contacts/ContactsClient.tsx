@@ -20,11 +20,11 @@ function GoogleBadge({ google }: { google: GoogleStatus }): React.JSX.Element {
         <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">
           ✓ Google 연결됨
         </div>
-        {google.email && <div className="text-[10px] text-slate-400">{google.email}</div>}
+        {google.email && <div className="text-[10px] text-[#6b7c96]">{google.email}</div>}
         <button
           type="button"
           onClick={() => void disconnectGoogle().then(() => location.reload())}
-          className="text-[10px] text-slate-400 hover:text-rose-600"
+          className="text-[10px] text-[#6b7c96] hover:text-rose-600"
         >
           연결 해제
         </button>
@@ -128,7 +128,7 @@ export function ContactsClient({
         <header className="flex items-center gap-3">
           <Link
             href="/hub"
-            className="group inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="group inline-flex items-center gap-1.5 rounded-full bg-[#101f38] px-3 py-1.5 text-xs font-medium text-[#9fb4d0] ring-1 ring-[#1c3556] transition-colors hover:bg-[#14263f] hover:text-[#dbe7f4]"
           >
             <span className="transition-transform group-hover:-translate-x-0.5">←</span>
             허브
@@ -137,8 +137,8 @@ export function ContactsClient({
             📇
           </div>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-slate-900">회사 연락처</h1>
-            <p className="text-xs text-slate-500">
+            <h1 className="text-xl font-bold text-[#dbe7f4]">회사 연락처</h1>
+            <p className="text-xs text-[#8ea0b8]">
               명함 사진 끌어다 놓으면 AI 가 글자 읽어서 연락처로 정리합니다.
             </p>
           </div>
@@ -148,10 +148,10 @@ export function ContactsClient({
         {/* 드롭존 */}
         <div
           {...getRootProps()}
-          className={`group relative cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed bg-white transition-all ${
+          className={`group relative cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed bg-[#101f38] transition-all ${
             isDragActive
               ? 'scale-[1.01] border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-200/50'
-              : 'border-slate-300 hover:border-slate-400'
+              : 'border-[#24405f] hover:border-slate-400'
           }`}
         >
           <input {...getInputProps()} />
@@ -159,7 +159,7 @@ export function ContactsClient({
             {uploading && progress ? (
               <div className="space-y-2">
                 <div className="text-3xl">⚙️</div>
-                <p className="text-sm font-medium text-slate-700">
+                <p className="text-sm font-medium text-[#c4d2e4]">
                   명함 OCR 중... {progress.done}/{progress.total}
                 </p>
               </div>
@@ -173,11 +173,11 @@ export function ContactsClient({
                 <div className="text-3xl opacity-60 transition-opacity group-hover:opacity-90">
                   📸
                 </div>
-                <p className="text-sm font-medium text-slate-700">
+                <p className="text-sm font-medium text-[#c4d2e4]">
                   명함 사진 끌어다 놓거나{' '}
                   <span className="text-emerald-600 underline">클릭해서 선택</span>
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#6b7c96]">
                   jpg · png · heic · webp · 여러 장 동시에 OK
                 </p>
               </div>
@@ -196,24 +196,24 @@ export function ContactsClient({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="이름·회사·직책·전화·이메일 검색"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
+            className="flex-1 rounded-lg border border-[#1c3556] bg-[#101f38] px-3 py-2 text-sm placeholder:text-[#6b7c96] focus:border-slate-400 focus:outline-none"
           />
           <button
             type="button"
             onClick={() => void handleRefresh()}
-            className="rounded-lg bg-white px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+            className="rounded-lg bg-[#101f38] px-3 py-2 text-xs text-[#9fb4d0] ring-1 ring-[#1c3556] hover:bg-[#14263f]"
             aria-label="새로고침"
           >
             🔄
           </button>
         </div>
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-[#8ea0b8]">
           총 {contacts.length}개 · 검색결과 {filtered.length}개
         </div>
 
         {/* 연락처 그리드 */}
         {filtered.length === 0 ? (
-          <div className="rounded-xl bg-white p-12 text-center text-sm text-slate-400 ring-1 ring-slate-200">
+          <div className="rounded-xl bg-[#101f38] p-12 text-center text-sm text-[#6b7c96] ring-1 ring-[#1c3556]">
             {contacts.length === 0
               ? '아직 등록된 명함이 없어요. 위에 사진 드롭하세요.'
               : '검색 결과 없음'}
@@ -257,8 +257,8 @@ function ContactCard({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl bg-white p-4 text-left shadow-sm ring-1 transition-all hover:shadow-md ${
-        isSelected ? 'ring-2 ring-emerald-500' : 'ring-slate-200'
+      className={`rounded-xl bg-[#101f38] p-4 text-left shadow-sm ring-1 transition-all hover:shadow-md ${
+        isSelected ? 'ring-2 ring-emerald-500' : 'ring-[#1c3556]'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -267,28 +267,28 @@ function ContactCard({
           <img
             src={contact.cardSignedUrl}
             alt={contact.name}
-            className="h-14 w-20 shrink-0 rounded-lg object-cover ring-1 ring-slate-100"
+            className="h-14 w-20 shrink-0 rounded-lg object-cover ring-1 ring-[#1c3556]"
           />
         ) : (
-          <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-2xl">
+          <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg bg-[#0c1830] text-2xl">
             📇
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-bold text-slate-900">{contact.name}</div>
-          {contact.title && <div className="truncate text-xs text-slate-500">{contact.title}</div>}
+          <div className="truncate text-sm font-bold text-[#dbe7f4]">{contact.name}</div>
+          {contact.title && <div className="truncate text-xs text-[#8ea0b8]">{contact.title}</div>}
           {contact.company && (
-            <div className="mt-0.5 truncate text-xs font-medium text-slate-700">
+            <div className="mt-0.5 truncate text-xs font-medium text-[#c4d2e4]">
               {contact.company}
             </div>
           )}
         </div>
       </div>
       <div className="mt-2.5 space-y-0.5 text-xs">
-        {contact.mobile && <div className="text-slate-700">📱 {contact.mobile}</div>}
-        {contact.phone && <div className="text-slate-700">☎️ {contact.phone}</div>}
+        {contact.mobile && <div className="text-[#c4d2e4]">📱 {contact.mobile}</div>}
+        {contact.phone && <div className="text-[#c4d2e4]">☎️ {contact.phone}</div>}
         {contact.email && (
-          <div className="truncate text-indigo-600 hover:text-indigo-800">📧 {contact.email}</div>
+          <div className="truncate text-[#35e0ff] hover:text-indigo-800">📧 {contact.email}</div>
         )}
       </div>
     </button>
@@ -310,7 +310,7 @@ function ContactDetailModal({
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-xl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-[#101f38] shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {contact.cardSignedUrl && (
@@ -318,16 +318,16 @@ function ContactDetailModal({
           <img
             src={contact.cardSignedUrl}
             alt={contact.name}
-            className="w-full rounded-t-2xl bg-slate-100 object-contain"
+            className="w-full rounded-t-2xl bg-[#0c1830] object-contain"
             style={{ maxHeight: '240px' }}
           />
         )}
         <div className="space-y-3 p-5">
           <div>
-            <div className="text-xl font-bold text-slate-900">{contact.name}</div>
-            {contact.title && <div className="text-sm text-slate-600">{contact.title}</div>}
+            <div className="text-xl font-bold text-[#dbe7f4]">{contact.name}</div>
+            {contact.title && <div className="text-sm text-[#9fb4d0]">{contact.title}</div>}
             {contact.company && (
-              <div className="mt-0.5 text-sm font-medium text-slate-700">{contact.company}</div>
+              <div className="mt-0.5 text-sm font-medium text-[#c4d2e4]">{contact.company}</div>
             )}
           </div>
 
@@ -398,25 +398,25 @@ function Field({
       href={link}
       target="_blank"
       rel="noreferrer"
-      className="text-indigo-600 hover:text-indigo-800 hover:underline"
+      className="text-[#35e0ff] hover:text-indigo-800 hover:underline"
     >
       {value}
     </a>
   ) : (
-    <span className="text-slate-800">{value}</span>
+    <span className="text-[#dbe7f4]">{value}</span>
   )
   return (
     <div className="flex items-start gap-2">
       <span className="mt-0.5">{icon}</span>
       <div className="min-w-0 flex-1">
-        <div className="text-[10px] text-slate-400 uppercase">{label}</div>
+        <div className="text-[10px] text-[#6b7c96] uppercase">{label}</div>
         <div className="text-sm break-all">{inner}</div>
       </div>
       {copy && (
         <button
           type="button"
           onClick={() => void navigator.clipboard?.writeText(value)}
-          className="shrink-0 rounded px-1.5 py-0.5 text-[10px] text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          className="shrink-0 rounded px-1.5 py-0.5 text-[10px] text-[#6b7c96] hover:bg-[#14263f] hover:text-[#c4d2e4]"
         >
           복사
         </button>

@@ -10,7 +10,7 @@ export default async function InboxPage(): Promise<React.JSX.Element> {
   const memberList = (members ?? []).map((m) => ({ id: m.id as string, name: m.name as string }))
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-[#0c1830]">
       <InboxClient members={memberList} />
     </div>
   )

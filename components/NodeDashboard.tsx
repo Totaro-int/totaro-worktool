@@ -27,15 +27,15 @@ export function NodeDashboard({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {stats.map((stat) => (
-              <div key={stat.label} className="rounded-xl bg-white p-4 ring-1 ring-slate-200">
-                <p className="text-xs text-slate-400">{stat.label}</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">{stat.value}</p>
+              <div key={stat.label} className="rounded-xl bg-[#101f38] p-4 ring-1 ring-[#1c3556]">
+                <p className="text-xs text-[#6b7c96]">{stat.label}</p>
+                <p className="mt-1 text-2xl font-bold text-[#dbe7f4]">{stat.value}</p>
               </div>
             ))}
           </div>
-          <div className="rounded-xl bg-white p-5 ring-1 ring-slate-200">
-            <h2 className="text-sm font-semibold text-slate-700">{listTitle}</h2>
-            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+          <div className="rounded-xl bg-[#101f38] p-5 ring-1 ring-[#1c3556]">
+            <h2 className="text-sm font-semibold text-[#c4d2e4]">{listTitle}</h2>
+            <ul className="mt-3 space-y-2 text-sm text-[#9fb4d0]">
               {listItems.map((item) => (
                 <li key={item}>· {item}</li>
               ))}

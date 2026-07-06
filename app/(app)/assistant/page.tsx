@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase/server'
 import { loadAssistantHistory } from './actions'
 import { AssistantClient } from './AssistantClient'
 
-
 /** AI 직원 — 우편실(구글 드라이브) 자료를 근거로 자연어 대화. */
 export default async function AssistantPage(): Promise<JSX.Element> {
   const supabase = await createClient()
@@ -22,7 +21,7 @@ export default async function AssistantPage(): Promise<JSX.Element> {
   ])
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-[#0c1830]">
       <PageHeader title="AI 직원" description="우편실 자료를 근거로 답하는 토타로 AI 동료">
         <div className="mt-3 flex gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white">
@@ -30,7 +29,7 @@ export default async function AssistantPage(): Promise<JSX.Element> {
           </span>
           <Link
             href="/assistant/files"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#101f38] px-3 py-1.5 text-xs font-medium text-[#c4d2e4] ring-1 ring-[#1c3556] hover:bg-[#14263f]"
           >
             📁 파일 브라우저
           </Link>

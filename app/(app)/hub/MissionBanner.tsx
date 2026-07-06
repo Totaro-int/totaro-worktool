@@ -36,12 +36,12 @@ export function MissionBanner(): React.JSX.Element | null {
       }}
       aria-hidden={!visible}
     >
-      <div className="w-[440px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-6 pt-5 pb-4">
-          <p className="text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+      <div className="w-[440px] overflow-hidden rounded-xl border border-[#1c3556] bg-[#101f38] shadow-sm">
+        <div className="border-b border-[#12233c] px-6 pt-5 pb-4">
+          <p className="text-[10px] font-medium tracking-[0.3em] text-[#6b7c96] uppercase">
             우리의 지표
           </p>
-          <ul className="mt-3 space-y-1.5 text-[13px] leading-relaxed text-slate-700">
+          <ul className="mt-3 space-y-1.5 text-[13px] leading-relaxed text-[#c4d2e4]">
             <li>세 명이 60명처럼 움직인다</li>
             <li>AI로 우리 브랜드를 키우고, 증명된 도구만 판다</li>
             <li>기업의 강점을 AI로 가장 잘 알리는 회사</li>
@@ -49,10 +49,10 @@ export function MissionBanner(): React.JSX.Element | null {
         </div>
         <div className="px-6 pt-4 pb-5">
           <div className="flex items-baseline justify-between">
-            <p className="text-[10px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+            <p className="text-[10px] font-medium tracking-[0.3em] text-[#6b7c96] uppercase">
               영역별 KPI
             </p>
-            <p className="text-[10px] font-medium tracking-[0.18em] text-slate-400 uppercase">
+            <p className="text-[10px] font-medium tracking-[0.18em] text-[#6b7c96] uppercase">
               ~ 07.31
             </p>
           </div>
@@ -70,8 +70,8 @@ export function MissionBanner(): React.JSX.Element | null {
 function KpiRow({ label, target }: { label: string; target: string }): React.JSX.Element {
   return (
     <li className="flex items-baseline justify-between gap-4">
-      <span className="font-medium text-slate-900">{label}</span>
-      <span className="text-slate-500">{target}</span>
+      <span className="font-medium text-[#dbe7f4]">{label}</span>
+      <span className="text-[#8ea0b8]">{target}</span>
     </li>
   )
 }

@@ -9,7 +9,7 @@ import { createAgent, deleteAgent, updateAgent } from './actions'
 const STATUS_META: Record<AgentStatus, { label: string; badge: string }> = {
   active: { label: '운영중', badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
   onboarding: { label: '도입중', badge: 'bg-amber-50 text-amber-700 ring-amber-200' },
-  paused: { label: '일시중지', badge: 'bg-slate-100 text-slate-500 ring-slate-200' },
+  paused: { label: '일시중지', badge: 'bg-[#0c1830] text-[#8ea0b8] ring-[#1c3556]' },
 }
 
 export default async function AgentHubPage(): Promise<React.JSX.Element> {
@@ -36,10 +36,10 @@ function AgentRow({ agent }: { agent: MarketingAgent }): React.JSX.Element {
   return (
     <li>
       <details className="group">
-        <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-3.5 hover:bg-slate-50">
+        <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-3.5 hover:bg-[#14263f]">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-slate-900">{agent.name}</p>
-            <p className="mt-0.5 truncate text-xs text-slate-400">
+            <p className="truncate text-sm font-medium text-[#dbe7f4]">{agent.name}</p>
+            <p className="mt-0.5 truncate text-xs text-[#6b7c96]">
               {agent.client_name ? `고객사 · ${agent.client_name}` : '고객사 미지정'}
               {agent.note ? ` · ${agent.note}` : ''}
             </p>
@@ -49,16 +49,16 @@ function AgentRow({ agent }: { agent: MarketingAgent }): React.JSX.Element {
           >
             {meta.label}
           </span>
-          <span className="w-24 shrink-0 text-right text-sm text-slate-600 tabular-nums">
+          <span className="w-24 shrink-0 text-right text-sm text-[#9fb4d0] tabular-nums">
             {agent.monthly_fee > 0 ? `${agent.monthly_fee.toLocaleString('ko-KR')}원` : '—'}
           </span>
-          <span className="shrink-0 font-mono text-[10px] tracking-wide text-slate-300 group-open:text-blue-500">
+          <span className="shrink-0 font-mono text-[10px] tracking-wide text-[#4a5568] group-open:text-blue-500">
             수정 ▾
           </span>
         </summary>
         <form
           action={updateAgent}
-          className="space-y-3 border-t border-slate-100 bg-slate-50/50 p-5"
+          className="space-y-3 border-t border-[#12233c] bg-[#0c1830]/50 p-5"
         >
           <input type="hidden" name="id" value={agent.id} />
           <div>
@@ -157,11 +157,11 @@ function AgentDashboard({ data }: { data: AgentData }): React.JSX.Element {
         <StatPanel label="도입 진행 중" value={`${data.onboardingCount}개`} accent="amber" />
       </div>
 
-      <details className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-        <summary className="cursor-pointer list-none px-5 py-3.5 font-mono text-[11px] font-semibold tracking-[0.14em] text-slate-500">
+      <details className="overflow-hidden rounded-xl bg-[#101f38] shadow-sm ring-1 ring-[#1c3556]">
+        <summary className="cursor-pointer list-none px-5 py-3.5 font-mono text-[11px] font-semibold tracking-[0.14em] text-[#8ea0b8]">
           + 에이전트 추가
         </summary>
-        <form action={createAgent} className="space-y-3 border-t border-slate-100 p-5">
+        <form action={createAgent} className="space-y-3 border-t border-[#12233c] p-5">
           <div>
             <label className={labelClass} htmlFor="agent-name">
               에이전트 이름
@@ -225,7 +225,7 @@ function AgentDashboard({ data }: { data: AgentData }): React.JSX.Element {
 
       <ConsolePanel title="에이전트 목록" accent="slate" flush>
         {data.agents.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-slate-400">
+          <p className="px-5 py-10 text-center text-sm text-[#6b7c96]">
             등록된 에이전트가 없습니다. 위에서 첫 에이전트를 추가하세요.
           </p>
         ) : (
@@ -242,16 +242,16 @@ function AgentDashboard({ data }: { data: AgentData }): React.JSX.Element {
 
 function MigrationCard(): React.JSX.Element {
   return (
-    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      <h2 className="text-base font-semibold text-slate-900">에이전트 테이블 생성이 필요합니다</h2>
-      <p className="mt-1.5 text-sm text-slate-500">
+    <div className="rounded-xl bg-[#101f38] p-6 shadow-sm ring-1 ring-[#1c3556]">
+      <h2 className="text-base font-semibold text-[#dbe7f4]">에이전트 테이블 생성이 필요합니다</h2>
+      <p className="mt-1.5 text-sm text-[#8ea0b8]">
         에이전트 데이터는 Supabase에 저장됩니다. 아래 SQL 파일의 내용을 Supabase 프로젝트의 SQL
         Editor에 붙여넣고 실행하세요.
       </p>
-      <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 px-4 py-3 text-xs leading-relaxed text-slate-200">
+      <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 px-4 py-3 text-xs leading-relaxed text-[#3a4a63]">
         <code>supabase/marketing-agents.sql</code>
       </pre>
-      <p className="mt-3 text-xs text-slate-400">
+      <p className="mt-3 text-xs text-[#6b7c96]">
         실행하면 marketing_agents 테이블과 RLS 정책, 샘플 데이터 4건이 생성됩니다.
       </p>
     </div>

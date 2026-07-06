@@ -63,7 +63,7 @@ export default async function ClaudeLogPage(): Promise<React.JSX.Element> {
           {missingTable && <SetupCard />}
           {!missingTable && error && <ErrorCard message={error.message} />}
           {!missingTable && !error && logs.length === 0 && (
-            <p className="rounded-xl border border-dashed border-slate-300 bg-white/50 px-6 py-16 text-center text-sm text-slate-400">
+            <p className="rounded-xl border border-dashed border-[#24405f] bg-[#101f38]/50 px-6 py-16 text-center text-sm text-[#6b7c96]">
               아직 기록이 없습니다. 훅이 설정되면 세션 종료 시 자동으로 쌓입니다.
             </p>
           )}
@@ -71,17 +71,17 @@ export default async function ClaudeLogPage(): Promise<React.JSX.Element> {
             !error &&
             [...groups.entries()].map(([day, items]) => (
               <section key={day}>
-                <h2 className="mb-2 text-xs font-semibold tracking-wide text-slate-400">{day}</h2>
+                <h2 className="mb-2 text-xs font-semibold tracking-wide text-[#6b7c96]">{day}</h2>
                 <ul className="space-y-2">
                   {items.map((log) => (
-                    <li key={log.id} className="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+                    <li key={log.id} className="rounded-xl bg-[#101f38] p-4 ring-1 ring-[#1c3556]">
                       <div className="flex items-start gap-3">
-                        <span className="mt-0.5 shrink-0 rounded-md bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700">
+                        <span className="mt-0.5 shrink-0 rounded-md bg-indigo-50 px-2 py-1 text-xs font-semibold text-[#35e0ff]">
                           {log.member}
                         </span>
                         <div className="min-w-0 flex-1">
                           <LogSummary text={log.summary} />
-                          <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-slate-400">
+                          <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-[#6b7c96]">
                             {log.project && (
                               <>
                                 <span>{log.project}</span>
@@ -110,15 +110,15 @@ function LogSummary({ text }: { text: string }): React.JSX.Element {
   const [headline, ...rest] = text.split('\n')
   return (
     <div>
-      <p className="text-sm text-slate-800">{headline}</p>
+      <p className="text-sm text-[#dbe7f4]">{headline}</p>
       {rest.length > 0 && (
         <details className="mt-1.5">
-          <summary className="cursor-pointer list-none text-xs font-medium text-indigo-500 hover:text-indigo-600">
+          <summary className="cursor-pointer list-none text-xs font-medium text-indigo-500 hover:text-[#35e0ff]">
             상세 보기
           </summary>
-          <ul className="mt-1.5 space-y-1 border-l-2 border-slate-100 pl-3">
+          <ul className="mt-1.5 space-y-1 border-l-2 border-[#12233c] pl-3">
             {rest.map((line, i) => (
-              <li key={i} className="text-xs text-slate-500">
+              <li key={i} className="text-xs text-[#8ea0b8]">
                 {line.replace(/^·\s*/, '')}
               </li>
             ))}
@@ -133,9 +133,9 @@ function PlanCard(): React.JSX.Element {
   return (
     <div className="rounded-xl bg-indigo-50 p-5 ring-1 ring-indigo-100">
       <h2 className="text-sm font-semibold text-indigo-900">오늘 업무 계획 세우기</h2>
-      <p className="mt-1.5 text-sm leading-relaxed text-indigo-700/80">
+      <p className="mt-1.5 text-sm leading-relaxed text-[#35e0ff]/80">
         아래 기록으로 어제 한 일을 확인한 뒤, Claude Code에서{' '}
-        <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs text-indigo-700">
+        <code className="rounded bg-[#101f38] px-1.5 py-0.5 font-mono text-xs text-[#35e0ff]">
           /계획
         </code>{' '}
         을 입력하세요. 어제 기록을 토대로 오늘 할 일을 정리해 각 영역(소싱 AI · e커머스 · 마케팅
@@ -147,11 +147,11 @@ function PlanCard(): React.JSX.Element {
 
 function SetupCard(): React.JSX.Element {
   return (
-    <div className="rounded-xl bg-white p-6 ring-1 ring-slate-200">
-      <h2 className="text-base font-semibold text-slate-900">기록 테이블 생성이 필요합니다</h2>
-      <p className="mt-1.5 text-sm text-slate-500">
+    <div className="rounded-xl bg-[#101f38] p-6 ring-1 ring-[#1c3556]">
+      <h2 className="text-base font-semibold text-[#dbe7f4]">기록 테이블 생성이 필요합니다</h2>
+      <p className="mt-1.5 text-sm text-[#8ea0b8]">
         Supabase SQL Editor에서{' '}
-        <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-slate-600">
+        <code className="rounded bg-[#0c1830] px-1 py-0.5 font-mono text-xs text-[#9fb4d0]">
           supabase/claude-logs.sql
         </code>{' '}
         을 실행하세요. 실행하면 claude_logs 테이블과 RLS 정책이 생성됩니다.

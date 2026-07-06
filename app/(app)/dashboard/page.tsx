@@ -51,11 +51,11 @@ export default async function DashboardPage({
       <PageHeader title="활동 피드" description="팀이 한 모든 업무가 시간순으로 모입니다." />
       <div className="p-8">
         <div className="mx-auto max-w-3xl">
-          <details className="mb-6 rounded-xl bg-white ring-1 ring-slate-200">
-            <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-slate-700">
+          <details className="mb-6 rounded-xl bg-[#101f38] ring-1 ring-[#1c3556]">
+            <summary className="cursor-pointer list-none px-5 py-3.5 text-sm font-medium text-[#c4d2e4]">
               + 업무 직접 기록하기
             </summary>
-            <form action={logActivity} className="space-y-3 border-t border-slate-100 p-5">
+            <form action={logActivity} className="space-y-3 border-t border-[#12233c] p-5">
               <div>
                 <label className={labelClass} htmlFor="title">
                   무슨 업무를 했나요?
@@ -154,7 +154,7 @@ export default async function DashboardPage({
                 const area = a.work_area_id ? workAreaById.get(a.work_area_id) : undefined
                 const meta = ACTIVITY_SOURCE_META[a.source]
                 return (
-                  <li key={a.id} className="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+                  <li key={a.id} className="rounded-xl bg-[#101f38] p-4 ring-1 ring-[#1c3556]">
                     <div className="flex items-start gap-3">
                       <span
                         className={`mt-0.5 shrink-0 rounded-md px-2 py-1 text-xs font-medium ${meta.badge}`}
@@ -162,9 +162,9 @@ export default async function DashboardPage({
                         {meta.label}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-slate-900">{a.title}</p>
+                        <p className="text-sm font-medium text-[#dbe7f4]">{a.title}</p>
                         {a.description && (
-                          <p className="mt-0.5 text-sm whitespace-pre-wrap text-slate-500">
+                          <p className="mt-0.5 text-sm whitespace-pre-wrap text-[#8ea0b8]">
                             {a.description}
                           </p>
                         )}
@@ -173,13 +173,13 @@ export default async function DashboardPage({
                             href={a.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="mt-1 inline-block text-xs font-medium text-indigo-600 hover:underline"
+                            className="mt-1 inline-block text-xs font-medium text-[#35e0ff] hover:underline"
                           >
                             링크 열기 →
                           </a>
                         )}
-                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400">
-                          <span className="font-medium text-slate-500">
+                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#6b7c96]">
+                          <span className="font-medium text-[#8ea0b8]">
                             {member?.name ?? '알 수 없음'}
                           </span>
                           <span>·</span>
@@ -209,7 +209,7 @@ function FilterRow({
 }): React.JSX.Element {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="w-14 shrink-0 text-xs font-medium text-slate-400">{label}</span>
+      <span className="w-14 shrink-0 text-xs font-medium text-[#6b7c96]">{label}</span>
       {children}
     </div>
   )
@@ -229,8 +229,8 @@ function Chip({
       href={href}
       className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
         active
-          ? 'bg-indigo-600 text-white'
-          : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'
+          ? 'bg-[#189ec2] text-white'
+          : 'bg-[#101f38] text-[#9fb4d0] ring-1 ring-[#1c3556] hover:bg-[#14263f]'
       }`}
     >
       {children}
