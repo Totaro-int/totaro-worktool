@@ -372,7 +372,9 @@ export default function HubBoard3DCanvas({
       camera={{ position: [9, 8, 9], fov: 42 }}
       dpr={[1, 1.6]}
       gl={{ antialias: true, preserveDrawingBuffer: true }}
-      style={{ width: '100%', height: '100%', background: 'transparent' }}
+      // absolute inset-0 — next/dynamic 래퍼의 높이 상속 단절을 우회(부모 relative 를 채움)
+      style={{ position: 'absolute', inset: 0, background: 'transparent' }}
+      resize={{ scroll: false, debounce: 0 }}
     >
       <Scene nodes={nodes} onSelect={onSelect} />
     </Canvas>

@@ -21,7 +21,7 @@ export type Hub3DNode = {
 
 const Canvas3D = dynamic(() => import('./HubBoard3DCanvas'), {
   ssr: false,
-  loading: () => <div style={{ height: '100%', width: '100%', background: '#081120' }} />,
+  loading: () => <div style={{ position: 'absolute', inset: 0, background: '#081120' }} />,
 })
 
 export function HubBoard3D({
@@ -35,5 +35,10 @@ export function HubBoard3D({
     if (onSelect) onSelect(href)
     else window.location.href = href
   }
-  return <Canvas3D nodes={nodes} onSelect={handle} />
+  // 자체 relative·full 컨테이너 — Canvas(absolute inset-0)가 이걸 채운다.
+  return (
+    <div style={{ position: 'absolute', inset: 0 }}>
+      <Canvas3D nodes={nodes} onSelect={handle} />
+    </div>
+  )
 }
