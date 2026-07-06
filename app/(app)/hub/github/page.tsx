@@ -52,7 +52,7 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
         {data.recentCommits.length === 0 ? (
           <p className="px-5 py-6 text-sm text-[#6b7c96]">표시할 커밋이 없습니다.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-[#1c3556]">
             {data.recentCommits.map((c) => (
               <li key={`${c.repo}-${c.sha}`} className="flex items-center gap-3 px-5 py-2.5">
                 <span className="w-28 shrink-0 truncate font-mono text-[10px] font-medium text-blue-600">
@@ -75,7 +75,7 @@ function GithubDashboard({ data }: { data: GithubData }): React.JSX.Element {
       </ConsolePanel>
 
       <ConsolePanel title="레포" meta={`최근 ${data.repos.length}개`} accent="slate" flush>
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-[#1c3556]">
           {data.repos.map((r) => (
             <li key={r.name} className="flex items-center gap-3 px-5 py-2">
               <a

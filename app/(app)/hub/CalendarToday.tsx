@@ -69,7 +69,7 @@ export async function CalendarToday({
       {events.length === 0 ? (
         <p className="px-4 py-5 text-center text-[11px] text-[#6b7c96]">이번 주 일정 없음</p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-[#1c3556]">
           {events.slice(0, 5).map((e) => {
             const totaro = isTotaroEvent(e.summary)
             return (

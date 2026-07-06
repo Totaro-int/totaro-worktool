@@ -229,7 +229,7 @@ function AgentDashboard({ data }: { data: AgentData }): React.JSX.Element {
             등록된 에이전트가 없습니다. 위에서 첫 에이전트를 추가하세요.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-[#1c3556]">
             {data.agents.map((agent) => (
               <AgentRow key={agent.id} agent={agent} />
             ))}

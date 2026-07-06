@@ -190,7 +190,7 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
                   <th className="px-4 py-2 font-medium">최근 hit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#1c3556]">
                 {byBot.map((agg) => {
                   const badge = botTypeBadge(agg.identity.type)
                   return (
@@ -232,7 +232,7 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
                   <th className="px-4 py-2 font-medium">최근 hit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#1c3556]">
                 {byVariant.map((v) => (
                   <tr key={v.variant}>
                     <td className="px-4 py-2 font-mono">{v.variant}</td>
@@ -269,7 +269,7 @@ export default async function HoneypotDashboardPage(): Promise<React.JSX.Element
                   <th className="px-3 py-2 text-right font-medium">ms</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#1c3556]">
                 {hits.slice(0, 100).map((h) => {
                   const id = identifyBot(h.user_agent)
                   return (

@@ -584,7 +584,7 @@ export function CalendarMonth({
               이 날 업무가 없어요. 우측 위 &lsquo;+ 이 날 추가&rsquo;로 만들 수 있어요.
             </p>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[#1c3556]">
               {selTasks.map((t) => {
                 const area = t.work_area_id ? areaById.get(t.work_area_id) : undefined
                 const assignee = t.assignee_id ? memberById.get(t.assignee_id) : undefined

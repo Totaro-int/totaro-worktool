@@ -141,7 +141,7 @@ export function CashClient({ initial }: { initial: CashSnapshot[] }): React.JSX.
             아직 기록이 없습니다.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-[#1c3556] bg-[#101f38]">
+          <ul className="divide-y divide-[#1c3556] overflow-hidden rounded-xl border border-[#1c3556] bg-[#101f38]">
             {snapshots.map((s, i) => {
               const nx = snapshots[i + 1]
               const d = nx ? s.balance_krw - nx.balance_krw : 0

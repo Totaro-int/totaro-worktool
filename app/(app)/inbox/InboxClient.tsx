@@ -715,7 +715,7 @@ function BatchPanel({
       </div>
 
       {/* 파일 리스트 */}
-      <ul className="divide-y divide-slate-100 rounded-xl border border-[#12233c]">
+      <ul className="divide-y divide-[#1c3556] rounded-xl border border-[#12233c]">
         {items.map((it) => (
           <li key={it.key} className="px-3 py-2.5">
             <div className="flex items-center gap-3">

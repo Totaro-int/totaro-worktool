@@ -36,7 +36,7 @@ export default async function AppLayout({
   if (memberRow?.name) userName = memberRow.name
 
   return (
-    <div className="min-h-screen" style={{ background: '#081120' }}>
+    <div className="min-h-screen" style={{ background: '#081120', color: '#c9d6e8' }}>
       <NotificationsFloat />
       <PushManager />
       <AppNav userName={userName} logoutAction={signOut} />
