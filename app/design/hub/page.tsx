@@ -264,8 +264,11 @@ export default function HubPreviewPage(): JSX.Element {
         </span>
       </div>
 
-      {/* ── 데스크탑: 마더보드 ── */}
-      <div className="relative hidden flex-1 md:block" style={{ minHeight: 620 }}>
+      {/* ── 데스크탑: 마더보드 (한 화면에 보드 전체가 들어오도록 뷰포트에 고정) ── */}
+      <div
+        className="relative mx-auto hidden w-full max-w-6xl md:block"
+        style={{ height: 'calc(100vh - 148px)', minHeight: 520, maxHeight: 760 }}
+      >
         {/* 회로 트레이스 (CPU → 각 모듈) */}
         <svg
           className="absolute inset-0 h-full w-full"
