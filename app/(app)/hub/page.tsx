@@ -1,5 +1,5 @@
+import { GlassHub, type GlassHubModule } from '@/components/GlassHub'
 import { HubBoard, type HubNode } from '@/components/HubBoard'
-import { HubSpline, type SplineHubModule } from '@/components/HubSpline'
 import { getAgentData } from '@/lib/agents'
 import { getGithubData } from '@/lib/github'
 import { getMailroomData } from '@/lib/mailroom/stats'
@@ -124,22 +124,26 @@ export default async function HubPage(): Promise<React.JSX.Element> {
     },
   ]
 
-  // Spline 유리박스 6개 ↔ 핵심 모듈 매핑 (+박스 없는 3개는 범례 전용)
+  // 유리박스 모듈 9개 — 3×3 그리드 배치 (중앙 = 할 일)
   const byHref = new Map(nodes.map((n) => [n.href, n]))
-  const sp = (block: string | undefined, href: string): SplineHubModule => {
+  const gm = (href: string, icon: string, x: number, z: number): GlassHubModule => {
     const n = byHref.get(href)!
-    return { block, href, name: n.name, value: n.value, sub: n.subText }
+    return { href, name: n.name, value: n.value, sub: n.subText, icon, x, z }
   }
-  const splineModules: SplineHubModule[] = [
-    sp('Block 3', '/tasks'),
-    sp('Block 1', '/inbox'),
-    sp('Block 2', '/hub/ai-team'),
-    sp('Block 5', '/hub/naver'),
-    sp('Block 6', '/hub/agent'),
-    sp('Block 4', '/cash'),
-    sp(undefined, '/assistant'),
-    sp(undefined, '/hub/github'),
-    sp(undefined, '/contacts'),
+  const S = 2.85
+  const glassModules: GlassHubModule[] = [
+    // 뒷줄
+    gm('/assistant', 'assistant', -S, -S),
+    gm('/hub/ai-team', 'ai-team', 0, -S),
+    gm('/hub/github', 'github', S, -S),
+    // 가운데줄
+    gm('/inbox', 'inbox', -S, 0),
+    gm('/tasks', 'tasks', 0, 0),
+    gm('/hub/naver', 'naver', S, 0),
+    // 앞줄
+    gm('/contacts', 'contacts', -S, S),
+    gm('/cash', 'cash', 0, S),
+    gm('/hub/agent', 'agent', S, S),
   ]
 
   return (
@@ -171,7 +175,7 @@ export default async function HubPage(): Promise<React.JSX.Element> {
       {/* 데스크탑: Spline 유리박스 3D 허브 / 모바일: 칩 카드 그리드 */}
       <div className="relative flex flex-1 flex-col">
         <div className="relative hidden flex-1 md:block">
-          <HubSpline modules={splineModules} />
+          <GlassHub modules={glassModules} />
         </div>
         <HubBoard nodes={nodes} mobileOnly />
         {user ? (
