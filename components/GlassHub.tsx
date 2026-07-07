@@ -15,6 +15,8 @@ export type GlassHubModule = {
   sub?: string
   /** 상판 임보싱 아이콘 종류 */
   icon: string
+  /** 호버/클릭 발광 액센트 컬러 (기본 시안) */
+  accent?: string
   /** 바닥 좌표 (그리드 배치) */
   x: number
   z: number

@@ -126,24 +126,25 @@ export default async function HubPage(): Promise<React.JSX.Element> {
 
   // 유리박스 모듈 9개 — 3×3 그리드 배치 (중앙 = 할 일)
   const byHref = new Map(nodes.map((n) => [n.href, n]))
-  const gm = (href: string, icon: string, x: number, z: number): GlassHubModule => {
+  const gm = (href: string, icon: string, accent: string, x: number, z: number): GlassHubModule => {
     const n = byHref.get(href)!
-    return { href, name: n.name, value: n.value, sub: n.subText, icon, x, z }
+    return { href, name: n.name, value: n.value, sub: n.subText, icon, accent, x, z }
   }
   const S = 2.85
+  // 액센트 팔레트 — 호버 시 그 색으로 발광 (시안/마젠타/앰버/에메랄드/바이올렛)
   const glassModules: GlassHubModule[] = [
     // 뒷줄
-    gm('/assistant', 'assistant', -S, -S),
-    gm('/hub/ai-team', 'ai-team', 0, -S),
-    gm('/hub/github', 'github', S, -S),
+    gm('/assistant', 'assistant', '#35e0ff', -S, -S),
+    gm('/hub/ai-team', 'ai-team', '#a78bfa', 0, -S),
+    gm('/hub/github', 'github', '#8ea6ff', S, -S),
     // 가운데줄
-    gm('/inbox', 'inbox', -S, 0),
-    gm('/tasks', 'tasks', 0, 0),
-    gm('/hub/naver', 'naver', S, 0),
+    gm('/inbox', 'inbox', '#ff3d9a', -S, 0),
+    gm('/tasks', 'tasks', '#35e0ff', 0, 0),
+    gm('/hub/naver', 'naver', '#3ddc97', S, 0),
     // 앞줄
-    gm('/contacts', 'contacts', -S, S),
-    gm('/cash', 'cash', 0, S),
-    gm('/hub/agent', 'agent', S, S),
+    gm('/contacts', 'contacts', '#3ddc97', -S, S),
+    gm('/cash', 'cash', '#ffb454', 0, S),
+    gm('/hub/agent', 'agent', '#ff3d9a', S, S),
   ]
 
   return (
