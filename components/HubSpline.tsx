@@ -75,15 +75,10 @@ export function HubSpline({
     [onNavigate]
   )
 
-  // template 영어 문구 숨김 + 씬 배경 투명화(뒤의 회로 일러스트가 비치도록)
+  // template 의 영어 마케팅 문구 숨김 (우리 라벨은 툴팁·범례가 담당)
   const handleLoad = useCallback((app: Application): void => {
     for (const o of app.getAllObjects()) {
       if (o.name === 'TEXT' || /^text \d$/.test(o.name)) o.visible = false
-    }
-    try {
-      app.setBackgroundColor('transparent')
-    } catch {
-      // 구버전 런타임이면 씬 자체 배경 유지 (기능 무해)
     }
   }, [])
 
@@ -91,14 +86,7 @@ export function HubSpline({
 
   return (
     <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        // 회로 일러스트 배경(Imagen 생성, public/hub-bg.jpg) + 가독성용 다크 베일.
-        // 씬 배경은 onLoad 에서 투명화 → 유리박스 뒤로 이 레이어가 비친다.
-        background:
-          'linear-gradient(rgba(6,10,18,.55), rgba(6,10,18,.8)), url(/hub-bg.jpg) center / cover no-repeat',
-      }}
+      style={{ position: 'absolute', inset: 0 }}
       onMouseMove={(ev) => {
         const r = ev.currentTarget.getBoundingClientRect()
         setMouse({ x: ev.clientX - r.left, y: ev.clientY - r.top })
