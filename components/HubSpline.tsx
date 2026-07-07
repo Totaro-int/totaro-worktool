@@ -4,15 +4,17 @@
  * HubSpline — 사용자 Spline 씬(유리 박스 6개)을 허브 모듈로 매핑한 인터랙티브 3D 허브.
  *
  * 씬: public/scene.splinecode (자체 호스팅 — 외부의존·워터마크 없음)
- * 구조: "Block 1"~"Block 6" 그룹 + 각 자식 메시. getAllObjects() 평면 리스트가
- * "Block N → 그 자식들 → Block M → …" 순서라, 로드 시 자식→블록 소속표를 만든다.
- * 클릭 = 해당 모듈 페이지 이동 · 호버 = 커서 툴팁(이름·값) · 좌하단 범례 = 9모듈 실데이터(클릭 가능).
+ * ⚠️ 이 씬은 에디터에 마우스 이벤트가 없어서 Spline 런타임 이벤트가 발화하지 않는다(실측).
+ *   → 카메라가 고정 오르소이고 리사이즈 시 씬이 캔버스에 비례 축소됨을 실측으로 확인,
+ *     각 박스의 위치를 "캔버스 비율 좌표" 핫스팟으로 얹는다 (두 캔버스 크기에서 교차 검증됨).
+ * onLoad 에서 template 영어 문구(TEXT, text 1~6)는 숨긴다.
+ * 클릭 = 모듈 페이지 이동 · 호버 = 커서 툴팁(이름·값) · 좌하단 범례 = 전체 모듈 실데이터.
  */
-import { useCallback, useRef, useState, type JSX } from 'react'
+import { useCallback, useState, type JSX } from 'react'
 
 import dynamic from 'next/dynamic'
 
-import type { Application, SplineEvent } from '@splinetool/runtime'
+import type { Application } from '@splinetool/runtime'
 
 const Spline = dynamic(() => import('@splinetool/react-spline'), {
   ssr: false,
@@ -36,6 +38,16 @@ const Spline = dynamic(() => import('@splinetool/react-spline'), {
 
 const CYAN = '#35e0ff'
 
+/** 씬 내 각 블록의 화면 비율 좌표 (fx, fy) — 캔버스 크기 무관(비례 축소 실측 검증). */
+const BLOCK_POS: Record<string, [number, number]> = {
+  'Block 1': [0.12, 0.44], // 좌측 코일
+  'Block 2': [0.375, 0.31], // 상단 실드
+  'Block 3': [0.46, 0.47], // 중앙 핸드
+  'Block 4': [0.411, 0.657], // 하단 아톰
+  'Block 5': [0.738, 0.5], // 우측 벨
+  'Block 6': [0.716, 0.72], // 우하단 플래그
+}
+
 export type SplineHubModule = {
   /** 씬의 블록 그룹 이름 — 'Block 1' ~ 'Block 6'. 없으면 범례 전용(박스 없음). */
   block?: string
@@ -52,15 +64,8 @@ export function HubSpline({
   modules: SplineHubModule[]
   onNavigate?: (href: string) => void
 }): JSX.Element {
-  const uuidToBlock = useRef<Map<string, string>>(new Map())
   const [hover, setHover] = useState<SplineHubModule | null>(null)
   const [mouse, setMouse] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
-
-  const byBlock = useCallback(
-    (block: string | undefined): SplineHubModule | null =>
-      (block && modules.find((m) => m.block === block)) || null,
-    [modules]
-  )
 
   const go = useCallback(
     (href: string): void => {
@@ -70,45 +75,18 @@ export function HubSpline({
     [onNavigate]
   )
 
+  // template 의 영어 마케팅 문구 숨김 (우리 라벨은 툴팁·범례가 담당)
   const handleLoad = useCallback((app: Application): void => {
-    // 평면 리스트를 걸으며 각 오브젝트를 직전에 나온 Block N 에 귀속시킨다.
-    const map = new Map<string, string>()
-    let current: string | null = null
     for (const o of app.getAllObjects()) {
-      if (/^Block \d$/.test(o.name)) current = o.name
-      if (current) map.set(o.uuid, current)
+      if (o.name === 'TEXT' || /^text \d$/.test(o.name)) o.visible = false
     }
-    uuidToBlock.current = map
   }, [])
 
-  const resolve = useCallback(
-    (e: SplineEvent): SplineHubModule | null => {
-      const block = /^Block \d$/.test(e.target.name)
-        ? e.target.name
-        : uuidToBlock.current.get(e.target.id)
-      return byBlock(block)
-    },
-    [byBlock]
-  )
-
-  const handleDown = useCallback(
-    (e: SplineEvent): void => {
-      const m = resolve(e)
-      if (m) go(m.href)
-    },
-    [resolve, go]
-  )
-
-  const handleHover = useCallback(
-    (e: SplineEvent): void => {
-      setHover(resolve(e))
-    },
-    [resolve]
-  )
+  const boxed = modules.filter((m) => m.block && BLOCK_POS[m.block])
 
   return (
     <div
-      style={{ position: 'absolute', inset: 0, cursor: hover ? 'pointer' : 'default' }}
+      style={{ position: 'absolute', inset: 0 }}
       onMouseMove={(ev) => {
         const r = ev.currentTarget.getBoundingClientRect()
         setMouse({ x: ev.clientX - r.left, y: ev.clientY - r.top })
@@ -116,13 +94,36 @@ export function HubSpline({
       onMouseLeave={() => setHover(null)}
     >
       <div style={{ position: 'absolute', inset: 0 }}>
-        <Spline
-          scene="/scene.splinecode"
-          onLoad={handleLoad}
-          onSplineMouseDown={handleDown}
-          onSplineMouseHover={handleHover}
-        />
+        <Spline scene="/scene.splinecode" onLoad={handleLoad} />
       </div>
+
+      {/* 박스 핫스팟 — 씬 위 투명 버튼 (비율 좌표) */}
+      {boxed.map((m) => {
+        const [fx, fy] = BLOCK_POS[m.block!]!
+        return (
+          <button
+            key={m.href}
+            type="button"
+            aria-label={`${m.name} ${m.value}`}
+            onClick={() => go(m.href)}
+            onMouseEnter={() => setHover(m)}
+            onMouseLeave={() => setHover(null)}
+            style={{
+              position: 'absolute',
+              left: `${fx * 100}%`,
+              top: `${fy * 100}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '13%',
+              aspectRatio: '1.5 / 1',
+              borderRadius: '50%',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              zIndex: 5,
+            }}
+          />
+        )
+      })}
 
       {/* 호버 툴팁 — 커서 따라다님 */}
       {hover ? (
