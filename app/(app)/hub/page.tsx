@@ -1,4 +1,5 @@
 import { HubBoard, type HubNode } from '@/components/HubBoard'
+import { HubSpline, type SplineHubModule } from '@/components/HubSpline'
 import { getAgentData } from '@/lib/agents'
 import { getGithubData } from '@/lib/github'
 import { getMailroomData } from '@/lib/mailroom/stats'
@@ -123,6 +124,24 @@ export default async function HubPage(): Promise<React.JSX.Element> {
     },
   ]
 
+  // Spline 유리박스 6개 ↔ 핵심 모듈 매핑 (+박스 없는 3개는 범례 전용)
+  const byHref = new Map(nodes.map((n) => [n.href, n]))
+  const sp = (block: string | undefined, href: string): SplineHubModule => {
+    const n = byHref.get(href)!
+    return { block, href, name: n.name, value: n.value, sub: n.subText }
+  }
+  const splineModules: SplineHubModule[] = [
+    sp('Block 3', '/tasks'),
+    sp('Block 1', '/inbox'),
+    sp('Block 2', '/hub/ai-team'),
+    sp('Block 5', '/hub/naver'),
+    sp('Block 6', '/hub/agent'),
+    sp('Block 4', '/cash'),
+    sp(undefined, '/assistant'),
+    sp(undefined, '/hub/github'),
+    sp(undefined, '/contacts'),
+  ]
+
   return (
     <div
       className="flex min-h-screen flex-col"
@@ -149,20 +168,17 @@ export default async function HubPage(): Promise<React.JSX.Element> {
         </span>
       </div>
 
-      {/* 아이소 마더보드 (데스크탑) / 칩 카드 (모바일) */}
+      {/* 데스크탑: Spline 유리박스 3D 허브 / 모바일: 칩 카드 그리드 */}
       <div className="relative flex flex-1 flex-col">
-        <HubBoard nodes={nodes} />
+        <div className="relative hidden flex-1 md:block">
+          <HubSpline modules={splineModules} />
+        </div>
+        <HubBoard nodes={nodes} mobileOnly />
         {user ? (
-          <div className="absolute bottom-4 left-4 z-10 hidden md:block">
+          <div className="absolute right-4 bottom-4 z-10 hidden md:block">
             <CalendarToday userId={user.id} />
           </div>
         ) : null}
-        <p
-          className="pointer-events-none absolute right-6 bottom-4 hidden font-mono text-[11px] md:block"
-          style={{ color: '#4a5568' }}
-        >
-          칩을 눌러 각 업무 영역으로 이동
-        </p>
       </div>
     </div>
   )

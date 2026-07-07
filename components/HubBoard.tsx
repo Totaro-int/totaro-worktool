@@ -309,7 +309,14 @@ function Label({ node, color }: { node: HubNode; color: string }): JSX.Element {
   )
 }
 
-export function HubBoard({ nodes }: { nodes: HubNode[] }): JSX.Element {
+export function HubBoard({
+  nodes,
+  mobileOnly = false,
+}: {
+  nodes: HubNode[]
+  /** true 면 모바일 카드 그리드만 렌더 (데스크탑은 HubSpline 이 담당) */
+  mobileOnly?: boolean
+}): JSX.Element {
   const known = nodes.filter((n) => LAYOUT[n.href])
   const cpu = known.find((n) => LAYOUT[n.href]!.kind === 'cpu')
   const mods = known.filter((n) => LAYOUT[n.href]!.kind !== 'cpu')
@@ -332,8 +339,14 @@ export function HubBoard({ nodes }: { nodes: HubNode[] }): JSX.Element {
   }
   return (
     <>
-      {/* 데스크탑: 아이소 마더보드 */}
-      <div className="hidden flex-1 items-center justify-center overflow-hidden md:flex">
+      {/* 데스크탑: 아이소 마더보드 (mobileOnly 면 숨김) */}
+      <div
+        className={
+          mobileOnly
+            ? 'hidden'
+            : 'hidden flex-1 items-center justify-center overflow-hidden md:flex'
+        }
+      >
         <svg
           viewBox="0 60 1200 720"
           className="h-full w-full max-w-6xl"
