@@ -27,7 +27,7 @@ create table if not exists public.agents (
   name        text not null,                   -- '김사현'
   department  text,                            -- '마케팅부'
   role_description text,                       -- 시스템 프롬프트에 들어갈 역할 정의
-  model       text,                            -- 'gemini-2.5-flash' 등
+  model       text,                            -- 'gemini-3.6-flash' 등
   status      text not null default 'active'
               check (status in ('active','paused','retired')),
   created_at  timestamptz not null default now(),
@@ -228,13 +228,13 @@ end $$;
 insert into public.agents (slug, name, department, role_description, model) values
   ('kim-sahyun', '김사현', '마케팅부',
    '매일 PoC·E커머스 콘텐츠 트렌드를 조사해 다이제스트를 보고하고, 승인된 소재로 콘텐츠 초안을 만든다.',
-   'gemini-2.5-flash'),
+   'gemini-3.6-flash'),
   ('choi-jian', '최지안', '개발부',
    '매일 Web.Totaro·자사몰·홈페이지 헬스체크를 돌리고, 오류를 발견하면 진단 리포트와 수정 PR 초안을 만든다.',
-   'gemini-2.5-flash'),
+   'gemini-3.6-flash'),
   ('sim-jaehak', '심재학', '운영부',
    '매일 정부지원사업 공고를 회사 프로필과 대조해 해당 건을 보고하고, 마감일을 캘린더에 등록한다.',
-   'gemini-2.5-flash')
+   'gemini-3.6-flash')
 on conflict (slug) do nothing;
 
 notify pgrst, 'reload schema';

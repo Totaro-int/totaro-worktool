@@ -6,7 +6,7 @@
  */
 import { getVertexAccess, vertexUrl } from '../assistant/vertex'
 
-const MODEL = 'gemini-2.5-flash'
+const MODEL = 'gemini-3.6-flash'
 
 export type ExtractedContact = {
   name: string

@@ -39,7 +39,7 @@ import type { ClassificationResult } from '../lib/mailroom/classify'
 
 /** Gemini 가 멀티모달로 직접 처리 가능한 이미지 MIME — 카톡 사진·스크린샷 분류용 */
 const VISION_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif'])
-const VISION_MODEL = 'gemini-2.5-flash'
+const VISION_MODEL = 'gemini-3.6-flash'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''

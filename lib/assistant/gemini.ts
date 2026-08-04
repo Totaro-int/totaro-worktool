@@ -12,8 +12,10 @@ import { getVertexAccess, vertexUrl } from './vertex'
 
 import type { AnswerResult, StreamEvent } from './answer'
 
-/** 답변 생성 모델(기본: 빠르고 저렴한 Gemini 2.5 Flash). GOOGLE_VERTEX_GEN_MODEL 로 덮어쓰기. */
-const GEN_MODEL = process.env.GOOGLE_VERTEX_GEN_MODEL || 'gemini-2.5-flash'
+/** 답변 생성 모델(기본: 최신 상위 티어 Gemini 3.6 Flash — 품질 우선 선택).
+ *  비용을 낮추려면 GOOGLE_VERTEX_GEN_MODEL=gemini-3.5-flash-lite 로 덮어쓴다
+ *  (은퇴한 2.5-flash 와 토큰 단가가 같다). */
+const GEN_MODEL = process.env.GOOGLE_VERTEX_GEN_MODEL || 'gemini-3.6-flash'
 const MAX_OUTPUT_TOKENS = 2048
 const TIMEOUT_MS = 120_000
 
