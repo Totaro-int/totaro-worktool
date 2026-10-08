@@ -121,3 +121,9 @@ supabase/
 - **2단계 — GitHub 연동**: 커밋 · PR 이 활동 피드에 자동 표시
 - **3단계 — 네이버 커머스 API 연동**: 스마트스토어 주문 · 상품 변경 자동 수집
 - **4단계 — 확장**: 네이버 광고 연동, 알림, 주간 업무 요약
+
+
+---
+
+## Built by TOTARO
+[TOTARO (주식회사 토타로 인터내셔널)](https://www.totaro.co.kr) — 지원사업·외주 개발을 기획부터 실 운영 안착까지 진행하는 0→1 개발 파트너. [포트폴리오](https://www.totaro.co.kr/work) · [외주 개발](https://www.totaro.co.kr/services/outsourcing)
